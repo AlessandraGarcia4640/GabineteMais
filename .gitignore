@@ -1,0 +1,67 @@
+# --- Dependências ---
+node_modules/
+.pnpm-store/
+
+# --- Ambiente e segredos (NUNCA commitar) ---
+.env
+.env.*
+!.env.example
+
+# --- Builds e saídas ---
+dist/
+build/
+out/
+*.tsbuildinfo
+coverage/
+
+# --- Expo / React Native ---
+.expo/
+.expo-shared/
+expo-env.d.ts
+apps/mobile/android/
+apps/mobile/ios/
+*.apk
+*.aab
+*.ipa
+*.jks
+*.keystore
+!debug.keystore
+
+# --- EAS ---
+.eas/
+
+# --- Metro ---
+.metro-health-check*
+.metro-cache/
+
+# --- Prisma ---
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# --- Testes ---
+.vitest-cache/
+.jest-cache/
+
+# --- Caches de ferramentas ---
+.eslintcache
+.prettiercache
+.turbo/
+.cache/
+
+# --- IDE / SO ---
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Claude Code (config local da máquina) ---
+.claude/settings.local.json
