@@ -1,0 +1,11 @@
+openapi: 3.1.0
+info:
+  title: Gabinete+ API
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      summary: Verifica o estado da API
+      responses:
+        "200":
+          description: API disponível

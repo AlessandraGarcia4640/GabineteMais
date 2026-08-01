@@ -1,0 +1,31 @@
+{
+  "name": "gabinete-plus",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.14.0",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @gabinete-plus/api --filter @gabinete-plus/mobile dev",
+    "dev:api": "pnpm --filter @gabinete-plus/api dev",
+    "dev:mobile": "pnpm --filter @gabinete-plus/mobile start",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "db:generate": "pnpm --filter @gabinete-plus/api prisma:generate",
+    "db:migrate": "pnpm --filter @gabinete-plus/api prisma:migrate",
+    "db:seed": "pnpm --filter @gabinete-plus/api seed"
+  },
+  "devDependencies": {
+    "@eslint/js": "latest",
+    "@types/node": "latest",
+    "eslint": "latest",
+    "prettier": "latest",
+    "typescript": "5.9.3",
+    "typescript-eslint": "latest"
+  }
+}
