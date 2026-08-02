@@ -1,0 +1,1165 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Wireframes de baixa fidelidade — Gabinete+</title>
+
+    <style>
+      :root {
+        font-family: Arial, Helvetica, sans-serif;
+        color: #202020;
+        background: #eeeeee;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 32px;
+      }
+
+      header {
+        max-width: 1200px;
+        margin: 0 auto 32px;
+      }
+
+      h1 {
+        margin-bottom: 8px;
+        font-size: 28px;
+      }
+
+      header p {
+        max-width: 760px;
+        margin: 0;
+        color: #555555;
+        line-height: 1.5;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 32px;
+        max-width: 1500px;
+        margin: 0 auto;
+        align-items: start;
+      }
+
+      .wireframe {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .wireframe-title {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .phone {
+        position: relative;
+        width: 100%;
+        max-width: 390px;
+        min-height: 760px;
+        margin: 0 auto;
+        overflow: hidden;
+        border: 3px solid #222222;
+        border-radius: 28px;
+        background: #ffffff;
+      }
+
+      .status-bar {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 18px;
+        border-bottom: 1px solid #aaaaaa;
+        font-size: 12px;
+      }
+
+      .screen {
+        padding: 18px;
+        padding-bottom: 86px;
+      }
+
+      .screen-center {
+        display: flex;
+        min-height: 675px;
+        flex-direction: column;
+        justify-content: center;
+        padding: 28px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 22px;
+      }
+
+      .subtitle {
+        margin: 4px 0 0;
+        color: #666666;
+        font-size: 13px;
+      }
+
+      .placeholder-logo {
+        display: grid;
+        width: 88px;
+        height: 88px;
+        margin: 0 auto 24px;
+        place-items: center;
+        border: 2px solid #333333;
+        border-radius: 18px;
+        background: #dddddd;
+        font-weight: bold;
+      }
+
+      .field {
+        margin-bottom: 14px;
+      }
+
+      .field label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: bold;
+      }
+
+      .input {
+        min-height: 44px;
+        border: 2px solid #777777;
+        border-radius: 8px;
+        background: #f6f6f6;
+      }
+
+      .input.large {
+        min-height: 92px;
+      }
+
+      .button {
+        display: grid;
+        min-height: 44px;
+        padding: 8px 14px;
+        place-items: center;
+        border: 2px solid #333333;
+        border-radius: 8px;
+        background: #bdbdbd;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .button.secondary {
+        background: #eeeeee;
+      }
+
+      .button.small {
+        min-height: 36px;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      .button-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .summary {
+        min-height: 88px;
+        padding: 12px;
+        border: 2px solid #777777;
+        border-radius: 10px;
+        background: #e7e7e7;
+      }
+
+      .summary strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 24px;
+      }
+
+      .summary span {
+        font-size: 12px;
+      }
+
+      .section {
+        margin-top: 20px;
+      }
+
+      .section-title {
+        margin: 0 0 10px;
+        font-size: 15px;
+      }
+
+      .card {
+        margin-bottom: 10px;
+        padding: 12px;
+        border: 2px solid #888888;
+        border-radius: 10px;
+        background: #f3f3f3;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .card p {
+        margin: 8px 0 0;
+        color: #555555;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 4px 7px;
+        border: 1px solid #555555;
+        border-radius: 999px;
+        background: #dddddd;
+        font-size: 10px;
+        white-space: nowrap;
+      }
+
+      .search-row {
+        display: grid;
+        grid-template-columns: 1fr 74px;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .filter {
+        display: grid;
+        min-height: 42px;
+        place-items: center;
+        border: 2px solid #666666;
+        border-radius: 8px;
+        background: #dddddd;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .checklist {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .checklist li {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 9px;
+        font-size: 13px;
+      }
+
+      .checkbox {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+        border: 2px solid #555555;
+        background: #ffffff;
+      }
+
+      .info-row {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 8px;
+        padding: 9px 0;
+        border-bottom: 1px solid #cccccc;
+        font-size: 12px;
+      }
+
+      .info-row strong {
+        color: #444444;
+      }
+
+      .avatar {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 2px solid #555555;
+        border-radius: 50%;
+        background: #d5d5d5;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .person {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        padding: 12px;
+        border: 2px solid #888888;
+        border-radius: 10px;
+        background: #f2f2f2;
+      }
+
+      .person-content {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .person-content h3 {
+        margin: 0 0 5px;
+        font-size: 14px;
+      }
+
+      .person-content p {
+        margin: 0 0 7px;
+        color: #555555;
+        font-size: 12px;
+      }
+
+      .notice {
+        margin-bottom: 14px;
+        padding: 10px;
+        border: 2px dashed #555555;
+        border-radius: 8px;
+        background: #eeeeee;
+        font-size: 12px;
+      }
+
+      .bottom-nav {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        min-height: 68px;
+        border-top: 2px solid #555555;
+        background: #eeeeee;
+      }
+
+      .nav-item {
+        display: grid;
+        place-items: center;
+        border-right: 1px solid #999999;
+        font-size: 11px;
+        text-align: center;
+      }
+
+      .nav-item:last-child {
+        border-right: 0;
+      }
+
+      .nav-item.active {
+        background: #c8c8c8;
+        font-weight: bold;
+      }
+
+      .menu-item {
+        display: flex;
+        min-height: 54px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px;
+        border-bottom: 1px solid #aaaaaa;
+        font-size: 14px;
+      }
+
+      .menu-icon {
+        display: inline-block;
+        width: 26px;
+        height: 26px;
+        margin-right: 10px;
+        border: 2px solid #555555;
+        border-radius: 5px;
+        vertical-align: middle;
+      }
+
+      .divider {
+        height: 1px;
+        margin: 16px 0;
+        background: #bbbbbb;
+      }
+
+      .floating-button {
+        position: absolute;
+        right: 18px;
+        bottom: 84px;
+        display: grid;
+        width: 54px;
+        height: 54px;
+        place-items: center;
+        border: 2px solid #222222;
+        border-radius: 50%;
+        background: #bbbbbb;
+        font-size: 26px;
+        font-weight: bold;
+      }
+
+      @media (max-width: 600px) {
+        body {
+          padding: 18px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+
+  </head>
+
+  <body>
+    <header>
+      <h1>Wireframes de baixa fidelidade do Gabinete+</h1>
+
+      <p>
+        Representação inicial das principais telas do aplicativo. Os elementos
+        usam apenas tons de cinza para permitir a validação da estrutura,
+        hierarquia das informações e navegação antes da definição visual.
+      </p>
+    </header>
+
+    <main class="grid">
+      <!-- 1. LOGIN -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">1. Login</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen-center">
+            <div class="placeholder-logo">Gabinete+</div>
+
+            <div class="field">
+              <label>E-mail</label>
+              <div class="input"></div>
+            </div>
+
+            <div class="field">
+              <label>Senha</label>
+              <div class="input"></div>
+            </div>
+
+            <div class="button">Entrar</div>
+
+            <p class="subtitle" style="margin-top: 14px; text-align: center">
+              Mensagens de erro e carregamento aparecerão nesta área.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. INÍCIO ASSESSOR-CHEFE -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">2. Início — Assessor-chefe</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <h3 class="title">Olá, Assessor-chefe</h3>
+                <p class="subtitle">Visão geral da assessoria</p>
+              </div>
+
+              <div class="avatar">AC</div>
+            </div>
+
+            <div class="summary-grid">
+              <div class="summary">
+                <strong>12</strong>
+                <span>Tarefas de hoje</span>
+              </div>
+
+              <div class="summary">
+                <strong>3</strong>
+                <span>Tarefas atrasadas</span>
+              </div>
+
+              <div class="summary">
+                <strong>5</strong>
+                <span>Próximas do prazo</span>
+              </div>
+
+              <div class="summary">
+                <strong>1</strong>
+                <span>Substituição ativa</span>
+              </div>
+            </div>
+
+            <section class="section">
+              <h4 class="section-title">Ações rápidas</h4>
+
+              <div class="button-row">
+                <div class="button small">Nova atividade</div>
+                <div class="button small">Criar tarefa</div>
+                <div class="button small">Distribuir tarefa</div>
+                <div class="button small">Nova substituição</div>
+              </div>
+            </section>
+
+            <section class="section">
+              <h4 class="section-title">Prioridades do dia</h4>
+
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title">Consultar processos prioritários</h5>
+                  <span class="badge">Alta</span>
+                </div>
+
+                <p>Responsável: Assessor-chefe · Prazo: hoje</p>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title">Conferir pauta da sessão</h5>
+                  <span class="badge">Sessão</span>
+                </div>
+
+                <p>Responsável: Assessor 1 · Prazo: amanhã</p>
+              </div>
+            </section>
+          </div>
+
+          <nav class="bottom-nav">
+            <div class="nav-item active">Início</div>
+            <div class="nav-item">Tarefas</div>
+            <div class="nav-item">Atividades</div>
+            <div class="nav-item">Mais</div>
+          </nav>
+        </div>
+      </section>
+
+      <!-- 3. INÍCIO ASSESSOR -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">3. Início — Assessor</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <h3 class="title">Olá, Assessor 1</h3>
+                <p class="subtitle">Suas atividades e prioridades</p>
+              </div>
+
+              <div class="avatar">A1</div>
+            </div>
+
+            <div class="summary-grid">
+              <div class="summary">
+                <strong>7</strong>
+                <span>Minhas tarefas</span>
+              </div>
+
+              <div class="summary">
+                <strong>1</strong>
+                <span>Atrasada</span>
+              </div>
+
+              <div class="summary">
+                <strong>2</strong>
+                <span>Próximas do prazo</span>
+              </div>
+
+              <div class="summary">
+                <strong>3</strong>
+                <span>Recebidas recentemente</span>
+              </div>
+            </div>
+
+            <section class="section">
+              <h4 class="section-title">Minhas prioridades</h4>
+
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title">Conferir minuta de recurso ordinário</h5>
+                  <span class="badge">Alta</span>
+                </div>
+
+                <p>Prazo: hoje · Movimento processual</p>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title">Analisar processo de vista regimental</h5>
+                  <span class="badge">Sessão</span>
+                </div>
+
+                <p>Prazo: amanhã · Pré-sessão</p>
+              </div>
+            </section>
+
+            <section class="section">
+              <h4 class="section-title">Tarefas compartilhadas</h4>
+
+              <div class="card">
+                <p>2 tarefas disponíveis para distribuição entre os assessores.</p>
+              </div>
+            </section>
+          </div>
+
+          <nav class="bottom-nav">
+            <div class="nav-item active">Início</div>
+            <div class="nav-item">Tarefas</div>
+            <div class="nav-item">Atividades</div>
+            <div class="nav-item">Mais</div>
+          </nav>
+        </div>
+      </section>
+
+      <!-- 4. LISTA DE TAREFAS -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">4. Lista de tarefas</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <h3 class="title">Tarefas</h3>
+                <p class="subtitle">18 resultados</p>
+              </div>
+            </div>
+
+            <div class="search-row">
+              <div class="input"></div>
+              <div class="filter">Filtros</div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">Consultar e-Gestão</h4>
+                <span class="badge">Hoje</span>
+              </div>
+
+              <p>Assessor-chefe · Movimento processual</p>
+              <p>Situação: pendente · Prioridade alta</p>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">Conferir recurso ordinário</h4>
+                <span class="badge">Atrasada</span>
+              </div>
+
+              <p>Assessor 1 · Movimento processual</p>
+              <p>Situação: em andamento</p>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">Atualizar controle de sessões</h4>
+                <span class="badge">Mensal</span>
+              </div>
+
+              <p>Assessor-chefe · Administrativo</p>
+              <p>Prazo: dia 30</p>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">Acompanhar sessão de julgamento</h4>
+                <span class="badge">Sessão</span>
+              </div>
+
+              <p>Assessor 2 · Sessão</p>
+              <p>Prazo: sexta-feira</p>
+            </div>
+          </div>
+
+          <div class="floating-button">+</div>
+
+          <nav class="bottom-nav">
+            <div class="nav-item">Início</div>
+            <div class="nav-item active">Tarefas</div>
+            <div class="nav-item">Atividades</div>
+            <div class="nav-item">Mais</div>
+          </nav>
+        </div>
+      </section>
+
+      <!-- 5. DETALHES DA TAREFA -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">5. Detalhes da tarefa</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <p class="subtitle">← Voltar</p>
+                <h3 class="title">Detalhes da tarefa</h3>
+              </div>
+
+              <span class="badge">Alta</span>
+            </div>
+
+            <h4>Conferir recurso ordinário</h4>
+
+            <div class="info-row">
+              <strong>Responsável</strong>
+              <span>Assessor 1</span>
+            </div>
+
+            <div class="info-row">
+              <strong>Categoria</strong>
+              <span>Movimento processual</span>
+            </div>
+
+            <div class="info-row">
+              <strong>Prazo</strong>
+              <span>Hoje, 17h</span>
+            </div>
+
+            <div class="info-row">
+              <strong>Situação</strong>
+              <span>Em andamento</span>
+            </div>
+
+            <section class="section">
+              <h4 class="section-title">Instruções</h4>
+
+              <div class="card">
+                <p>
+                  Conferir a minuta conforme os temas e orientações internas.
+                </p>
+              </div>
+            </section>
+
+            <section class="section">
+              <h4 class="section-title">Checklist</h4>
+
+              <ul class="checklist">
+                <li>
+                  <span class="checkbox"></span>
+                  Conferir fundamentos
+                </li>
+
+                <li>
+                  <span class="checkbox"></span>
+                  Conferir dispositivo
+                </li>
+
+                <li>
+                  <span class="checkbox"></span>
+                  Registrar pendências
+                </li>
+              </ul>
+            </section>
+
+            <section class="section">
+              <h4 class="section-title">Histórico</h4>
+
+              <div class="card">
+                <p>08:30 — Tarefa atribuída ao Assessor 1.</p>
+                <p>09:10 — Situação alterada para “Em andamento”.</p>
+              </div>
+            </section>
+
+            <div class="button-row">
+              <div class="button">Concluir</div>
+              <div class="button secondary">Transferir</div>
+              <div class="button secondary">Editar</div>
+              <div class="button secondary">Observação</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. CADASTRO DE ATIVIDADE -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">6. Cadastro de atividade</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <p class="subtitle">← Cancelar</p>
+                <h3 class="title">Nova atividade</h3>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Nome da atividade</label>
+              <div class="input"></div>
+            </div>
+
+            <div class="field">
+              <label>Descrição</label>
+              <div class="input large"></div>
+            </div>
+
+            <div class="field">
+              <label>Categoria</label>
+              <div class="input"></div>
+            </div>
+
+            <div class="field">
+              <label>Responsável padrão</label>
+              <div class="input"></div>
+            </div>
+
+            <div class="field">
+              <label>Frequência</label>
+              <div class="input"></div>
+            </div>
+
+            <div class="button-row">
+              <div class="field">
+                <label>Dia inicial</label>
+                <div class="input"></div>
+              </div>
+
+              <div class="field">
+                <label>Dia final</label>
+                <div class="input"></div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Instruções</label>
+              <div class="input large"></div>
+            </div>
+
+            <div class="card">
+              <p>□ Gerar tarefas automaticamente</p>
+              <p>□ Atividade ativa</p>
+            </div>
+
+            <div class="button">Salvar atividade</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. LISTA DA EQUIPE -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">7. Lista da equipe</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <h3 class="title">Equipe</h3>
+                <p class="subtitle">Visão funcional da assessoria</p>
+              </div>
+            </div>
+
+            <div class="search-row">
+              <div class="input"></div>
+              <div class="filter">Filtros</div>
+            </div>
+
+            <div class="person">
+              <div class="avatar">AC</div>
+
+              <div class="person-content">
+                <h3>Assessor-chefe</h3>
+                <p>12 pendentes · 3 atrasadas</p>
+                <span class="badge">Ativo</span>
+              </div>
+            </div>
+
+            <div class="person">
+              <div class="avatar">A1</div>
+
+              <div class="person-content">
+                <h3>Assessor 1</h3>
+                <p>7 pendentes · 1 atrasada</p>
+                <span class="badge">Ativo</span>
+              </div>
+            </div>
+
+            <div class="person">
+              <div class="avatar">A2</div>
+
+              <div class="person-content">
+                <h3>Assessor 2</h3>
+                <p>6 pendentes · nenhuma atrasada</p>
+                <span class="badge">Ativo</span>
+              </div>
+            </div>
+
+            <div class="person">
+              <div class="avatar">AS</div>
+
+              <div class="person-content">
+                <h3>Assessor substituto</h3>
+                <p>Substituindo Assessor 1 até 15/08</p>
+                <span class="badge">Substituição ativa</span>
+              </div>
+            </div>
+
+            <div class="button">Nova substituição</div>
+          </div>
+
+          <nav class="bottom-nav">
+            <div class="nav-item">Início</div>
+            <div class="nav-item">Tarefas</div>
+            <div class="nav-item">Atividades</div>
+            <div class="nav-item active">Mais</div>
+          </nav>
+        </div>
+      </section>
+
+      <!-- 8. NOVA SUBSTITUIÇÃO -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">8. Nova substituição</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <p class="subtitle">← Cancelar</p>
+                <h3 class="title">Nova substituição</h3>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Titular substituído</label>
+              <div class="input"></div>
+            </div>
+
+            <div class="field">
+              <label>Substituto</label>
+              <div class="input"></div>
+            </div>
+
+            <div class="field">
+              <label>Cargo ou função assumida</label>
+              <div class="input"></div>
+            </div>
+
+            <div class="button-row">
+              <div class="field">
+                <label>Data inicial</label>
+                <div class="input"></div>
+              </div>
+
+              <div class="field">
+                <label>Data final</label>
+                <div class="input"></div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Tarefas transferidas</label>
+              <div class="input large"></div>
+            </div>
+
+            <div class="field">
+              <label>Permissões temporárias</label>
+              <div class="input large"></div>
+            </div>
+
+            <div class="field">
+              <label>Observações</label>
+              <div class="input large"></div>
+            </div>
+
+            <div class="notice">
+              O sistema verificará se o substituto já possui outra substituição
+              ativa no mesmo período.
+            </div>
+
+            <div class="button">Confirmar substituição</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. DETALHES DA SUBSTITUIÇÃO -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">9. Detalhes da substituição</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <p class="subtitle">← Voltar</p>
+                <h3 class="title">Substituição ativa</h3>
+              </div>
+
+              <span class="badge">Ativa</span>
+            </div>
+
+            <div class="info-row">
+              <strong>Titular</strong>
+              <span>Assessor 1</span>
+            </div>
+
+            <div class="info-row">
+              <strong>Substituto</strong>
+              <span>Assessor substituto</span>
+            </div>
+
+            <div class="info-row">
+              <strong>Período</strong>
+              <span>01/08 a 15/08</span>
+            </div>
+
+            <div class="info-row">
+              <strong>Função</strong>
+              <span>Assessor 1</span>
+            </div>
+
+            <section class="section">
+              <h4 class="section-title">Tarefas transferidas</h4>
+
+              <div class="card">
+                <p>5 tarefas pendentes</p>
+                <p>2 atividades recorrentes</p>
+              </div>
+            </section>
+
+            <section class="section">
+              <h4 class="section-title">Alterações no período</h4>
+
+              <div class="card">
+                <p>2 tarefas concluídas</p>
+                <p>1 tarefa redistribuída</p>
+                <p>1 observação adicionada</p>
+              </div>
+            </section>
+
+            <section class="section">
+              <h4 class="section-title">Pendências</h4>
+
+              <div class="card">
+                <p>Conferir processo relacionado à próxima sessão.</p>
+              </div>
+            </section>
+
+            <div class="button-row">
+              <div class="button secondary">Editar período</div>
+              <div class="button secondary">Relatório</div>
+            </div>
+
+            <div class="button" style="margin-top: 10px">
+              Encerrar substituição
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. MENU MAIS -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">10. Menu “Mais”</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <h3 class="title">Mais</h3>
+                <p class="subtitle">Outras áreas do aplicativo</p>
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <span><span class="menu-icon"></span>Equipe</span>
+              <span>›</span>
+            </div>
+
+            <div class="menu-item">
+              <span><span class="menu-icon"></span>Substituições</span>
+              <span>›</span>
+            </div>
+
+            <div class="menu-item">
+              <span><span class="menu-icon"></span>Relatórios</span>
+              <span>›</span>
+            </div>
+
+            <div class="menu-item">
+              <span><span class="menu-icon"></span>Perfil</span>
+              <span>›</span>
+            </div>
+
+            <div class="menu-item">
+              <span><span class="menu-icon"></span>Configurações</span>
+              <span>›</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="menu-item">
+              <span><span class="menu-icon"></span>Sair</span>
+              <span>›</span>
+            </div>
+          </div>
+
+          <nav class="bottom-nav">
+            <div class="nav-item">Início</div>
+            <div class="nav-item">Tarefas</div>
+            <div class="nav-item">Atividades</div>
+            <div class="nav-item active">Mais</div>
+          </nav>
+        </div>
+      </section>
+    </main>
+
+  </body>
+</html>
