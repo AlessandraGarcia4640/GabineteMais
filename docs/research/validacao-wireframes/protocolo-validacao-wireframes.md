@@ -38,7 +38,7 @@ Informar que:
 - os wireframes são representações de interface, e não funcionalidades implementadas;
 - o participante poderá explicar o que procura, o que espera encontrar e o que considera pouco claro;
 - poderá interromper a participação a qualquer momento;
-- a sessão somente será iniciada após o registro do consentimento;
+- a sessão somente será iniciada após o consentimento do participante, que poderá ser registrado como verbal ou escrito;
 - durante os cenários, a pesquisadora evitará indicar antecipadamente o caminho esperado.
 
 ## 5. Procedimento
