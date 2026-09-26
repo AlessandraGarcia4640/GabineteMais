@@ -518,8 +518,8 @@
               <h4 class="section-title">Ações rápidas</h4>
 
               <div class="button-row">
-                <div class="button small">Nova atividade</div>
-                <div class="button small">Criar tarefa</div>
+                <div class="button small">Nova atividade recorrente</div>
+                <div class="button small">Nova tarefa pontual</div>
                 <div class="button small">Distribuir tarefa</div>
                 <div class="button small">Nova substituição</div>
               </div>
@@ -669,7 +669,7 @@
               </div>
 
               <p>Assessor-chefe · Movimento processual</p>
-              <p>Situação: pendente · Prioridade alta</p>
+              <p>Status: ○ Por fazer · Prioridade alta</p>
             </div>
 
             <div class="card">
@@ -679,7 +679,7 @@
               </div>
 
               <p>Assessor 1 · Movimento processual</p>
-              <p>Situação: em andamento</p>
+              <p>Status: ◐ Em andamento</p>
             </div>
 
             <div class="card">
@@ -689,7 +689,7 @@
               </div>
 
               <p>Assessor-chefe · Administrativo</p>
-              <p>Prazo: dia 30</p>
+              <p>Status: ○ Por fazer · Data: dia 30</p>
             </div>
 
             <div class="card">
@@ -752,8 +752,8 @@
             </div>
 
             <div class="info-row">
-              <strong>Situação</strong>
-              <span>Em andamento</span>
+              <strong>Status</strong>
+              <span>◐ Em andamento</span>
             </div>
 
             <section class="section">
@@ -762,6 +762,8 @@
               <div class="card">
                 <p>
                   Conferir a minuta conforme os temas e orientações internas.
+                  <br /><strong>Orientação:</strong> consultar manual interno.
+                  <br /><span style="text-decoration: underline">Abrir orientação externa ↗</span>
                 </p>
               </div>
             </section>
@@ -797,10 +799,15 @@
             </section>
 
             <div class="button-row">
-              <div class="button">Concluir</div>
+              <div class="button">✓ Marcar como concluída</div>
               <div class="button secondary">Transferir</div>
               <div class="button secondary">Editar</div>
               <div class="button secondary">Observação</div>
+            </div>
+
+            <div class="card" style="margin-top: 10px">
+              <p><strong>Ao transferir:</strong> selecionar responsável ▾</p>
+              <p>Assessor 1 · Assessor 2 · Assessor substituto</p>
             </div>
           </div>
         </div>
@@ -836,7 +843,9 @@
 
             <div class="field">
               <label>Categoria</label>
-              <div class="input"></div>
+              <div class="input" style="padding: 12px; font-size: 12px">
+                Movimento processual · Sessão · Administrativo · Atendimento · Outro
+              </div>
             </div>
 
             <div class="field">
@@ -846,7 +855,14 @@
 
             <div class="field">
               <label>Frequência</label>
-              <div class="input"></div>
+              <div class="input" style="padding: 12px; font-size: 12px">
+                Diária · Semanal · Quinzenal · Mensal · Eventual · Personalizada
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Data específica / calendário (opcional)</label>
+              <div class="input" style="padding: 12px; font-size: 12px">Selecionar data ▾</div>
             </div>
 
             <div class="button-row">
@@ -1081,10 +1097,18 @@
             </section>
 
             <section class="section">
-              <h4 class="section-title">Pendências</h4>
+              <h4 class="section-title">Pendências para continuidade</h4>
 
               <div class="card">
-                <p>Conferir processo relacionado à próxima sessão.</p>
+                <p><strong>Tarefa pendente:</strong> Conferir processo relacionado à próxima sessão.</p>
+                <p><strong>Responsável atual:</strong> Assessor substituto</p>
+                <p><strong>Prazo:</strong> amanhã</p>
+              </div>
+
+              <div class="card">
+                <p><strong>Atividade recorrente:</strong> acompanhamento de pauta</p>
+                <p><strong>Orientações:</strong> consultar instruções vinculadas às tarefas</p>
+                <p><strong>Contatos:</strong> acessar contatos institucionais relacionados</p>
               </div>
             </section>
 
@@ -1129,6 +1153,16 @@
             </div>
 
             <div class="menu-item">
+              <span><span class="menu-icon"></span>Contatos institucionais</span>
+              <span>›</span>
+            </div>
+
+            <div class="menu-item">
+              <span><span class="menu-icon"></span>Orientações</span>
+              <span>›</span>
+            </div>
+
+            <div class="menu-item">
               <span><span class="menu-icon"></span>Relatórios</span>
               <span>›</span>
             </div>
@@ -1159,7 +1193,59 @@
           </nav>
         </div>
       </section>
-    </main>
+    
+      <!-- 11. CONTATOS INSTITUCIONAIS -->
+      <section class="wireframe">
+        <h2 class="wireframe-title">11. Contatos institucionais</h2>
+
+        <div class="phone">
+          <div class="status-bar">
+            <span>09:00</span>
+            <span>Rede · Bateria</span>
+          </div>
+
+          <div class="screen">
+            <div class="topbar">
+              <div>
+                <p class="subtitle">← Voltar</p>
+                <h3 class="title">Contatos institucionais</h3>
+                <p class="subtitle">Informações úteis para a rotina e substituições</p>
+              </div>
+            </div>
+
+            <div class="search-row">
+              <div class="input" style="padding: 12px; font-size: 12px">Buscar contato</div>
+              <div class="filter">Filtros</div>
+            </div>
+
+            <div class="card">
+              <h4 class="card-title">Secretaria da Turma</h4>
+              <p>Telefone · e-mail · responsável · observações</p>
+            </div>
+
+            <div class="card">
+              <h4 class="card-title">Apoio de sessão</h4>
+              <p>Telefone · e-mail · horário · orientações de contato</p>
+            </div>
+
+            <div class="card">
+              <h4 class="card-title">Contato relacionado à substituição</h4>
+              <p>Vínculo com atividade/tarefa · responsável · observações</p>
+            </div>
+
+            <div class="floating-button">+</div>
+          </div>
+
+          <nav class="bottom-nav">
+            <div class="nav-item">Início</div>
+            <div class="nav-item">Tarefas</div>
+            <div class="nav-item">Atividades</div>
+            <div class="nav-item active">Mais</div>
+          </nav>
+        </div>
+      </section>
+
+</main>
 
   </body>
 </html>
