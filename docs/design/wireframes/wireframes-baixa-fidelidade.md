@@ -799,10 +799,15 @@
             </section>
 
             <div class="button-row">
-              <div class="button">Concluir</div>
+              <div class="button">✓ Marcar como concluída</div>
               <div class="button secondary">Transferir</div>
               <div class="button secondary">Editar</div>
               <div class="button secondary">Observação</div>
+            </div>
+
+            <div class="card" style="margin-top: 10px">
+              <p><strong>Ao transferir:</strong> selecionar responsável ▾</p>
+              <p>Assessor 1 · Assessor 2 · Assessor substituto</p>
             </div>
           </div>
         </div>
@@ -1095,7 +1100,15 @@
               <h4 class="section-title">Pendências para continuidade</h4>
 
               <div class="card">
-                <p>Conferir processo relacionado à próxima sessão.</p>
+                <p><strong>Tarefa pendente:</strong> Conferir processo relacionado à próxima sessão.</p>
+                <p><strong>Responsável atual:</strong> Assessor substituto</p>
+                <p><strong>Prazo:</strong> amanhã</p>
+              </div>
+
+              <div class="card">
+                <p><strong>Atividade recorrente:</strong> acompanhamento de pauta</p>
+                <p><strong>Orientações:</strong> consultar instruções vinculadas às tarefas</p>
+                <p><strong>Contatos:</strong> acessar contatos institucionais relacionados</p>
               </div>
             </section>
 
