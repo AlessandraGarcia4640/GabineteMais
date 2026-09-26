@@ -11,7 +11,8 @@
 - Data:
 - Versão dos wireframes:
 - Modalidade:
-- Consentimento registrado: sim / não
+- Consentimento obtido: sim / não
+- Forma de consentimento: verbal / escrito / outro
 
 ## Cenário C1 — Organização de atividade — RF01
 
