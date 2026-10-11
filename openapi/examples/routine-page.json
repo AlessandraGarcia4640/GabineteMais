@@ -1,0 +1,26 @@
+{
+  "items": [
+    {
+      "id": "mock-routine",
+      "title": "Reunião de equipe",
+      "category": "Administrativo",
+      "frequency": "EVENTUAL",
+      "description": "Atividade fictícia",
+      "instructions": "Preparar pauta e confirmar participantes",
+      "steps": [
+        "Preparar pauta",
+        "Confirmar participantes"
+      ],
+      "frequencyDetails": null,
+      "specificDate": "2026-11-03",
+      "defaultPosition": "ASSESSOR_CHEFE",
+      "essentialForTransition": false,
+      "isArchived": false,
+      "createdById": "mock-user",
+      "updatedById": "mock-user",
+      "createdAt": "2026-10-11T12:00:00Z",
+      "updatedAt": "2026-10-11T12:00:00Z"
+    }
+  ],
+  "nextCursor": null
+}

@@ -1,0 +1,16 @@
+{
+  "userId": "mock-user",
+  "role": "ASSESSOR",
+  "isActive": true,
+  "permissions": [
+    "team:read",
+    "activities:read",
+    "tasks:read",
+    "contacts:read",
+    "guidelines:read",
+    "profile:update-self",
+    "tasks:execute-assigned",
+    "checklists:read",
+    "checklists:execute-assigned"
+  ]
+}

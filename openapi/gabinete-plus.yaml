@@ -1,55 +1,88 @@
 openapi: 3.1.0
 info:
   title: Gabinete+ API
-  version: 0.1.0
+  version: 0.2.0
+  description: |-
+    API implementada de RF00–RF04: autenticação, equipe, atividades, checklists, contatos e tarefas. RF05 (orientações) e RF06 (transição) permanecem planejados e não possuem endpoints nesta versão. Interface local: /docs; contrato em /docs/openapi.json e /docs/openapi.yaml, habilitados em desenvolvimento/teste.
+
+    Login retorna accessToken Bearer válido por 900 segundos e refreshToken opaco com prazo absoluto de sete dias. No botão Authorize informe apenas accessToken. Refresh/logout recebem refreshToken no corpo e não exigem Bearer. Renovação rotativa invalida o token anterior; reutilização revoga a sessão. Logout é idempotente. Sessão, atividade do usuário e perfil são consultados no banco a cada chamada protegida. Tokens dos exemplos são fictícios.
+
+    Todos os perfis ativos leem módulos core. CHEFE gerencia membros, cargos, atividades, modelos e contatos; membros editam seu próprio perfil. Checklists são executados pelo responsável ou CHEFE. Tarefas próprias podem ser criadas por todos; CHEFE atribui inicialmente a terceiros. Criador/CHEFE edita, reatribui e cancela; responsável/CHEFE inicia e conclui.
+
+    Validações de negócio: normalização de e-mail/tags e telefone válido; datas civis suportadas; frequência PERSONALIZADA exige detalhes; intervalos de prazo válidos; transições restritas; checklist vinculado concluído antes da tarefa e sem reabertura depois. Os schemas gerados descrevem estruturas; refinements Zod e serviços são a validação executável completa.
+
+    Listagens retornam items e nextCursor, limite padrão 20 e máximo 100. Cursor de tarefas é opaco e composto; demais cursors usam id. DELETE desativa/cancela/arquiva preservando históricos. Erros usam {error:{code,message,details?}}. Corpo JSON máximo 1 MB. TLS é fornecido pelo ambiente de publicação.
 paths:
   /auth/me:
     get:
       summary: Consulta usuário e permissões atuais
       operationId: currentAccess
       description: Valida JWT e consulta sessão e usuário no banco a cada chamada; perfil do token não concede permissões.
-      security: [{bearerAuth: []}]
+      security:
+        - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Acesso atual; Cache-Control no-store
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/CurrentAccess'}
+              schema:
+                $ref: "#/components/schemas/CurrentAccess"
               examples:
-                ficticio: {externalValue: ./examples/current-access.json}
-        '400': {$ref: '#/components/responses/InvalidInput'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '500': {$ref: '#/components/responses/InternalError'}
+                ficticio:
+                  externalValue: ./examples/current-access.json
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      tags:
+        - Autenticação
   /users/{id}/permissions:
     get:
       summary: Consulta administrativa das permissões de um usuário
       operationId: userPermissions
       description: Exige perfil CHEFE e permissão team:manage, também verificada no service. Não é a listagem geral da equipe.
-      security: [{bearerAuth: []}]
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          schema: {type: string, minLength: 1, maxLength: 128}
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
       responses:
-        '200':
+        "200":
           description: Permissões do usuário consultado; Cache-Control no-store
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/UserPermissions'}
-        '400': {$ref: '#/components/responses/InvalidInput'}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403':
+              schema:
+                $ref: "#/components/schemas/UserPermissions"
+              examples:
+                ficticio:
+                  externalValue: ./examples/user-permissions.json
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
           description: Perfil sem permissão (FORBIDDEN)
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/ApiError'}
-        '404':
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
           description: Usuário não encontrado (USER_NOT_FOUND); somente após autorização
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/ApiError'}
-        '500': {$ref: '#/components/responses/InternalError'}
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      tags:
+        - Equipe
   /auth/refresh:
     post:
       summary: Renova a sessão e consome o refresh token anterior
@@ -60,24 +93,38 @@ paths:
         required: true
         content:
           application/json:
-            schema: {$ref: '#/components/schemas/RefreshRequest'}
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+            examples:
+              ficticio:
+                value:
+                  refreshToken: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
       responses:
-        '200':
+        "200":
           description: Novos tokens de acesso e renovação; Cache-Control no-store
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/LoginResponse'}
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
               examples:
-                ficticio: {externalValue: ./examples/refresh-success.json}
-        '400': {$ref: '#/components/responses/InvalidInput'}
-        '401':
+                ficticio:
+                  externalValue: ./examples/refresh-success.json
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
           description: Token inexistente, consumido, revogado, expirado ou usuário inativo (INVALID_REFRESH_TOKEN)
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/ApiError'}
-        '413': {$ref: '#/components/responses/BodyTooLarge'}
-        '429': {$ref: '#/components/responses/AuthRateLimited'}
-        '500': {$ref: '#/components/responses/InternalError'}
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "429":
+          $ref: "#/components/responses/AuthRateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      tags:
+        - Autenticação
   /auth/logout:
     post:
       summary: Revoga a sessão identificada pelo refresh token
@@ -88,14 +135,25 @@ paths:
         required: true
         content:
           application/json:
-            schema: {$ref: '#/components/schemas/RefreshRequest'}
+            schema:
+              $ref: "#/components/schemas/LogoutRequest"
+            examples:
+              ficticio:
+                value:
+                  refreshToken: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
       responses:
-        '204':
+        "204":
           description: Sessão revogada; sem corpo; Cache-Control no-store
-        '400': {$ref: '#/components/responses/InvalidInput'}
-        '413': {$ref: '#/components/responses/BodyTooLarge'}
-        '429': {$ref: '#/components/responses/AuthRateLimited'}
-        '500': {$ref: '#/components/responses/InternalError'}
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "429":
+          $ref: "#/components/responses/AuthRateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      tags:
+        - Autenticação
   /auth/login:
     post:
       summary: Autentica usuário ativo e emite token de acesso
@@ -106,51 +164,78 @@ paths:
         required: true
         content:
           application/json:
-            schema: {$ref: '#/components/schemas/LoginRequest'}
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              ficticio:
+                value:
+                  email: assessor1@example.invalid
+                  password: Senha-ficticia-minimo-12
       responses:
-        '200':
+        "200":
           description: Login válido; resposta com Cache-Control no-store
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/LoginResponse'}
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
               examples:
                 ficticio:
                   externalValue: ./examples/login-success.json
-        '400':
+        "400":
           description: Entrada inválida (VALIDATION_ERROR) ou JSON malformado (INVALID_JSON)
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/ApiError'}
-        '401':
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
           description: Credenciais inválidas ou usuário desativado (INVALID_CREDENTIALS)
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/ApiError'}
-        '413':
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
           description: Corpo excede 1 MB (BODY_TOO_LARGE)
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/ApiError'}
-        '429':
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
           description: Limite de tentativas excedido (AUTH_RATE_LIMITED)
           headers:
             Retry-After:
-              schema: {type: integer}
+              schema:
+                type: integer
               description: Segundos até a próxima tentativa permitida
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/ApiError'}
-        '500':
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500":
           description: Falha interna (INTERNAL_ERROR)
           content:
             application/json:
-              schema: {$ref: '#/components/schemas/ApiError'}
+              schema:
+                $ref: "#/components/schemas/ApiError"
+      tags:
+        - Autenticação
   /health:
     get:
-      summary: Verifica o estado da API
+      summary: Verifica disponibilidade do processo da API
+      description: Público; não testa conexão com banco nem garante prontidão dos módulos.
+      operationId: health
+      security: []
       responses:
         "200":
-          description: API disponível
+          description: Processo disponível
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              examples:
+                ficticio:
+                  externalValue: ./examples/health-response.json
+      tags:
+        - Saúde
   /users:
     get:
       operationId: listUsers
@@ -164,37 +249,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserPage"
-        "400": &a1
+              examples:
+                ficticio:
+                  externalValue: ./examples/user-page.json
+        "400": &a23
           $ref: "#/components/responses/InvalidInput"
-        "401": &a2
+        "401": &a24
           $ref: "#/components/responses/Unauthenticated"
-        "403": &a3
+        "403": &a25
           description: Sem permissão (FORBIDDEN)
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": &a4
+        "500": &a26
           $ref: "#/components/responses/InternalError"
       parameters:
         - name: limit
           in: query
           schema:
+            default: 20
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
         - name: cursor
           in: query
           schema:
             type: string
             minLength: 1
             maxLength: 128
-          description: ID retornado em nextCursor; ordenação crescente por id
         - name: role
           in: query
           schema:
-            $ref: "#/components/schemas/UserRole"
+            type: string
+            enum:
+              - CHEFE
+              - ASSESSOR
+              - APOIO
         - name: isActive
           in: query
           schema:
@@ -202,6 +293,8 @@ paths:
             enum:
               - "true"
               - "false"
+      tags:
+        - Equipe
     post:
       operationId: createUser
       summary: Cadastro administrativo somente pela chefia
@@ -214,13 +307,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDetail"
+              examples:
+                ficticio:
+                  externalValue: ./examples/user-detail.json
           headers:
             Location:
               schema:
                 type: string
-        "400": *a1
-        "401": *a2
-        "403": *a3
+        "400": *a23
+        "401": *a24
+        "403": *a25
         "409":
           description: EMAIL_ALREADY_EXISTS ou LAST_ACTIVE_CHIEF
           content:
@@ -229,13 +325,22 @@ paths:
                 $ref: "#/components/schemas/ApiError"
         "413":
           $ref: "#/components/responses/BodyTooLarge"
-        "500": *a4
+        "500": *a26
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateUser"
+            examples:
+              ficticio:
+                value:
+                  name: Pessoa Fictícia
+                  email: nova@example.invalid
+                  password: Senha-ficticia-minimo-12
+                  position: ASSESSOR
+      tags:
+        - Equipe
   /users/{id}:
     get:
       operationId: getUser
@@ -249,11 +354,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDetail"
-        "400": &a1
+              examples:
+                ficticio:
+                  externalValue: ./examples/user-detail.json
+        "400": &a27
           $ref: "#/components/responses/InvalidInput"
-        "401": &a2
+        "401": &a28
           $ref: "#/components/responses/Unauthenticated"
-        "403": &a3
+        "403": &a29
           description: Sem permissão (FORBIDDEN)
           content:
             application/json:
@@ -265,10 +373,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": &a4
+        "500": &a30
           $ref: "#/components/responses/InternalError"
       parameters:
-        - &a5
+        - &a31
           name: id
           in: path
           required: true
@@ -276,6 +384,8 @@ paths:
             type: string
             minLength: 1
             maxLength: 128
+      tags:
+        - Equipe
     patch:
       operationId: updateUser
       summary: Edita nome/e-mail de membro; somente chefia
@@ -288,9 +398,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDetail"
-        "400": *a1
-        "401": *a2
-        "403": *a3
+              examples:
+                ficticio:
+                  externalValue: ./examples/user-detail.json
+        "400": *a27
+        "401": *a28
+        "403": *a29
         "404":
           description: USER_NOT_FOUND
           content:
@@ -305,15 +418,21 @@ paths:
                 $ref: "#/components/schemas/ApiError"
         "413":
           $ref: "#/components/responses/BodyTooLarge"
-        "500": *a4
+        "500": *a30
       parameters:
-        - *a5
+        - *a31
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateProfile"
+            examples:
+              ficticio:
+                value: &a34
+                  name: Pessoa Atualizada
+      tags:
+        - Equipe
     delete:
       operationId: deactivateUser
       summary: Desativa e revoga sessões; não apaga pessoa ou histórico
@@ -322,9 +441,9 @@ paths:
       responses:
         "204":
           description: Desativação idempotente; sem corpo
-        "400": *a1
-        "401": *a2
-        "403": *a3
+        "400": *a27
+        "401": *a28
+        "403": *a29
         "404":
           description: USER_NOT_FOUND
           content:
@@ -337,9 +456,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": *a4
+        "500": *a30
       parameters:
-        - *a5
+        - *a31
+      tags:
+        - Equipe
   /users/me:
     patch:
       operationId: updateOwnProfile
@@ -353,6 +474,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDetail"
+              examples:
+                ficticio:
+                  externalValue: ./examples/user-detail.json
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -379,6 +503,11 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateProfile"
+            examples:
+              ficticio:
+                value: *a34
+      tags:
+        - Equipe
   /users/{id}/position:
     patch:
       operationId: changeUserPosition
@@ -392,6 +521,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDetail"
+              examples:
+                ficticio:
+                  externalValue: ./examples/user-detail.json
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -432,6 +564,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ChangePosition"
+            examples:
+              ficticio:
+                value:
+                  position: APOIO
+      tags:
+        - Equipe
   /users/{id}/positions:
     get:
       operationId: listUserPositions
@@ -445,6 +583,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PositionPage"
+              examples:
+                ficticio:
+                  externalValue: ./examples/position-page.json
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -474,17 +615,18 @@ paths:
         - name: limit
           in: query
           schema:
+            default: 20
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
         - name: cursor
           in: query
           schema:
             type: string
             minLength: 1
             maxLength: 128
-          description: ID retornado em nextCursor; ordenação crescente por id
+      tags:
+        - Equipe
   /routines:
     get:
       operationId: listRoutines
@@ -498,26 +640,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RoutinePage"
-        "400": &a6
+              examples:
+                ficticio:
+                  externalValue: ./examples/routine-page.json
+        "400": &a35
           $ref: "#/components/responses/InvalidInput"
-        "401": &a7
+        "401": &a36
           $ref: "#/components/responses/Unauthenticated"
-        "403": &a8
+        "403": &a37
           description: FORBIDDEN
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": &a9
+        "500": &a38
           $ref: "#/components/responses/InternalError"
       parameters:
         - name: limit
           in: query
           schema:
+            default: 20
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
         - name: cursor
           in: query
           schema:
@@ -527,11 +672,11 @@ paths:
         - name: isArchived
           in: query
           schema:
+            default: "false"
             type: string
             enum:
               - "true"
               - "false"
-            default: "false"
         - name: frequency
           in: query
           schema:
@@ -553,14 +698,20 @@ paths:
         - name: defaultPosition
           in: query
           schema:
-            $ref: "#/components/schemas/UserPosition"
+            type: string
+            enum:
+              - MAGISTRADO_GESTOR
+              - ASSESSOR_CHEFE
+              - ASSESSOR
+              - APOIO
         - name: q
           in: query
           schema:
             type: string
             minLength: 1
             maxLength: 100
-          description: Busca por título/descrição
+      tags:
+        - Atividades
     post:
       operationId: createRoutine
       summary: Cadastra atividade; somente chefia
@@ -580,18 +731,28 @@ paths:
             Location:
               schema:
                 type: string
-        "400": *a6
-        "401": *a7
-        "403": *a8
+        "400": *a35
+        "401": *a36
+        "403": *a37
         "413":
           $ref: "#/components/responses/BodyTooLarge"
-        "500": *a9
+        "500": *a38
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateRoutine"
+            examples:
+              ficticio:
+                value:
+                  title: Atividade fictícia
+                  category: Administrativo
+                  frequency: DIARIA
+                  steps:
+                    - Conferir expediente
+      tags:
+        - Atividades
   /routines/{id}:
     get:
       operationId: getRoutine
@@ -605,11 +766,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Routine"
-        "400": &a6
+              examples:
+                ficticio:
+                  externalValue: ./examples/routine.json
+        "400": &a39
           $ref: "#/components/responses/InvalidInput"
-        "401": &a7
+        "401": &a40
           $ref: "#/components/responses/Unauthenticated"
-        "403": &a8
+        "403": &a41
           description: FORBIDDEN
           content:
             application/json:
@@ -621,10 +785,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": &a9
+        "500": &a42
           $ref: "#/components/responses/InternalError"
       parameters:
-        - &a10
+        - &a43
           name: id
           in: path
           required: true
@@ -632,6 +796,8 @@ paths:
             type: string
             minLength: 1
             maxLength: 128
+      tags:
+        - Atividades
     patch:
       operationId: updateRoutine
       summary: Edita atividade; somente chefia
@@ -644,9 +810,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Routine"
-        "400": *a6
-        "401": *a7
-        "403": *a8
+              examples:
+                ficticio:
+                  externalValue: ./examples/routine.json
+        "400": *a39
+        "401": *a40
+        "403": *a41
         "404":
           description: ROUTINE_NOT_FOUND
           content:
@@ -661,15 +830,21 @@ paths:
                 $ref: "#/components/schemas/ApiError"
         "413":
           $ref: "#/components/responses/BodyTooLarge"
-        "500": *a9
+        "500": *a42
       parameters:
-        - *a10
+        - *a43
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateRoutine"
+            examples:
+              ficticio:
+                value:
+                  title: Atividade atualizada
+      tags:
+        - Atividades
     delete:
       operationId: archiveRoutine
       summary: Arquiva sem apagar; idempotente; somente chefia
@@ -678,18 +853,20 @@ paths:
       responses:
         "204":
           description: Arquivada; sem corpo
-        "400": *a6
-        "401": *a7
-        "403": *a8
+        "400": *a39
+        "401": *a40
+        "403": *a41
         "404":
           description: ROUTINE_NOT_FOUND
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": *a9
+        "500": *a42
       parameters:
-        - *a10
+        - *a43
+      tags:
+        - Atividades
   /checklists/templates:
     get:
       operationId: listChecklistTemplates
@@ -703,55 +880,63 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChecklistTemplatePage"
-        "400": &a12
+              examples:
+                ficticio:
+                  externalValue: ./examples/checklist-template-page.json
+        "400": &a45
           $ref: "#/components/responses/InvalidInput"
-        "401": &a13
+        "401": &a46
           $ref: "#/components/responses/Unauthenticated"
-        "403": &a14
+        "403": &a47
           description: FORBIDDEN
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "404": &a15
+        "404": &a48
           description: Registro não encontrado
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "409": &a16
+        "409": &a49
           description: Modelo/atividade arquivados, responsável inativo ou período com outro responsável
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": &a17
+        "500": &a50
           $ref: "#/components/responses/InternalError"
       parameters:
         - name: limit
           in: query
           schema:
+            default: 20
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
         - name: cursor
           in: query
-          schema: &a11
+          schema:
             type: string
             minLength: 1
             maxLength: 128
         - name: routineId
           in: query
-          schema: *a11
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
         - name: isArchived
           in: query
           schema:
+            default: "false"
             type: string
             enum:
               - "true"
               - "false"
-            default: "false"
+      tags:
+        - Checklists
     post:
       operationId: createChecklistTemplate
       summary: Cria modelo; chefia
@@ -764,18 +949,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChecklistTemplate"
-        "400": *a12
-        "401": *a13
-        "403": *a14
-        "404": *a15
-        "409": *a16
-        "500": *a17
+              examples:
+                ficticio:
+                  externalValue: ./examples/checklist-template.json
+        "400": *a45
+        "401": *a46
+        "403": *a47
+        "404": *a48
+        "409": *a49
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500": *a50
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateChecklist"
+            examples:
+              ficticio:
+                value:
+                  routineId: mock-routine
+                  title: Checklist fictício
+                  items:
+                    - Conferir expediente
+      tags:
+        - Checklists
   /checklists/templates/{id}:
     get:
       operationId: getChecklistTemplate
@@ -789,32 +988,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChecklistTemplate"
-        "400": &a11
+              examples:
+                ficticio:
+                  externalValue: ./examples/checklist-template.json
+        "400": &a51
           $ref: "#/components/responses/InvalidInput"
-        "401": &a12
+        "401": &a52
           $ref: "#/components/responses/Unauthenticated"
-        "403": &a13
+        "403": &a53
           description: FORBIDDEN
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "404": &a14
+        "404": &a54
           description: Registro não encontrado
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "409": &a15
+        "409": &a55
           description: Modelo/atividade arquivados, responsável inativo ou período com outro responsável
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": &a16
+        "500": &a56
           $ref: "#/components/responses/InternalError"
       parameters:
-        - &a17
+        - &a57
           name: id
           in: path
           required: true
@@ -822,6 +1024,8 @@ paths:
             type: string
             minLength: 1
             maxLength: 128
+      tags:
+        - Checklists
     patch:
       operationId: updateChecklistTemplate
       summary: Edita e incrementa versão; execuções antigas não mudam
@@ -834,20 +1038,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChecklistTemplate"
-        "400": *a11
-        "401": *a12
-        "403": *a13
-        "404": *a14
-        "409": *a15
-        "500": *a16
+              examples:
+                ficticio:
+                  externalValue: ./examples/checklist-template.json
+        "400": *a51
+        "401": *a52
+        "403": *a53
+        "404": *a54
+        "409": *a55
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500": *a56
       parameters:
-        - *a17
+        - *a57
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateChecklist"
+            examples:
+              ficticio:
+                value:
+                  title: Modelo atualizado
+      tags:
+        - Checklists
     delete:
       operationId: archiveChecklistTemplate
       summary: Arquiva modelo sem apagar execuções; chefia
@@ -856,14 +1071,16 @@ paths:
       responses:
         "204":
           description: Arquivado; sem corpo
-        "400": *a11
-        "401": *a12
-        "403": *a13
-        "404": *a14
-        "409": *a15
-        "500": *a16
+        "400": *a51
+        "401": *a52
+        "403": *a53
+        "404": *a54
+        "409": *a55
+        "500": *a56
       parameters:
-        - *a17
+        - *a57
+      tags:
+        - Checklists
   /checklists/templates/{id}/runs:
     post:
       operationId: startChecklistRun
@@ -877,12 +1094,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChecklistRun"
+              examples:
+                ficticio:
+                  externalValue: ./examples/checklist-run.json
         "201":
           description: Execução criada
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChecklistRun"
+              examples:
+                ficticio:
+                  externalValue: ./examples/checklist-run.json
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -905,6 +1128,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
         "500":
           $ref: "#/components/responses/InternalError"
       parameters:
@@ -921,6 +1146,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/StartChecklist"
+            examples:
+              ficticio:
+                value:
+                  date: 2026-10-11
+      tags:
+        - Checklists
   /checklists/runs:
     get:
       operationId: listChecklistRuns
@@ -934,6 +1165,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChecklistRunPage"
+              examples:
+                ficticio:
+                  externalValue: ./examples/checklist-run-page.json
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -962,25 +1196,34 @@ paths:
         - name: limit
           in: query
           schema:
+            default: 20
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
         - name: cursor
           in: query
-          schema: &a11
+          schema:
             type: string
             minLength: 1
             maxLength: 128
         - name: templateId
           in: query
-          schema: *a11
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
         - name: routineId
           in: query
-          schema: *a11
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
         - name: assigneeId
           in: query
-          schema: *a11
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
         - name: status
           in: query
           schema:
@@ -994,13 +1237,15 @@ paths:
           schema:
             type: string
             format: date
-          description: Intervalo inclusivo; filtra períodos sobrepostos
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
         - name: to
           in: query
           schema:
             type: string
             format: date
-          description: Intervalo inclusivo; filtra períodos sobrepostos
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+      tags:
+        - Checklists
   /checklists/runs/{id}:
     get:
       operationId: getChecklistRun
@@ -1049,6 +1294,8 @@ paths:
             type: string
             minLength: 1
             maxLength: 128
+      tags:
+        - Checklists
   /checklists/runs/{id}/items/{itemId}:
     patch:
       operationId: markChecklistItem
@@ -1062,6 +1309,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChecklistRun"
+              examples:
+                ficticio:
+                  externalValue: ./examples/checklist-run.json
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -1084,26 +1334,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
         "500":
           $ref: "#/components/responses/InternalError"
       parameters:
         - name: id
           in: path
           required: true
-          schema: &a11
+          schema: &a59
             type: string
             minLength: 1
             maxLength: 128
         - name: itemId
           in: path
           required: true
-          schema: *a11
+          schema: *a59
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/MarkChecklistItem"
+            examples:
+              ficticio:
+                value:
+                  isCompleted: true
+      tags:
+        - Checklists
+      description: Responsável ou CHEFE marca/desmarca itens. Não permite desmarcar se uma tarefa vinculada já estiver concluída (CHECKLIST_TASK_COMPLETED, 409).
   /contacts:
     get:
       operationId: listContacts
@@ -1117,26 +1376,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ContactPage"
-        "400": &a18
+              examples:
+                ficticio:
+                  externalValue: ./examples/contact-page.json
+        "400": &a60
           $ref: "#/components/responses/InvalidInput"
-        "401": &a19
+        "401": &a61
           $ref: "#/components/responses/Unauthenticated"
-        "403": &a20
+        "403": &a62
           description: FORBIDDEN
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": &a21
+        "500": &a63
           $ref: "#/components/responses/InternalError"
       parameters:
         - name: limit
           in: query
           schema:
+            default: 20
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
         - name: cursor
           in: query
           schema:
@@ -1164,11 +1426,11 @@ paths:
         - name: isArchived
           in: query
           schema:
+            default: "false"
             type: string
             enum:
               - "true"
               - "false"
-            default: "false"
         - name: isKeyContact
           in: query
           schema:
@@ -1176,6 +1438,8 @@ paths:
             enum:
               - "true"
               - "false"
+      tags:
+        - Contatos
     post:
       operationId: createContact
       summary: Cadastra contato; chefia
@@ -1195,18 +1459,28 @@ paths:
             Location:
               schema:
                 type: string
-        "400": *a18
-        "401": *a19
-        "403": *a20
+        "400": *a60
+        "401": *a61
+        "403": *a62
         "413":
           $ref: "#/components/responses/BodyTooLarge"
-        "500": *a21
+        "500": *a63
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateContact"
+            examples:
+              ficticio:
+                value:
+                  name: Secretaria Fictícia
+                  organization: Órgão Fictício
+                  email: secretaria@example.invalid
+                  tags:
+                    - secretaria
+      tags:
+        - Contatos
   /contacts/{id}:
     get:
       operationId: getContact
@@ -1220,11 +1494,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Contact"
-        "400": &a18
+              examples:
+                ficticio:
+                  externalValue: ./examples/contact.json
+        "400": &a64
           $ref: "#/components/responses/InvalidInput"
-        "401": &a19
+        "401": &a65
           $ref: "#/components/responses/Unauthenticated"
-        "403": &a20
+        "403": &a66
           description: FORBIDDEN
           content:
             application/json:
@@ -1236,10 +1513,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": &a21
+        "500": &a67
           $ref: "#/components/responses/InternalError"
       parameters:
-        - &a22
+        - &a68
           name: id
           in: path
           required: true
@@ -1247,6 +1524,8 @@ paths:
             type: string
             minLength: 1
             maxLength: 128
+      tags:
+        - Contatos
     patch:
       operationId: updateContact
       summary: Edita contato; chefia
@@ -1259,9 +1538,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Contact"
-        "400": *a18
-        "401": *a19
-        "403": *a20
+              examples:
+                ficticio:
+                  externalValue: ./examples/contact.json
+        "400": *a64
+        "401": *a65
+        "403": *a66
         "404":
           description: CONTACT_NOT_FOUND
           content:
@@ -1276,15 +1558,21 @@ paths:
                 $ref: "#/components/schemas/ApiError"
         "413":
           $ref: "#/components/responses/BodyTooLarge"
-        "500": *a21
+        "500": *a67
       parameters:
-        - *a22
+        - *a68
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateContact"
+            examples:
+              ficticio:
+                value:
+                  notes: Informação fictícia atualizada
+      tags:
+        - Contatos
     delete:
       operationId: archiveContact
       summary: Arquiva sem apagar; idempotente; chefia
@@ -1293,18 +1581,20 @@ paths:
       responses:
         "204":
           description: Arquivado; sem corpo
-        "400": *a18
-        "401": *a19
-        "403": *a20
+        "400": *a64
+        "401": *a65
+        "403": *a66
         "404":
           description: CONTACT_NOT_FOUND
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-        "500": *a21
+        "500": *a67
       parameters:
-        - *a22
+        - *a68
+      tags:
+        - Contatos
   /tasks:
     get:
       summary: Lista por prazo ascendente, sem prazo ao final, prioridade descendente e id
@@ -1315,15 +1605,17 @@ paths:
         - name: limit
           in: query
           schema:
+            default: 20
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
         - name: cursor
           in: query
           schema:
             type: string
+            minLength: 1
             maxLength: 512
+            pattern: ^[A-Za-z0-9_-]+$
         - name: status
           in: query
           schema:
@@ -1344,13 +1636,16 @@ paths:
               - URGENTE
         - name: assigneeId
           in: query
-          schema: &a32
+          schema:
             type: string
             minLength: 1
             maxLength: 128
         - name: routineId
           in: query
-          schema: *a32
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
         - name: q
           in: query
           schema:
@@ -1362,11 +1657,13 @@ paths:
           schema:
             type: string
             format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
         - name: dueTo
           in: query
           schema:
             type: string
             format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
         - name: overdue
           in: query
           schema:
@@ -1381,6 +1678,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TaskPage"
+              examples:
+                ficticio:
+                  externalValue: ./examples/task-page.json
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -1393,6 +1693,8 @@ paths:
           $ref: "#/components/responses/TaskConflict"
         "500":
           $ref: "#/components/responses/InternalError"
+      tags:
+        - Tarefas
     post:
       summary: Cria tarefa própria; CHEFE também atribui a outro membro ativo
       operationId: createTask
@@ -1404,6 +1706,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateTask"
+            examples:
+              ficticio:
+                value:
+                  title: Conferir expediente fictício
+                  priority: ALTA
+                  dueDate: 2026-10-12
       responses:
         "201":
           description: Cria tarefa própria; CHEFE também atribui a outro membro ativo
@@ -1414,6 +1722,11 @@ paths:
               examples:
                 ficticio:
                   externalValue: ./examples/task.json
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL da tarefa criada
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -1424,8 +1737,12 @@ paths:
           $ref: "#/components/responses/TaskNotFound"
         "409":
           $ref: "#/components/responses/TaskConflict"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
         "500":
           $ref: "#/components/responses/InternalError"
+      tags:
+        - Tarefas
   /tasks/{id}:
     get:
       summary: Consulta tarefa
@@ -1433,7 +1750,7 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - &a33
+        - &a70
           name: id
           in: path
           required: true
@@ -1463,19 +1780,25 @@ paths:
           $ref: "#/components/responses/TaskConflict"
         "500":
           $ref: "#/components/responses/InternalError"
+      tags:
+        - Tarefas
     patch:
       summary: Criador ou CHEFE edita tarefa não encerrada
       operationId: updateTask
       security:
         - bearerAuth: []
       parameters:
-        - *a33
+        - *a70
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateTask"
+            examples:
+              ficticio:
+                value:
+                  title: Tarefa atualizada
       responses:
         "200":
           description: Criador ou CHEFE edita tarefa não encerrada
@@ -1496,15 +1819,19 @@ paths:
           $ref: "#/components/responses/TaskNotFound"
         "409":
           $ref: "#/components/responses/TaskConflict"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
         "500":
           $ref: "#/components/responses/InternalError"
+      tags:
+        - Tarefas
     delete:
       summary: Criador ou CHEFE cancela preservando registro
       operationId: cancelTask
       security:
         - bearerAuth: []
       parameters:
-        - *a33
+        - *a70
       responses:
         "204":
           description: Criador ou CHEFE cancela preservando registro
@@ -1520,6 +1847,8 @@ paths:
           $ref: "#/components/responses/TaskConflict"
         "500":
           $ref: "#/components/responses/InternalError"
+      tags:
+        - Tarefas
   /tasks/{id}/assignee:
     patch:
       summary: Criador ou CHEFE reatribui a membro ativo compatível com checklist
@@ -1540,6 +1869,10 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/AssignTask"
+            examples:
+              ficticio:
+                value:
+                  assigneeId: mock-user
       responses:
         "200":
           description: Criador ou CHEFE reatribui a membro ativo compatível com checklist
@@ -1560,8 +1893,12 @@ paths:
           $ref: "#/components/responses/TaskNotFound"
         "409":
           $ref: "#/components/responses/TaskConflict"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
         "500":
           $ref: "#/components/responses/InternalError"
+      tags:
+        - Tarefas
   /tasks/{id}/status:
     patch:
       summary: Responsável ou CHEFE executa ABERTA → EM_ANDAMENTO → CONCLUIDA; criador ou CHEFE cancela
@@ -1582,6 +1919,10 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ChangeTaskStatus"
+            examples:
+              ficticio:
+                value:
+                  status: EM_ANDAMENTO
       responses:
         "200":
           description: Responsável ou CHEFE executa ABERTA → EM_ANDAMENTO → CONCLUIDA; criador ou CHEFE cancela
@@ -1602,8 +1943,12 @@ paths:
           $ref: "#/components/responses/TaskNotFound"
         "409":
           $ref: "#/components/responses/TaskConflict"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
         "500":
           $ref: "#/components/responses/InternalError"
+      tags:
+        - Tarefas
   /tasks/{id}/history:
     get:
       summary: Consulta eventos de criação, edição, atribuição e status
@@ -1621,15 +1966,16 @@ paths:
         - name: limit
           in: query
           schema:
+            default: 20
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
         - name: cursor
           in: query
           schema:
             type: string
-            maxLength: 512
+            minLength: 1
+            maxLength: 128
       responses:
         "200":
           description: Consulta eventos de criação, edição, atribuição e status
@@ -1637,6 +1983,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TaskEventPage"
+              examples:
+                ficticio:
+                  externalValue: ./examples/task-event-page.json
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -1649,60 +1998,128 @@ paths:
           $ref: "#/components/responses/TaskConflict"
         "500":
           $ref: "#/components/responses/InternalError"
+      tags:
+        - Tarefas
 components:
   responses:
     Unauthenticated:
       description: Token ausente/inválido, sessão encerrada/expirada ou usuário desativado (UNAUTHENTICATED)
       headers:
-        WWW-Authenticate: {schema: {type: string, const: Bearer}}
+        WWW-Authenticate:
+          schema:
+            type: string
+            const: Bearer
       content:
         application/json:
-          schema: {$ref: '#/components/schemas/ApiError'}
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            ficticio:
+              value:
+                error:
+                  code: UNAUTHENTICATED
+                  message: Sessão inválida. Entre novamente.
     InvalidInput:
       description: Entrada inválida (VALIDATION_ERROR) ou JSON malformado (INVALID_JSON)
       content:
         application/json:
-          schema: {$ref: '#/components/schemas/ApiError'}
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            ficticio:
+              value:
+                error:
+                  code: VALIDATION_ERROR
+                  message: Dados inválidos.
+                  details:
+                    errors: []
+                    properties:
+                      title:
+                        errors:
+                          - Informe um título.
     BodyTooLarge:
       description: Corpo excede 1 MB (BODY_TOO_LARGE)
       content:
         application/json:
-          schema: {$ref: '#/components/schemas/ApiError'}
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            ficticio:
+              value:
+                error:
+                  code: BODY_TOO_LARGE
+                  message: Os dados excedem o limite permitido.
     AuthRateLimited:
       description: Limite de tentativas excedido (AUTH_RATE_LIMITED)
       headers:
-        Retry-After: {schema: {type: integer}, description: Segundos até a próxima tentativa}
+        Retry-After:
+          schema:
+            type: integer
+          description: Segundos até a próxima tentativa
       content:
         application/json:
-          schema: {$ref: '#/components/schemas/ApiError'}
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            ficticio:
+              value:
+                error:
+                  code: AUTH_RATE_LIMITED
+                  message: Muitas tentativas. Tente novamente mais tarde.
     InternalError:
       description: Falha interna (INTERNAL_ERROR)
       content:
         application/json:
-          schema: {$ref: '#/components/schemas/ApiError'}
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            ficticio:
+              value:
+                error:
+                  code: INTERNAL_ERROR
+                  message: Erro interno do servidor.
     TaskNotFound:
       description: Registro não encontrado
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ApiError"
+          examples:
+            ficticio:
+              value:
+                error:
+                  code: TASK_NOT_FOUND
+                  message: Tarefa não encontrada.
     TaskConflict:
       description: Conflito de regra de negócio
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ApiError"
+          examples:
+            ficticio:
+              value:
+                error:
+                  code: TASK_INVALID_TRANSITION
+                  message: Transição de status não permitida.
     Forbidden:
       description: Operação não autorizada
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ApiError"
+          examples:
+            ficticio:
+              value:
+                error:
+                  code: FORBIDDEN
+                  message: Você não tem permissão para esta operação.
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: Informe accessToken emitido pelo login, sem prefixo Bearer no campo Authorize. Validade 900 segundos; perfil e sessão atuais são revalidados no banco.
   schemas:
     Permission:
       type: string
@@ -1725,131 +2142,362 @@ components:
         - checklists:execute-assigned
     CurrentAccess:
       type: object
-      required: [user, permissions]
       properties:
-        user: {$ref: '#/components/schemas/UserSummary'}
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              minLength: 1
+            name:
+              type: string
+              minLength: 1
+            email:
+              type: string
+              format: email
+              pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+            role:
+              type: string
+              enum:
+                - CHEFE
+                - ASSESSOR
+                - APOIO
+            isActive:
+              type: boolean
+          required:
+            - id
+            - name
+            - email
+            - role
+            - isActive
         permissions:
           type: array
-          items: {$ref: '#/components/schemas/Permission'}
+          items:
+            type: string
+            enum:
+              - team:read
+              - activities:read
+              - tasks:read
+              - contacts:read
+              - guidelines:read
+              - profile:update-self
+              - tasks:execute-assigned
+              - team:manage
+              - activities:manage
+              - contacts:manage
+              - guidelines:manage
+              - tasks:assign
+              - substitutions:manage
+              - checklists:read
+              - checklists:manage
+              - checklists:execute-assigned
+      required:
+        - user
+        - permissions
     UserPermissions:
       type: object
-      required: [userId, role, isActive, permissions]
       properties:
-        userId: {type: string, minLength: 1}
-        role: {$ref: '#/components/schemas/UserRole'}
-        isActive: {type: boolean}
+        userId:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          enum:
+            - CHEFE
+            - ASSESSOR
+            - APOIO
+        isActive:
+          type: boolean
         permissions:
           type: array
-          items: {$ref: '#/components/schemas/Permission'}
+          items:
+            type: string
+            enum:
+              - team:read
+              - activities:read
+              - tasks:read
+              - contacts:read
+              - guidelines:read
+              - profile:update-self
+              - tasks:execute-assigned
+              - team:manage
+              - activities:manage
+              - contacts:manage
+              - guidelines:manage
+              - tasks:assign
+              - substitutions:manage
+              - checklists:read
+              - checklists:manage
+              - checklists:execute-assigned
+      required:
+        - userId
+        - role
+        - isActive
+        - permissions
     UserRole:
       type: string
-      enum: [CHEFE, ASSESSOR, APOIO]
+      enum:
+        - CHEFE
+        - ASSESSOR
+        - APOIO
     UserPosition:
       type: string
-      enum: [MAGISTRADO_GESTOR, ASSESSOR_CHEFE, ASSESSOR, APOIO]
+      enum:
+        - MAGISTRADO_GESTOR
+        - ASSESSOR_CHEFE
+        - ASSESSOR
+        - APOIO
     UserSummary:
       type: object
-      required: [id, name, email, role, isActive]
       properties:
-        id: {type: string, minLength: 1}
-        name: {type: string, minLength: 1}
-        email: {type: string, format: email}
-        role: {$ref: '#/components/schemas/UserRole'}
-        isActive: {type: boolean}
+        id:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+          pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        role:
+          type: string
+          enum:
+            - CHEFE
+            - ASSESSOR
+            - APOIO
+        isActive:
+          type: boolean
+      required:
+        - id
+        - name
+        - email
+        - role
+        - isActive
     UserPositionHistory:
       type: object
-      description: Histórico de cargo; endedAt, quando preenchido, deve ser posterior a startedAt.
-      required: [id, userId, position, role, startedAt, endedAt]
       properties:
-        id: {type: string, minLength: 1}
-        userId: {type: string, minLength: 1}
-        position: {$ref: '#/components/schemas/UserPosition'}
-        role: {$ref: '#/components/schemas/UserRole'}
-        startedAt: {type: string, format: date-time}
-        endedAt: {type: [string, 'null'], format: date-time}
+        id:
+          type: string
+          minLength: 1
+        userId:
+          type: string
+          minLength: 1
+        position:
+          type: string
+          enum:
+            - MAGISTRADO_GESTOR
+            - ASSESSOR_CHEFE
+            - ASSESSOR
+            - APOIO
+        role:
+          type: string
+          enum:
+            - CHEFE
+            - ASSESSOR
+            - APOIO
+        startedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+        endedAt:
+          anyOf:
+            - type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            - type: "null"
+      required:
+        - id
+        - userId
+        - position
+        - role
+        - startedAt
+        - endedAt
     LoginRequest:
-      description: E-mail sem espaços nas extremidades; consulta sem distinguir maiúsculas/minúsculas. Perfis e permissões não são aceitos na entrada.
       type: object
-      additionalProperties: false
-      required: [email, password]
       properties:
-        email: {type: string, format: email}
-        password: {type: string, minLength: 8, maxLength: 128, writeOnly: true}
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+      required:
+        - email
+        - password
+      additionalProperties: false
     LoginResponse:
       type: object
-      required: [accessToken, refreshToken, refreshExpiresAt, tokenType, expiresIn, user]
       properties:
-        accessToken: {type: string, minLength: 1}
-        refreshToken: {type: string, pattern: '^[A-Za-z0-9_-]{43}$'}
-        refreshExpiresAt: {type: string, format: date-time, description: Prazo absoluto da sessão; não muda com a rotação}
-        tokenType: {type: string, const: Bearer}
-        expiresIn: {type: integer, const: 900}
-        user: {$ref: '#/components/schemas/UserSummary'}
+        accessToken:
+          type: string
+          minLength: 1
+        refreshToken:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+        refreshExpiresAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+        tokenType:
+          type: string
+          const: Bearer
+        expiresIn:
+          type: number
+          const: 900
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              minLength: 1
+            name:
+              type: string
+              minLength: 1
+            email:
+              type: string
+              format: email
+              pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+            role:
+              type: string
+              enum:
+                - CHEFE
+                - ASSESSOR
+                - APOIO
+            isActive:
+              type: boolean
+          required:
+            - id
+            - name
+            - email
+            - role
+            - isActive
+      required:
+        - accessToken
+        - refreshToken
+        - refreshExpiresAt
+        - tokenType
+        - expiresIn
+        - user
     RefreshRequest:
       type: object
-      additionalProperties: false
-      required: [refreshToken]
       properties:
-        refreshToken: {type: string, pattern: '^[A-Za-z0-9_-]{43}$', writeOnly: true}
+        refreshToken:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+      required:
+        - refreshToken
+      additionalProperties: false
     ApiError:
       type: object
-      required: [error]
       properties:
         error:
           type: object
-          required: [code, message]
           properties:
-            code: {type: string, minLength: 1}
-            message: {type: string, minLength: 1}
-            details: {description: Detalhes opcionais de validação}
-    UserDetail:
-      allOf:
-        - $ref: "#/components/schemas/UserSummary"
-        - type: object
+            code:
+              type: string
+              minLength: 1
+            message:
+              type: string
+              minLength: 1
+            details:
+              $ref: "#/components/schemas/ApiError/$defs/__schema0"
           required:
-            - position
-            - createdAt
-            - updatedAt
-          properties:
-            position:
-              anyOf:
-                - $ref: "#/components/schemas/UserPosition"
-                - type: "null"
-            createdAt:
-              type: string
-              format: date-time
-            updatedAt:
-              type: string
-              format: date-time
+            - code
+            - message
+      required:
+        - error
+      $defs:
+        __schema0:
+          anyOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: "null"
+            - type: array
+              items:
+                $ref: "#/components/schemas/ApiError/$defs/__schema0"
+            - type: object
+              propertyNames:
+                type: string
+              additionalProperties:
+                $ref: "#/components/schemas/ApiError/$defs/__schema0"
+    UserDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+          pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        role:
+          type: string
+          enum:
+            - CHEFE
+            - ASSESSOR
+            - APOIO
+        isActive:
+          type: boolean
+        position:
+          anyOf:
+            - type: string
+              enum:
+                - MAGISTRADO_GESTOR
+                - ASSESSOR_CHEFE
+                - ASSESSOR
+                - APOIO
+            - type: "null"
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+      required:
+        - id
+        - name
+        - email
+        - role
+        - isActive
+        - position
+        - createdAt
+        - updatedAt
     CreateUser:
       type: object
-      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          maxLength: 254
+        password:
+          type: string
+          minLength: 12
+          maxLength: 128
+        position:
+          type: string
+          enum:
+            - MAGISTRADO_GESTOR
+            - ASSESSOR_CHEFE
+            - ASSESSOR
+            - APOIO
       required:
         - name
         - email
         - password
         - position
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 150
-        email:
-          type: string
-          format: email
-          maxLength: 254
-          description: Normalizado em minúsculas
-        password:
-          type: string
-          minLength: 12
-          maxLength: 128
-          writeOnly: true
-        position:
-          $ref: "#/components/schemas/UserPosition"
+      additionalProperties: false
     UpdateProfile:
       type: object
-      additionalProperties: false
-      minProperties: 1
       properties:
         name:
           type: string
@@ -1857,109 +2505,134 @@ components:
           maxLength: 150
         email:
           type: string
-          format: email
           maxLength: 254
-          description: Normalizado em minúsculas
-    ChangePosition:
-      type: object
-      additionalProperties: false
-      required:
-        - position
-      properties:
-        position:
-          $ref: "#/components/schemas/UserPosition"
-    UserPage:
-      type: object
-      required:
-        - items
-        - nextCursor
-      properties:
-        items:
-          type: array
-          maxItems: 100
-          items:
-            $ref: "#/components/schemas/UserDetail"
-        nextCursor:
-          type:
-            - string
-            - "null"
-    PositionPage:
-      type: object
-      required:
-        - items
-        - nextCursor
-      properties:
-        items:
-          type: array
-          maxItems: 100
-          items:
-            $ref: "#/components/schemas/UserPositionHistory"
-        nextCursor:
-          type:
-            - string
-            - "null"
-    CreateRoutine:
-      type: object
-      additionalProperties: false
-      required:
-        - title
-        - category
-        - frequency
-      description: PERSONALIZADA exige frequencyDetails não nulo. Campos omitidos recebem valores vazios/null/false.
-      properties:
-        title:
-          type: string
-          minLength: 1
-          maxLength: 200
-        category:
-          type: string
-          minLength: 1
-          maxLength: 100
-        frequency:
-          type: string
-          enum:
-            - DIARIA
-            - SEMANAL
-            - QUINZENAL
-            - MENSAL
-            - EVENTUAL
-            - PERSONALIZADA
-            - A_DEFINIR
-        description:
-          type: string
-          maxLength: 4000
-        instructions:
-          type: string
-          maxLength: 12000
-        steps:
-          type: array
-          maxItems: 100
-          items:
-            type: string
-            minLength: 1
-            maxLength: 500
-        frequencyDetails:
-          type:
-            - string
-            - "null"
-          minLength: 1
-          maxLength: 2000
-        specificDate:
-          type:
-            - string
-            - "null"
-          format: date
-        defaultPosition:
-          anyOf:
-            - $ref: "#/components/schemas/UserPosition"
-            - type: "null"
-        essentialForTransition:
-          type: boolean
-    UpdateRoutine:
-      type: object
       additionalProperties: false
       minProperties: 1
-      description: Validação considera os dados atuais e o patch; autoria/status não são aceitos.
+    ChangePosition:
+      type: object
+      properties:
+        position:
+          type: string
+          enum:
+            - MAGISTRADO_GESTOR
+            - ASSESSOR_CHEFE
+            - ASSESSOR
+            - APOIO
+      required:
+        - position
+      additionalProperties: false
+    UserPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                minLength: 1
+              name:
+                type: string
+                minLength: 1
+              email:
+                type: string
+                format: email
+                pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+              role:
+                type: string
+                enum:
+                  - CHEFE
+                  - ASSESSOR
+                  - APOIO
+              isActive:
+                type: boolean
+              position:
+                anyOf:
+                  - type: string
+                    enum:
+                      - MAGISTRADO_GESTOR
+                      - ASSESSOR_CHEFE
+                      - ASSESSOR
+                      - APOIO
+                  - type: "null"
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - id
+              - name
+              - email
+              - role
+              - isActive
+              - position
+              - createdAt
+              - updatedAt
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - items
+        - nextCursor
+    PositionPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                minLength: 1
+              userId:
+                type: string
+                minLength: 1
+              position:
+                type: string
+                enum:
+                  - MAGISTRADO_GESTOR
+                  - ASSESSOR_CHEFE
+                  - ASSESSOR
+                  - APOIO
+              role:
+                type: string
+                enum:
+                  - CHEFE
+                  - ASSESSOR
+                  - APOIO
+              startedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              endedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: "null"
+            required:
+              - id
+              - userId
+              - position
+              - role
+              - startedAt
+              - endedAt
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - items
+        - nextCursor
+    CreateRoutine:
+      type: object
       properties:
         title:
           type: string
@@ -1980,54 +2653,55 @@ components:
             - PERSONALIZADA
             - A_DEFINIR
         description:
+          default: ""
           type: string
           maxLength: 4000
         instructions:
+          default: ""
           type: string
           maxLength: 12000
         steps:
-          type: array
+          default: []
           maxItems: 100
+          type: array
           items:
             type: string
             minLength: 1
             maxLength: 500
         frequencyDetails:
-          type:
-            - string
-            - "null"
-          minLength: 1
-          maxLength: 2000
-        specificDate:
-          type:
-            - string
-            - "null"
-          format: date
-        defaultPosition:
+          default: null
           anyOf:
-            - $ref: "#/components/schemas/UserPosition"
+            - type: string
+              minLength: 1
+              maxLength: 2000
+            - type: "null"
+        specificDate:
+          default: null
+          anyOf:
+            - type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            - type: "null"
+        defaultPosition:
+          default: null
+          anyOf:
+            - type: string
+              enum:
+                - MAGISTRADO_GESTOR
+                - ASSESSOR_CHEFE
+                - ASSESSOR
+                - APOIO
             - type: "null"
         essentialForTransition:
+          default: false
           type: boolean
-    Routine:
-      type: object
       required:
         - title
         - category
         - frequency
-        - description
-        - instructions
-        - steps
-        - frequencyDetails
-        - specificDate
-        - defaultPosition
-        - essentialForTransition
-        - id
-        - isArchived
-        - createdById
-        - updatedById
-        - createdAt
-        - updatedAt
+      additionalProperties: false
+    UpdateRoutine:
+      type: object
       properties:
         title:
           type: string
@@ -2054,26 +2728,91 @@ components:
           type: string
           maxLength: 12000
         steps:
-          type: array
           maxItems: 100
+          type: array
           items:
             type: string
             minLength: 1
             maxLength: 500
         frequencyDetails:
-          type:
-            - string
-            - "null"
-          minLength: 1
-          maxLength: 2000
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 2000
+            - type: "null"
         specificDate:
-          type:
-            - string
-            - "null"
-          format: date
+          anyOf:
+            - type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            - type: "null"
         defaultPosition:
           anyOf:
-            - $ref: "#/components/schemas/UserPosition"
+            - type: string
+              enum:
+                - MAGISTRADO_GESTOR
+                - ASSESSOR_CHEFE
+                - ASSESSOR
+                - APOIO
+            - type: "null"
+        essentialForTransition:
+          type: boolean
+      additionalProperties: false
+      minProperties: 1
+    Routine:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        frequency:
+          type: string
+          enum:
+            - DIARIA
+            - SEMANAL
+            - QUINZENAL
+            - MENSAL
+            - EVENTUAL
+            - PERSONALIZADA
+            - A_DEFINIR
+        description:
+          type: string
+          maxLength: 4000
+        instructions:
+          type: string
+          maxLength: 12000
+        steps:
+          maxItems: 100
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+        frequencyDetails:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 2000
+            - type: "null"
+        specificDate:
+          anyOf:
+            - type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            - type: "null"
+        defaultPosition:
+          anyOf:
+            - type: string
+              enum:
+                - MAGISTRADO_GESTOR
+                - ASSESSOR_CHEFE
+                - ASSESSOR
+                - APOIO
             - type: "null"
         essentialForTransition:
           type: boolean
@@ -2091,29 +2830,136 @@ components:
         createdAt:
           type: string
           format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
         updatedAt:
           type: string
           format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+      required:
+        - title
+        - category
+        - frequency
+        - description
+        - instructions
+        - steps
+        - frequencyDetails
+        - specificDate
+        - defaultPosition
+        - essentialForTransition
+        - id
+        - isArchived
+        - createdById
+        - updatedById
+        - createdAt
+        - updatedAt
     RoutinePage:
       type: object
+      properties:
+        items:
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                minLength: 1
+                maxLength: 200
+              category:
+                type: string
+                minLength: 1
+                maxLength: 100
+              frequency:
+                type: string
+                enum:
+                  - DIARIA
+                  - SEMANAL
+                  - QUINZENAL
+                  - MENSAL
+                  - EVENTUAL
+                  - PERSONALIZADA
+                  - A_DEFINIR
+              description:
+                type: string
+                maxLength: 4000
+              instructions:
+                type: string
+                maxLength: 12000
+              steps:
+                maxItems: 100
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+              frequencyDetails:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 2000
+                  - type: "null"
+              specificDate:
+                anyOf:
+                  - type: string
+                    format: date
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                  - type: "null"
+              defaultPosition:
+                anyOf:
+                  - type: string
+                    enum:
+                      - MAGISTRADO_GESTOR
+                      - ASSESSOR_CHEFE
+                      - ASSESSOR
+                      - APOIO
+                  - type: "null"
+              essentialForTransition:
+                type: boolean
+              id:
+                type: string
+                minLength: 1
+              isArchived:
+                type: boolean
+              createdById:
+                type: string
+                minLength: 1
+              updatedById:
+                type: string
+                minLength: 1
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - title
+              - category
+              - frequency
+              - description
+              - instructions
+              - steps
+              - frequencyDetails
+              - specificDate
+              - defaultPosition
+              - essentialForTransition
+              - id
+              - isArchived
+              - createdById
+              - updatedById
+              - createdAt
+              - updatedAt
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: "null"
       required:
         - items
         - nextCursor
-      properties:
-        items:
-          type: array
-          maxItems: 100
-          items:
-            $ref: "#/components/schemas/Routine"
-        nextCursor:
-          type:
-            - string
-            - "null"
     CreateChecklist:
       type: object
-      required:
-        - routineId
-        - title
       properties:
         routineId:
           type: string
@@ -2124,27 +2970,28 @@ components:
           minLength: 1
           maxLength: 200
         items:
-          type: array
           minItems: 1
           maxItems: 100
+          type: array
           items:
             type: string
             minLength: 1
             maxLength: 500
+      required:
+        - routineId
+        - title
       additionalProperties: false
-      description: Sem items copia passos da atividade; precisa de ao menos um item.
     UpdateChecklist:
       type: object
-      required: []
       properties:
         title:
           type: string
           minLength: 1
           maxLength: 200
         items:
-          type: array
           minItems: 1
           maxItems: 100
+          type: array
           items:
             type: string
             minLength: 1
@@ -2153,27 +3000,67 @@ components:
       minProperties: 1
     StartChecklist:
       type: object
-      required: []
       properties:
         date:
           type: string
           format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
         assigneeId:
           type: string
           minLength: 1
           maxLength: 128
       additionalProperties: false
-      description: Data omitida usa specificDate ou dia em America/Sao_Paulo. Somente chefia indica outro responsável.
     MarkChecklistItem:
       type: object
-      required:
-        - isCompleted
       properties:
         isCompleted:
           type: boolean
+      required:
+        - isCompleted
       additionalProperties: false
     ChecklistTemplate:
       type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 128
+        routineId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        title:
+          type: string
+        items:
+          minItems: 1
+          maxItems: 100
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+        version:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+        isArchived:
+          type: boolean
+        createdById:
+          type: string
+          minLength: 1
+          maxLength: 128
+        updatedById:
+          type: string
+          minLength: 1
+          maxLength: 128
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
       required:
         - id
         - routineId
@@ -2185,44 +3072,8 @@ components:
         - updatedById
         - createdAt
         - updatedAt
-      properties:
-        id: &a11
-          type: string
-          minLength: 1
-          maxLength: 128
-        routineId: *a11
-        title:
-          type: string
-        items:
-          type: array
-          minItems: 1
-          maxItems: 100
-          items:
-            type: string
-            minLength: 1
-            maxLength: 500
-        version:
-          type: integer
-          minimum: 1
-        isArchived:
-          type: boolean
-        createdById: *a11
-        updatedById: *a11
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
     ChecklistItem:
       type: object
-      required:
-        - id
-        - position
-        - text
-        - isCompleted
-        - completedById
-        - completedAt
       properties:
         id:
           type: string
@@ -2231,21 +3082,152 @@ components:
         position:
           type: integer
           minimum: 0
+          maximum: 9007199254740991
         text:
           type: string
         isCompleted:
           type: boolean
         completedById:
-          type:
-            - string
-            - "null"
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
         completedAt:
-          type:
-            - string
-            - "null"
-          format: date-time
+          anyOf:
+            - type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            - type: "null"
+      required:
+        - id
+        - position
+        - text
+        - isCompleted
+        - completedById
+        - completedAt
     ChecklistRun:
       type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 128
+        templateId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        routineId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        assigneeId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        createdById:
+          type: string
+          minLength: 1
+          maxLength: 128
+        titleSnapshot:
+          type: string
+        routineTitleSnapshot:
+          type: string
+        instructionsSnapshot:
+          type: string
+        frequencySnapshot:
+          type: string
+          enum:
+            - DIARIA
+            - SEMANAL
+            - QUINZENAL
+            - MENSAL
+            - EVENTUAL
+            - PERSONALIZADA
+            - A_DEFINIR
+        templateVersion:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+        periodKey:
+          type: string
+        periodStart:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        periodEnd:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        status:
+          type: string
+          enum:
+            - POR_FAZER
+            - EM_ANDAMENTO
+            - CONCLUIDA
+        totalItems:
+          type: integer
+          minimum: 1
+          maximum: 100
+        completedItems:
+          type: integer
+          minimum: 0
+          maximum: 100
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        items:
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                minLength: 1
+                maxLength: 128
+              position:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+              text:
+                type: string
+              isCompleted:
+                type: boolean
+              completedById:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 128
+                  - type: "null"
+              completedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: "null"
+            required:
+              - id
+              - position
+              - text
+              - isCompleted
+              - completedById
+              - completedAt
+        completedAt:
+          anyOf:
+            - type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            - type: "null"
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
       required:
         - id
         - templateId
@@ -2268,107 +3250,230 @@ components:
         - completedAt
         - createdAt
         - updatedAt
-      properties:
-        id: &a11
-          type: string
-          minLength: 1
-          maxLength: 128
-        templateId: *a11
-        routineId: *a11
-        assigneeId: *a11
-        createdById: *a11
-        titleSnapshot:
-          type: string
-        routineTitleSnapshot:
-          type: string
-        instructionsSnapshot:
-          type: string
-        frequencySnapshot:
-          type: string
-          enum:
-            - DIARIA
-            - SEMANAL
-            - QUINZENAL
-            - MENSAL
-            - EVENTUAL
-            - PERSONALIZADA
-            - A_DEFINIR
-        templateVersion:
-          type: integer
-          minimum: 1
-        periodKey:
-          type: string
-        periodStart:
-          type: string
-          format: date
-        periodEnd:
-          type: string
-          format: date
-          description: Limite exclusivo
-        status:
-          type: string
-          enum:
-            - POR_FAZER
-            - EM_ANDAMENTO
-            - CONCLUIDA
-        totalItems:
-          type: integer
-          minimum: 1
-          maximum: 100
-        completedItems:
-          type: integer
-          minimum: 0
-          maximum: 100
-        progress:
-          type: integer
-          minimum: 0
-          maximum: 100
-        items:
-          type: array
-          maxItems: 100
-          items:
-            $ref: "#/components/schemas/ChecklistItem"
-        completedAt:
-          type:
-            - string
-            - "null"
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
     ChecklistTemplatePage:
       type: object
+      properties:
+        items:
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                minLength: 1
+                maxLength: 128
+              routineId:
+                type: string
+                minLength: 1
+                maxLength: 128
+              title:
+                type: string
+              items:
+                minItems: 1
+                maxItems: 100
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+              version:
+                type: integer
+                exclusiveMinimum: 0
+                maximum: 9007199254740991
+              isArchived:
+                type: boolean
+              createdById:
+                type: string
+                minLength: 1
+                maxLength: 128
+              updatedById:
+                type: string
+                minLength: 1
+                maxLength: 128
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - id
+              - routineId
+              - title
+              - items
+              - version
+              - isArchived
+              - createdById
+              - updatedById
+              - createdAt
+              - updatedAt
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: "null"
       required:
         - items
         - nextCursor
-      properties:
-        items:
-          type: array
-          maxItems: 100
-          items:
-            $ref: "#/components/schemas/ChecklistTemplate"
-        nextCursor:
-          type:
-            - string
-            - "null"
     ChecklistRunPage:
       type: object
+      properties:
+        items:
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                minLength: 1
+                maxLength: 128
+              templateId:
+                type: string
+                minLength: 1
+                maxLength: 128
+              routineId:
+                type: string
+                minLength: 1
+                maxLength: 128
+              assigneeId:
+                type: string
+                minLength: 1
+                maxLength: 128
+              createdById:
+                type: string
+                minLength: 1
+                maxLength: 128
+              titleSnapshot:
+                type: string
+              routineTitleSnapshot:
+                type: string
+              instructionsSnapshot:
+                type: string
+              frequencySnapshot:
+                type: string
+                enum:
+                  - DIARIA
+                  - SEMANAL
+                  - QUINZENAL
+                  - MENSAL
+                  - EVENTUAL
+                  - PERSONALIZADA
+                  - A_DEFINIR
+              templateVersion:
+                type: integer
+                exclusiveMinimum: 0
+                maximum: 9007199254740991
+              periodKey:
+                type: string
+              periodStart:
+                type: string
+                format: date
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+              periodEnd:
+                type: string
+                format: date
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+              status:
+                type: string
+                enum:
+                  - POR_FAZER
+                  - EM_ANDAMENTO
+                  - CONCLUIDA
+              totalItems:
+                type: integer
+                minimum: 1
+                maximum: 100
+              completedItems:
+                type: integer
+                minimum: 0
+                maximum: 100
+              progress:
+                type: integer
+                minimum: 0
+                maximum: 100
+              items:
+                maxItems: 100
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                    position:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                    text:
+                      type: string
+                    isCompleted:
+                      type: boolean
+                    completedById:
+                      anyOf:
+                        - type: string
+                          minLength: 1
+                          maxLength: 128
+                        - type: "null"
+                    completedAt:
+                      anyOf:
+                        - type: string
+                          format: date-time
+                          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                        - type: "null"
+                  required:
+                    - id
+                    - position
+                    - text
+                    - isCompleted
+                    - completedById
+                    - completedAt
+              completedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: "null"
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - id
+              - templateId
+              - routineId
+              - assigneeId
+              - createdById
+              - titleSnapshot
+              - routineTitleSnapshot
+              - instructionsSnapshot
+              - frequencySnapshot
+              - templateVersion
+              - periodKey
+              - periodStart
+              - periodEnd
+              - status
+              - totalItems
+              - completedItems
+              - progress
+              - items
+              - completedAt
+              - createdAt
+              - updatedAt
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: "null"
       required:
         - items
         - nextCursor
-      properties:
-        items:
-          type: array
-          maxItems: 100
-          items:
-            $ref: "#/components/schemas/ChecklistRun"
-        nextCursor:
-          type:
-            - string
-            - "null"
     CreateContact:
       type: object
       properties:
@@ -2381,34 +3486,36 @@ components:
           minLength: 1
           maxLength: 200
         jobTitle:
+          default: ""
           type: string
           maxLength: 150
         phones:
-          type: array
+          default: []
           maxItems: 10
+          type: array
           items:
             type: string
             minLength: 3
             maxLength: 40
-            description: 8–20 dígitos com formato de telefone/ramal
         email:
-          type:
-            - string
-            - "null"
-          format: email
-          maxLength: 254
+          default: null
+          anyOf:
+            - type: string
+              maxLength: 254
+            - type: "null"
         notes:
+          default: ""
           type: string
           maxLength: 4000
         tags:
-          type: array
           maxItems: 20
+          type: array
           items:
             type: string
             minLength: 1
             maxLength: 40
-          description: Normalizadas em minúsculas, sem repetição
         isKeyContact:
+          default: false
           type: boolean
       required:
         - name
@@ -2429,33 +3536,29 @@ components:
           type: string
           maxLength: 150
         phones:
-          type: array
           maxItems: 10
+          type: array
           items:
             type: string
             minLength: 3
             maxLength: 40
-            description: 8–20 dígitos com formato de telefone/ramal
         email:
-          type:
-            - string
-            - "null"
-          format: email
-          maxLength: 254
+          anyOf:
+            - type: string
+              maxLength: 254
+            - type: "null"
         notes:
           type: string
           maxLength: 4000
         tags:
-          type: array
           maxItems: 20
+          type: array
           items:
             type: string
             minLength: 1
             maxLength: 40
-          description: Normalizadas em minúsculas, sem repetição
         isKeyContact:
           type: boolean
-      required: []
       additionalProperties: false
       minProperties: 1
     Contact:
@@ -2473,30 +3576,27 @@ components:
           type: string
           maxLength: 150
         phones:
-          type: array
           maxItems: 10
+          type: array
           items:
             type: string
             minLength: 3
             maxLength: 40
-            description: 8–20 dígitos com formato de telefone/ramal
         email:
-          type:
-            - string
-            - "null"
-          format: email
-          maxLength: 254
+          anyOf:
+            - type: string
+              maxLength: 254
+            - type: "null"
         notes:
           type: string
           maxLength: 4000
         tags:
-          type: array
           maxItems: 20
+          type: array
           items:
             type: string
             minLength: 1
             maxLength: 40
-          description: Normalizadas em minúsculas, sem repetição
         isKeyContact:
           type: boolean
         id:
@@ -2506,14 +3606,18 @@ components:
           type: boolean
         createdById:
           type: string
+          minLength: 1
         updatedById:
           type: string
+          minLength: 1
         createdAt:
           type: string
           format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
         updatedAt:
           type: string
           format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
       required:
         - name
         - organization
@@ -2533,37 +3637,110 @@ components:
       type: object
       properties:
         items:
-          type: array
           maxItems: 100
+          type: array
           items:
-            $ref: "#/components/schemas/Contact"
+            type: object
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 150
+              organization:
+                type: string
+                minLength: 1
+                maxLength: 200
+              jobTitle:
+                type: string
+                maxLength: 150
+              phones:
+                maxItems: 10
+                type: array
+                items:
+                  type: string
+                  minLength: 3
+                  maxLength: 40
+              email:
+                anyOf:
+                  - type: string
+                    maxLength: 254
+                  - type: "null"
+              notes:
+                type: string
+                maxLength: 4000
+              tags:
+                maxItems: 20
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 40
+              isKeyContact:
+                type: boolean
+              id:
+                type: string
+                minLength: 1
+              isArchived:
+                type: boolean
+              createdById:
+                type: string
+                minLength: 1
+              updatedById:
+                type: string
+                minLength: 1
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - name
+              - organization
+              - jobTitle
+              - phones
+              - email
+              - notes
+              - tags
+              - isKeyContact
+              - id
+              - isArchived
+              - createdById
+              - updatedById
+              - createdAt
+              - updatedAt
         nextCursor:
-          type:
-            - string
-            - "null"
+          anyOf:
+            - type: string
+            - type: "null"
       required:
         - items
         - nextCursor
     CreateTask:
       type: object
-      additionalProperties: false
       properties:
         title:
           type: string
           minLength: 1
           maxLength: 200
         description:
+          default: ""
           type: string
           maxLength: 4000
         instructions:
           type: string
           maxLength: 12000
         dueDate:
-          type: &a23
-            - string
-            - "null"
-          format: date
+          default: null
+          anyOf:
+            - type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            - type: "null"
         priority:
+          default: NORMAL
           type: string
           enum:
             - BAIXA
@@ -2574,15 +3751,32 @@ components:
           type: string
           minLength: 1
           maxLength: 128
-        routineId: &a24
-          type: *a23
-        checklistRunId: *a24
-        contactId: *a24
+        routineId:
+          default: null
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
+        checklistRunId:
+          default: null
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
+        contactId:
+          default: null
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
       required:
         - title
+      additionalProperties: false
     UpdateTask:
       type: object
-      additionalProperties: false
       properties:
         title:
           type: string
@@ -2595,10 +3789,11 @@ components:
           type: string
           maxLength: 12000
         dueDate:
-          type:
-            - string
-            - "null"
-          format: date
+          anyOf:
+            - type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            - type: "null"
         priority:
           type: string
           enum:
@@ -2606,11 +3801,10 @@ components:
             - NORMAL
             - ALTA
             - URGENTE
-      required: []
+      additionalProperties: false
       minProperties: 1
     AssignTask:
       type: object
-      additionalProperties: false
       properties:
         assigneeId:
           type: string
@@ -2618,9 +3812,9 @@ components:
           maxLength: 128
       required:
         - assigneeId
+      additionalProperties: false
     ChangeTaskStatus:
       type: object
-      additionalProperties: false
       properties:
         status:
           type: string
@@ -2631,9 +3825,9 @@ components:
             - CANCELADA
       required:
         - status
+      additionalProperties: false
     Task:
       type: object
-      additionalProperties: false
       properties:
         title:
           type: string
@@ -2646,10 +3840,11 @@ components:
           type: string
           maxLength: 12000
         dueDate:
-          type: &a26
-            - string
-            - "null"
-          format: date
+          anyOf:
+            - type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            - type: "null"
         priority:
           type: string
           enum:
@@ -2657,17 +3852,40 @@ components:
             - NORMAL
             - ALTA
             - URGENTE
-        id: &a25
+        id:
           type: string
           minLength: 1
           maxLength: 128
-        assigneeId: *a25
-        routineId: &a27
-          type: *a26
-        checklistRunId: *a27
-        contactId: *a27
-        createdById: *a25
-        updatedById: *a25
+        assigneeId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        routineId:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
+        checklistRunId:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
+        contactId:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
+        createdById:
+          type: string
+          minLength: 1
+          maxLength: 128
+        updatedById:
+          type: string
+          minLength: 1
+          maxLength: 128
         status:
           type: string
           enum:
@@ -2677,19 +3895,44 @@ components:
             - CANCELADA
         isOverdue:
           type: boolean
-        startedAt: &a28
-          type: *a26
-          format: date-time
-        completedAt: *a28
-        completedById: *a27
-        cancelledAt: *a28
-        cancelledById: *a27
+        startedAt:
+          anyOf:
+            - type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            - type: "null"
+        completedAt:
+          anyOf:
+            - type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            - type: "null"
+        completedById:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
+        cancelledAt:
+          anyOf:
+            - type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            - type: "null"
+        cancelledById:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
         createdAt:
           type: string
           format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
         updatedAt:
           type: string
           format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
       required:
         - title
         - description
@@ -2714,14 +3957,19 @@ components:
         - updatedAt
     TaskEvent:
       type: object
-      additionalProperties: false
       properties:
-        id: &a29
+        id:
           type: string
           minLength: 1
           maxLength: 128
-        taskId: *a29
-        actorId: *a29
+        taskId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        actorId:
+          type: string
+          minLength: 1
+          maxLength: 128
         type:
           type: string
           enum:
@@ -2730,32 +3978,44 @@ components:
             - REASSIGNED
             - STATUS_CHANGED
         fromStatus:
-          type:
-            - string
-            - "null"
-          enum: &a30
-            - ABERTA
-            - EM_ANDAMENTO
-            - CONCLUIDA
-            - CANCELADA
+          anyOf:
+            - type: string
+              enum:
+                - ABERTA
+                - EM_ANDAMENTO
+                - CONCLUIDA
+                - CANCELADA
+            - type: "null"
         toStatus:
-          type:
-            - string
-            - "null"
-          enum: *a30
-        fromAssigneeId: &a31
-          type:
-            - string
-            - "null"
-        toAssigneeId: *a31
+          anyOf:
+            - type: string
+              enum:
+                - ABERTA
+                - EM_ANDAMENTO
+                - CONCLUIDA
+                - CANCELADA
+            - type: "null"
+        fromAssigneeId:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
+        toAssigneeId:
+          anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 128
+            - type: "null"
         changedFields:
-          type: array
           maxItems: 20
+          type: array
           items:
             type: string
         createdAt:
           type: string
           format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
       required:
         - id
         - taskId
@@ -2769,33 +4029,318 @@ components:
         - createdAt
     TaskPage:
       type: object
-      additionalProperties: false
       properties:
         items:
-          type: array
           maxItems: 100
+          type: array
           items:
-            $ref: "#/components/schemas/Task"
+            type: object
+            properties:
+              title:
+                type: string
+                minLength: 1
+                maxLength: 200
+              description:
+                type: string
+                maxLength: 4000
+              instructions:
+                type: string
+                maxLength: 12000
+              dueDate:
+                anyOf:
+                  - type: string
+                    format: date
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                  - type: "null"
+              priority:
+                type: string
+                enum:
+                  - BAIXA
+                  - NORMAL
+                  - ALTA
+                  - URGENTE
+              id:
+                type: string
+                minLength: 1
+                maxLength: 128
+              assigneeId:
+                type: string
+                minLength: 1
+                maxLength: 128
+              routineId:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 128
+                  - type: "null"
+              checklistRunId:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 128
+                  - type: "null"
+              contactId:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 128
+                  - type: "null"
+              createdById:
+                type: string
+                minLength: 1
+                maxLength: 128
+              updatedById:
+                type: string
+                minLength: 1
+                maxLength: 128
+              status:
+                type: string
+                enum:
+                  - ABERTA
+                  - EM_ANDAMENTO
+                  - CONCLUIDA
+                  - CANCELADA
+              isOverdue:
+                type: boolean
+              startedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: "null"
+              completedAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: "null"
+              completedById:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 128
+                  - type: "null"
+              cancelledAt:
+                anyOf:
+                  - type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  - type: "null"
+              cancelledById:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 128
+                  - type: "null"
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - title
+              - description
+              - instructions
+              - dueDate
+              - priority
+              - id
+              - assigneeId
+              - routineId
+              - checklistRunId
+              - contactId
+              - createdById
+              - updatedById
+              - status
+              - isOverdue
+              - startedAt
+              - completedAt
+              - completedById
+              - cancelledAt
+              - cancelledById
+              - createdAt
+              - updatedAt
         nextCursor:
-          type:
-            - string
-            - "null"
+          anyOf:
+            - type: string
+            - type: "null"
       required:
         - items
         - nextCursor
     TaskEventPage:
       type: object
-      additionalProperties: false
       properties:
         items:
-          type: array
           maxItems: 100
+          type: array
           items:
-            $ref: "#/components/schemas/TaskEvent"
+            type: object
+            properties:
+              id:
+                type: string
+                minLength: 1
+                maxLength: 128
+              taskId:
+                type: string
+                minLength: 1
+                maxLength: 128
+              actorId:
+                type: string
+                minLength: 1
+                maxLength: 128
+              type:
+                type: string
+                enum:
+                  - CREATED
+                  - EDITED
+                  - REASSIGNED
+                  - STATUS_CHANGED
+              fromStatus:
+                anyOf:
+                  - type: string
+                    enum:
+                      - ABERTA
+                      - EM_ANDAMENTO
+                      - CONCLUIDA
+                      - CANCELADA
+                  - type: "null"
+              toStatus:
+                anyOf:
+                  - type: string
+                    enum:
+                      - ABERTA
+                      - EM_ANDAMENTO
+                      - CONCLUIDA
+                      - CANCELADA
+                  - type: "null"
+              fromAssigneeId:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 128
+                  - type: "null"
+              toAssigneeId:
+                anyOf:
+                  - type: string
+                    minLength: 1
+                    maxLength: 128
+                  - type: "null"
+              changedFields:
+                maxItems: 20
+                type: array
+                items:
+                  type: string
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - id
+              - taskId
+              - actorId
+              - type
+              - fromStatus
+              - toStatus
+              - fromAssigneeId
+              - toAssigneeId
+              - changedFields
+              - createdAt
         nextCursor:
-          type:
-            - string
-            - "null"
+          anyOf:
+            - type: string
+            - type: "null"
       required:
         - items
         - nextCursor
+    RefreshResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          minLength: 1
+        refreshToken:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+        refreshExpiresAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+        tokenType:
+          type: string
+          const: Bearer
+        expiresIn:
+          type: number
+          const: 900
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              minLength: 1
+            name:
+              type: string
+              minLength: 1
+            email:
+              type: string
+              format: email
+              pattern: ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+            role:
+              type: string
+              enum:
+                - CHEFE
+                - ASSESSOR
+                - APOIO
+            isActive:
+              type: boolean
+          required:
+            - id
+            - name
+            - email
+            - role
+            - isActive
+      required:
+        - accessToken
+        - refreshToken
+        - refreshExpiresAt
+        - tokenType
+        - expiresIn
+        - user
+    LogoutRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+      required:
+        - refreshToken
+      additionalProperties: false
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+          const: gabinete-plus-api
+        timestamp:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+      required:
+        - status
+        - service
+        - timestamp
+servers:
+  - url: /
+    description: Mesmo servidor que disponibiliza a documentação
+tags:
+  - name: Autenticação
+  - name: Equipe
+  - name: Atividades
+  - name: Checklists
+  - name: Contatos
+  - name: Tarefas
+  - name: Saúde

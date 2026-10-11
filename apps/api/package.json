@@ -12,7 +12,8 @@
     "test": "vitest run",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "docs:generate": "tsx src/documentation/generate.ts"
   },
   "dependencies": {
     "@gabinete-plus/shared": "workspace:*",
@@ -26,6 +27,8 @@
     "helmet": "latest",
     "jose": "^6.1.0",
     "pg": "latest",
+    "swagger-ui-dist": "5.33.1",
+    "yaml": "2.9.0",
     "zod": "latest"
   },
   "devDependencies": {
@@ -36,6 +39,8 @@
     "prisma": "latest",
     "supertest": "latest",
     "tsx": "latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "@types/swagger-ui-dist": "3.30.6",
+    "@apidevtools/swagger-parser": "12.1.0"
   }
 }

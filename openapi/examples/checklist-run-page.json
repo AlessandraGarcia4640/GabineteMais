@@ -1,0 +1,45 @@
+{
+  "items": [
+    {
+      "id": "mock-run",
+      "templateId": "mock-template",
+      "routineId": "mock-routine",
+      "assigneeId": "mock-user",
+      "createdById": "mock-user",
+      "titleSnapshot": "Checklist fictício",
+      "routineTitleSnapshot": "Atividade fictícia",
+      "instructionsSnapshot": "Seguir roteiro fictício",
+      "frequencySnapshot": "DIARIA",
+      "templateVersion": 1,
+      "periodKey": "DIARIA:2026-10-11",
+      "periodStart": "2026-10-11",
+      "periodEnd": "2026-10-12",
+      "status": "POR_FAZER",
+      "totalItems": 2,
+      "completedItems": 0,
+      "progress": 0,
+      "completedAt": null,
+      "items": [
+        {
+          "id": "mock-item-a",
+          "position": 0,
+          "text": "Conferir demanda",
+          "isCompleted": false,
+          "completedById": null,
+          "completedAt": null
+        },
+        {
+          "id": "mock-item-b",
+          "position": 1,
+          "text": "Encaminhar demanda",
+          "isCompleted": false,
+          "completedById": null,
+          "completedAt": null
+        }
+      ],
+      "createdAt": "2026-10-11T12:00:00Z",
+      "updatedAt": "2026-10-11T12:00:00Z"
+    }
+  ],
+  "nextCursor": null
+}

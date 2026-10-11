@@ -45,3 +45,16 @@ marcação com autoria, progresso e histórico em `/checklists`.
 
 [Contatos institucionais](docs/contatos.md) oferecem busca, tags, contatos-chave,
 cadastro, edição e arquivamento em `/contacts`.
+
+[Tarefas](docs/tarefas.md) têm atribuição, prazos, prioridades, histórico e
+transições de status em `/tasks`.
+
+## Documentação da API
+
+Com a API local em execução, abra [a documentação interativa](http://localhost:3333/docs/).
+O contrato também está disponível em `/docs/openapi.json` e `/docs/openapi.yaml`.
+Consulte [o guia OpenAPI](docs/api-openapi.md) para autenticação, exemplos, permissões
+e atualização dos schemas com `pnpm docs:generate`.
+
+A documentação cobre os endpoints implementados de RF00–RF04. RF05 e RF06
+permanecem planejados. A interface local fica desabilitada em produção.

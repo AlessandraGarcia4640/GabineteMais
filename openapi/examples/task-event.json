@@ -1,0 +1,12 @@
+{
+  "id": "mock-event",
+  "taskId": "demo-task-conferencia",
+  "actorId": "demo-chief",
+  "type": "CREATED",
+  "fromStatus": null,
+  "toStatus": "ABERTA",
+  "fromAssigneeId": null,
+  "toAssigneeId": "demo-assessor",
+  "changedFields": [],
+  "createdAt": "2026-10-11T12:00:00Z"
+}
