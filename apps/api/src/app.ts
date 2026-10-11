@@ -13,13 +13,15 @@ import { AuthorizationService } from './modules/auth/authorization.service.js';
 import { UserAccessService } from './modules/users/user-access.service.js';
 import { createUserAccessRouter } from './modules/users/user-access.router.js';
 import { findPublicUserById } from './modules/users/users.repository.js';
+import { managementRepository } from './modules/users/management.repository.js';
+import { ManagementService } from './modules/users/management.service.js';
 
 export const createApp = (loginService = new LoginService({
   findUser: findCredentialUser, issueToken: createAccessTokenIssuer(env.JWT_ACCESS_SECRET),
   sessions: sessionRepository,
 }), authorization = new AuthorizationService({
   verifyToken: createAccessTokenVerifier(env.JWT_ACCESS_SECRET), findSession,
-}), userLookup = findPublicUserById): Express => {
+}), userLookup = findPublicUserById, usersRepository = managementRepository): Express => {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet());
@@ -27,7 +29,8 @@ export const createApp = (loginService = new LoginService({
   app.use(express.json({ limit: '1mb' }));
   app.use('/health', healthRouter);
   app.use('/auth', createAuthRouter(loginService, authorization));
-  app.use('/users', createUserAccessRouter(authorization, new UserAccessService(authorization, { findUser: userLookup })));
+  app.use('/users', createUserAccessRouter(authorization, new UserAccessService(authorization, { findUser: userLookup }),
+    new ManagementService(authorization, usersRepository)));
   app.use(errorHandler);
   return app;
 };

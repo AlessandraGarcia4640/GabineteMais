@@ -8,48 +8,48 @@ paths:
       summary: Consulta usuário e permissões atuais
       operationId: currentAccess
       description: Valida JWT e consulta sessão e usuário no banco a cada chamada; perfil do token não concede permissões.
-      security: [{ bearerAuth: [] }]
+      security: [{bearerAuth: []}]
       responses:
         '200':
           description: Acesso atual; Cache-Control no-store
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/CurrentAccess' }
+              schema: {$ref: '#/components/schemas/CurrentAccess'}
               examples:
-                ficticio: { externalValue: ./examples/current-access.json }
-        '400': { $ref: '#/components/responses/InvalidInput' }
-        '401': { $ref: '#/components/responses/Unauthenticated' }
-        '500': { $ref: '#/components/responses/InternalError' }
+                ficticio: {externalValue: ./examples/current-access.json}
+        '400': {$ref: '#/components/responses/InvalidInput'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '500': {$ref: '#/components/responses/InternalError'}
   /users/{id}/permissions:
     get:
       summary: Consulta administrativa das permissões de um usuário
       operationId: userPermissions
       description: Exige perfil CHEFE e permissão team:manage, também verificada no service. Não é a listagem geral da equipe.
-      security: [{ bearerAuth: [] }]
+      security: [{bearerAuth: []}]
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: string, minLength: 1, maxLength: 128 }
+          schema: {type: string, minLength: 1, maxLength: 128}
       responses:
         '200':
           description: Permissões do usuário consultado; Cache-Control no-store
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/UserPermissions' }
-        '400': { $ref: '#/components/responses/InvalidInput' }
-        '401': { $ref: '#/components/responses/Unauthenticated' }
+              schema: {$ref: '#/components/schemas/UserPermissions'}
+        '400': {$ref: '#/components/responses/InvalidInput'}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
         '403':
           description: Perfil sem permissão (FORBIDDEN)
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ApiError' }
+              schema: {$ref: '#/components/schemas/ApiError'}
         '404':
           description: Usuário não encontrado (USER_NOT_FOUND); somente após autorização
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ApiError' }
-        '500': { $ref: '#/components/responses/InternalError' }
+              schema: {$ref: '#/components/schemas/ApiError'}
+        '500': {$ref: '#/components/responses/InternalError'}
   /auth/refresh:
     post:
       summary: Renova a sessão e consome o refresh token anterior
@@ -60,24 +60,24 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/RefreshRequest' }
+            schema: {$ref: '#/components/schemas/RefreshRequest'}
       responses:
         '200':
           description: Novos tokens de acesso e renovação; Cache-Control no-store
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/LoginResponse' }
+              schema: {$ref: '#/components/schemas/LoginResponse'}
               examples:
-                ficticio: { externalValue: ./examples/refresh-success.json }
-        '400': { $ref: '#/components/responses/InvalidInput' }
+                ficticio: {externalValue: ./examples/refresh-success.json}
+        '400': {$ref: '#/components/responses/InvalidInput'}
         '401':
           description: Token inexistente, consumido, revogado, expirado ou usuário inativo (INVALID_REFRESH_TOKEN)
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ApiError' }
-        '413': { $ref: '#/components/responses/BodyTooLarge' }
-        '429': { $ref: '#/components/responses/AuthRateLimited' }
-        '500': { $ref: '#/components/responses/InternalError' }
+              schema: {$ref: '#/components/schemas/ApiError'}
+        '413': {$ref: '#/components/responses/BodyTooLarge'}
+        '429': {$ref: '#/components/responses/AuthRateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
   /auth/logout:
     post:
       summary: Revoga a sessão identificada pelo refresh token
@@ -88,14 +88,14 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/RefreshRequest' }
+            schema: {$ref: '#/components/schemas/RefreshRequest'}
       responses:
         '204':
           description: Sessão revogada; sem corpo; Cache-Control no-store
-        '400': { $ref: '#/components/responses/InvalidInput' }
-        '413': { $ref: '#/components/responses/BodyTooLarge' }
-        '429': { $ref: '#/components/responses/AuthRateLimited' }
-        '500': { $ref: '#/components/responses/InternalError' }
+        '400': {$ref: '#/components/responses/InvalidInput'}
+        '413': {$ref: '#/components/responses/BodyTooLarge'}
+        '429': {$ref: '#/components/responses/AuthRateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
   /auth/login:
     post:
       summary: Autentica usuário ativo e emite token de acesso
@@ -106,13 +106,13 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/LoginRequest' }
+            schema: {$ref: '#/components/schemas/LoginRequest'}
       responses:
         '200':
           description: Login válido; resposta com Cache-Control no-store
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/LoginResponse' }
+              schema: {$ref: '#/components/schemas/LoginResponse'}
               examples:
                 ficticio:
                   externalValue: ./examples/login-success.json
@@ -120,68 +120,402 @@ paths:
           description: Entrada inválida (VALIDATION_ERROR) ou JSON malformado (INVALID_JSON)
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ApiError' }
+              schema: {$ref: '#/components/schemas/ApiError'}
         '401':
           description: Credenciais inválidas ou usuário desativado (INVALID_CREDENTIALS)
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ApiError' }
+              schema: {$ref: '#/components/schemas/ApiError'}
         '413':
           description: Corpo excede 1 MB (BODY_TOO_LARGE)
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ApiError' }
+              schema: {$ref: '#/components/schemas/ApiError'}
         '429':
           description: Limite de tentativas excedido (AUTH_RATE_LIMITED)
           headers:
             Retry-After:
-              schema: { type: integer }
+              schema: {type: integer}
               description: Segundos até a próxima tentativa permitida
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ApiError' }
+              schema: {$ref: '#/components/schemas/ApiError'}
         '500':
           description: Falha interna (INTERNAL_ERROR)
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ApiError' }
+              schema: {$ref: '#/components/schemas/ApiError'}
   /health:
     get:
       summary: Verifica o estado da API
       responses:
         "200":
           description: API disponível
+  /users:
+    get:
+      operationId: listUsers
+      summary: Consulta equipe paginada para todos os perfis
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta pública; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPage"
+        "400": &a1
+          $ref: "#/components/responses/InvalidInput"
+        "401": &a2
+          $ref: "#/components/responses/Unauthenticated"
+        "403": &a3
+          description: Sem permissão (FORBIDDEN)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500": &a4
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+          description: ID retornado em nextCursor; ordenação crescente por id
+        - name: role
+          in: query
+          schema:
+            $ref: "#/components/schemas/UserRole"
+        - name: isActive
+          in: query
+          schema:
+            type: string
+            enum:
+              - "true"
+              - "false"
+    post:
+      operationId: createUser
+      summary: Cadastro administrativo somente pela chefia
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Resposta pública; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetail"
+          headers:
+            Location:
+              schema:
+                type: string
+        "400": *a1
+        "401": *a2
+        "403": *a3
+        "409":
+          description: EMAIL_ALREADY_EXISTS ou LAST_ACTIVE_CHIEF
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500": *a4
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUser"
+  /users/{id}:
+    get:
+      operationId: getUser
+      summary: Consulta detalhe público de membro
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta pública; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetail"
+        "400": &a1
+          $ref: "#/components/responses/InvalidInput"
+        "401": &a2
+          $ref: "#/components/responses/Unauthenticated"
+        "403": &a3
+          description: Sem permissão (FORBIDDEN)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: USER_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500": &a4
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - &a5
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+    patch:
+      operationId: updateUser
+      summary: Edita nome/e-mail de membro; somente chefia
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta pública; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetail"
+        "400": *a1
+        "401": *a2
+        "403": *a3
+        "404":
+          description: USER_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: EMAIL_ALREADY_EXISTS ou LAST_ACTIVE_CHIEF
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500": *a4
+      parameters:
+        - *a5
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfile"
+    delete:
+      operationId: deactivateUser
+      summary: Desativa e revoga sessões; não apaga pessoa ou histórico
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Desativação idempotente; sem corpo
+        "400": *a1
+        "401": *a2
+        "403": *a3
+        "404":
+          description: USER_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: LAST_ACTIVE_CHIEF
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500": *a4
+      parameters:
+        - *a5
+  /users/me:
+    patch:
+      operationId: updateOwnProfile
+      summary: Edita somente nome/e-mail do próprio usuário
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta pública; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetail"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          description: Sem permissão (FORBIDDEN)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: EMAIL_ALREADY_EXISTS ou LAST_ACTIVE_CHIEF
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfile"
+  /users/{id}/position:
+    patch:
+      operationId: changeUserPosition
+      summary: Altera cargo com histórico e perfil derivado; somente chefia
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta pública; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetail"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          description: Sem permissão (FORBIDDEN)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: USER_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: EMAIL_ALREADY_EXISTS ou LAST_ACTIVE_CHIEF
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePosition"
+  /users/{id}/positions:
+    get:
+      operationId: listUserPositions
+      summary: Consulta histórico paginado de cargos
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta pública; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PositionPage"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          description: Sem permissão (FORBIDDEN)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: USER_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+          description: ID retornado em nextCursor; ordenação crescente por id
 components:
   responses:
     Unauthenticated:
       description: Token ausente/inválido, sessão encerrada/expirada ou usuário desativado (UNAUTHENTICATED)
       headers:
-        WWW-Authenticate: { schema: { type: string, const: Bearer } }
+        WWW-Authenticate: {schema: {type: string, const: Bearer}}
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/ApiError' }
+          schema: {$ref: '#/components/schemas/ApiError'}
     InvalidInput:
       description: Entrada inválida (VALIDATION_ERROR) ou JSON malformado (INVALID_JSON)
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/ApiError' }
+          schema: {$ref: '#/components/schemas/ApiError'}
     BodyTooLarge:
       description: Corpo excede 1 MB (BODY_TOO_LARGE)
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/ApiError' }
+          schema: {$ref: '#/components/schemas/ApiError'}
     AuthRateLimited:
       description: Limite de tentativas excedido (AUTH_RATE_LIMITED)
       headers:
-        Retry-After: { schema: { type: integer }, description: Segundos até a próxima tentativa }
+        Retry-After: {schema: {type: integer}, description: Segundos até a próxima tentativa}
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/ApiError' }
+          schema: {$ref: '#/components/schemas/ApiError'}
     InternalError:
       description: Falha interna (INTERNAL_ERROR)
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/ApiError' }
+          schema: {$ref: '#/components/schemas/ApiError'}
   securitySchemes:
     bearerAuth:
       type: http
@@ -195,20 +529,20 @@ components:
       type: object
       required: [user, permissions]
       properties:
-        user: { $ref: '#/components/schemas/UserSummary' }
+        user: {$ref: '#/components/schemas/UserSummary'}
         permissions:
           type: array
-          items: { $ref: '#/components/schemas/Permission' }
+          items: {$ref: '#/components/schemas/Permission'}
     UserPermissions:
       type: object
       required: [userId, role, isActive, permissions]
       properties:
-        userId: { type: string, minLength: 1 }
-        role: { $ref: '#/components/schemas/UserRole' }
-        isActive: { type: boolean }
+        userId: {type: string, minLength: 1}
+        role: {$ref: '#/components/schemas/UserRole'}
+        isActive: {type: boolean}
         permissions:
           type: array
-          items: { $ref: '#/components/schemas/Permission' }
+          items: {$ref: '#/components/schemas/Permission'}
     UserRole:
       type: string
       enum: [CHEFE, ASSESSOR, APOIO]
@@ -219,46 +553,46 @@ components:
       type: object
       required: [id, name, email, role, isActive]
       properties:
-        id: { type: string, minLength: 1 }
-        name: { type: string, minLength: 1 }
-        email: { type: string, format: email }
-        role: { $ref: '#/components/schemas/UserRole' }
-        isActive: { type: boolean }
+        id: {type: string, minLength: 1}
+        name: {type: string, minLength: 1}
+        email: {type: string, format: email}
+        role: {$ref: '#/components/schemas/UserRole'}
+        isActive: {type: boolean}
     UserPositionHistory:
       type: object
       description: Histórico de cargo; endedAt, quando preenchido, deve ser posterior a startedAt.
       required: [id, userId, position, role, startedAt, endedAt]
       properties:
-        id: { type: string, minLength: 1 }
-        userId: { type: string, minLength: 1 }
-        position: { $ref: '#/components/schemas/UserPosition' }
-        role: { $ref: '#/components/schemas/UserRole' }
-        startedAt: { type: string, format: date-time }
-        endedAt: { type: [string, 'null'], format: date-time }
+        id: {type: string, minLength: 1}
+        userId: {type: string, minLength: 1}
+        position: {$ref: '#/components/schemas/UserPosition'}
+        role: {$ref: '#/components/schemas/UserRole'}
+        startedAt: {type: string, format: date-time}
+        endedAt: {type: [string, 'null'], format: date-time}
     LoginRequest:
-      description: E-mail sem espaços nas extremidades; consulta exata, sem conversão de maiúsculas. Perfis e permissões não são aceitos na entrada.
+      description: E-mail sem espaços nas extremidades; consulta sem distinguir maiúsculas/minúsculas. Perfis e permissões não são aceitos na entrada.
       type: object
       additionalProperties: false
       required: [email, password]
       properties:
-        email: { type: string, format: email }
-        password: { type: string, minLength: 8, maxLength: 128, writeOnly: true }
+        email: {type: string, format: email}
+        password: {type: string, minLength: 8, maxLength: 128, writeOnly: true}
     LoginResponse:
       type: object
       required: [accessToken, refreshToken, refreshExpiresAt, tokenType, expiresIn, user]
       properties:
-        accessToken: { type: string, minLength: 1 }
-        refreshToken: { type: string, pattern: '^[A-Za-z0-9_-]{43}$' }
-        refreshExpiresAt: { type: string, format: date-time, description: Prazo absoluto da sessão; não muda com a rotação }
-        tokenType: { type: string, const: Bearer }
-        expiresIn: { type: integer, const: 900 }
-        user: { $ref: '#/components/schemas/UserSummary' }
+        accessToken: {type: string, minLength: 1}
+        refreshToken: {type: string, pattern: '^[A-Za-z0-9_-]{43}$'}
+        refreshExpiresAt: {type: string, format: date-time, description: Prazo absoluto da sessão; não muda com a rotação}
+        tokenType: {type: string, const: Bearer}
+        expiresIn: {type: integer, const: 900}
+        user: {$ref: '#/components/schemas/UserSummary'}
     RefreshRequest:
       type: object
       additionalProperties: false
       required: [refreshToken]
       properties:
-        refreshToken: { type: string, pattern: '^[A-Za-z0-9_-]{43}$', writeOnly: true }
+        refreshToken: {type: string, pattern: '^[A-Za-z0-9_-]{43}$', writeOnly: true}
     ApiError:
       type: object
       required: [error]
@@ -267,6 +601,102 @@ components:
           type: object
           required: [code, message]
           properties:
-            code: { type: string, minLength: 1 }
-            message: { type: string, minLength: 1 }
-            details: { description: Detalhes opcionais de validação }
+            code: {type: string, minLength: 1}
+            message: {type: string, minLength: 1}
+            details: {description: Detalhes opcionais de validação}
+    UserDetail:
+      allOf:
+        - $ref: "#/components/schemas/UserSummary"
+        - type: object
+          required:
+            - position
+            - createdAt
+            - updatedAt
+          properties:
+            position:
+              anyOf:
+                - $ref: "#/components/schemas/UserPosition"
+                - type: "null"
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    CreateUser:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - email
+        - password
+        - position
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: Normalizado em minúsculas
+        password:
+          type: string
+          minLength: 12
+          maxLength: 128
+          writeOnly: true
+        position:
+          $ref: "#/components/schemas/UserPosition"
+    UpdateProfile:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: Normalizado em minúsculas
+    ChangePosition:
+      type: object
+      additionalProperties: false
+      required:
+        - position
+      properties:
+        position:
+          $ref: "#/components/schemas/UserPosition"
+    UserPage:
+      type: object
+      required:
+        - items
+        - nextCursor
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/UserDetail"
+        nextCursor:
+          type:
+            - string
+            - "null"
+    PositionPage:
+      type: object
+      required:
+        - items
+        - nextCursor
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/UserPositionHistory"
+        nextCursor:
+          type:
+            - string
+            - "null"
