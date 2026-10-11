@@ -2,9 +2,9 @@ import type { Permission, UserRole, UserSummary } from '@gabinete-plus/shared';
 export type { Permission } from '@gabinete-plus/shared';
 
 const commonPermissions: readonly Permission[] = ['team:read', 'activities:read', 'tasks:read', 'contacts:read',
-  'guidelines:read', 'profile:update-self', 'tasks:execute-assigned'];
+  'guidelines:read', 'profile:update-self', 'tasks:execute-assigned', 'checklists:read', 'checklists:execute-assigned'];
 const managementPermissions: readonly Permission[] = ['team:manage', 'activities:manage', 'contacts:manage',
-  'guidelines:manage', 'tasks:assign', 'substitutions:manage'];
+  'guidelines:manage', 'tasks:assign', 'substitutions:manage', 'checklists:manage'];
 
 const rolePermissions: Record<UserRole, readonly Permission[]> = {
   CHEFE: [...commonPermissions, ...managementPermissions],

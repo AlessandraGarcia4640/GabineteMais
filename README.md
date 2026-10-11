@@ -39,3 +39,6 @@ inclui cadastro administrativo, edição de perfil, histórico de cargos e desat
 
 O módulo [rotinas e atividades](docs/rotinas-atividades.md) oferece consulta,
 cadastro, edição e arquivamento em `/routines`, com seed fictício.
+
+[Checklists](docs/checklists.md) têm modelos versionados, execução por período,
+marcação com autoria, progresso e histórico em `/checklists`.
