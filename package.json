@@ -19,7 +19,8 @@
     "db:generate": "pnpm --filter @gabinete-plus/api prisma:generate",
     "db:migrate": "pnpm --filter @gabinete-plus/api prisma:migrate",
     "db:seed": "pnpm --filter @gabinete-plus/api seed",
-    "docs:generate": "pnpm --filter @gabinete-plus/shared build && pnpm --filter @gabinete-plus/api docs:generate"
+    "docs:generate": "pnpm --filter @gabinete-plus/shared build && pnpm --filter @gabinete-plus/api docs:generate",
+    "test:integration": "pnpm --filter @gabinete-plus/shared build && pnpm --filter @gabinete-plus/api test:integration"
   },
   "devDependencies": {
     "@eslint/js": "latest",

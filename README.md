@@ -27,6 +27,10 @@ pnpm check
 O contrato compartilhado é compilado automaticamente pelos comandos da raiz.
 Após alterações no Prisma, execute `pnpm db:generate` antes da verificação.
 
+Para validar os fluxos com PostgreSQL real, configure `TEST_DATABASE_URL` e execute
+`pnpm test:integration`. Esse comando exige o banco de teste e é uma etapa obrigatória
+do CI. Consulte [os testes de integração da API](docs/testes-integracao-api.md).
+
 ## Usuários de demonstração
 
 Consulte [usuários e permissões](docs/usuarios-e-permissoes.md) para migrations,

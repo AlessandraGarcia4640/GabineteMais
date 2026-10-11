@@ -8,12 +8,13 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src prisma.config.ts --max-warnings=0",
+    "lint": "eslint src prisma.config.ts vitest.integration.config.ts --max-warnings=0",
     "test": "vitest run",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
-    "docs:generate": "tsx src/documentation/generate.ts"
+    "docs:generate": "tsx src/documentation/generate.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@gabinete-plus/shared": "workspace:*",
