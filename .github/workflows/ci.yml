@@ -36,4 +36,10 @@ jobs:
       - run: pnpm db:generate
       - run: pnpm --filter @gabinete-plus/api exec prisma migrate deploy
       - run: pnpm check
+      - run: pnpm db:seed
+        env:
+          DEMO_SEED_PASSWORD: demo-ci-password-only
+      - run: pnpm db:seed
+        env:
+          DEMO_SEED_PASSWORD: demo-ci-password-only
       - run: pnpm build
