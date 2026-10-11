@@ -1,12 +1,10 @@
-import type { UserRole, UserSummary } from '@gabinete-plus/shared';
+import type { Permission, UserRole, UserSummary } from '@gabinete-plus/shared';
+export type { Permission } from '@gabinete-plus/shared';
 
-// Literal tuples preserve permission names in the union, without widening to string.
-const commonPermissions = ['team:read', 'activities:read', 'tasks:read', 'contacts:read',
-  'guidelines:read', 'profile:update-self', 'tasks:execute-assigned'] as const;
-const managementPermissions = ['team:manage', 'activities:manage', 'contacts:manage',
-  'guidelines:manage', 'tasks:assign', 'substitutions:manage'] as const;
-
-export type Permission = typeof commonPermissions[number] | typeof managementPermissions[number];
+const commonPermissions: readonly Permission[] = ['team:read', 'activities:read', 'tasks:read', 'contacts:read',
+  'guidelines:read', 'profile:update-self', 'tasks:execute-assigned'];
+const managementPermissions: readonly Permission[] = ['team:manage', 'activities:manage', 'contacts:manage',
+  'guidelines:manage', 'tasks:assign', 'substitutions:manage'];
 
 const rolePermissions: Record<UserRole, readonly Permission[]> = {
   CHEFE: [...commonPermissions, ...managementPermissions],

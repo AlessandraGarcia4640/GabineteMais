@@ -33,4 +33,6 @@ Consulte [usuários e permissões](docs/usuarios-e-permissoes.md) para migration
 seed com senha local e regras de cargos. A API expõe `/health` e os endpoints
 `POST /auth/login`, `/auth/refresh` e `/auth/logout`.
 Configure a chave JWT e consulte [autenticação](docs/autenticacao.md) antes de iniciar.
-Autorização de rotas e gestão de usuários seguem nas issues #26–#27.
+GET `/auth/me` consulta o acesso atual. GET `/users/:id/permissions` é restrito à
+chefia. As rotas protegidas verificam sessão e perfil atuais; gestão de usuários
+segue na issue #27.

@@ -32,10 +32,9 @@ outras sessões do usuário. Login/refresh/logout têm limites independentes de
 ## Relação com a issue #26
 
 JWT assinado continua criptograficamente válido até expirar. A proteção de rotas
-da #26 deve validar assinatura, issuer, audience, sub e sid, consultar a sessão
-(não revogada/não expirada) e o usuário ativo, e autorizar com perfil atual.
-Isso permitirá rejeitar access tokens de sessão encerrada imediatamente. Ainda
-não existem rotas de negócio protegidas; esta entrega não anuncia essa proteção.
+da #26 agora valida assinatura, issuer, audience, sub e sid, consulta a sessão
+(não revogada/não expirada) e o usuário ativo, e autoriza com perfil atual.
+Access tokens de sessão encerrada são rejeitados nas rotas protegidas. Veja ADR-005.
 O mobile deve limpar os dois tokens ao sair e usar expo-secure-store na #34.
 
 Os registros de tokens consumidos são retidos para detectar replay. Limpeza de
