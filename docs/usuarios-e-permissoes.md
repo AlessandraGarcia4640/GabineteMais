@@ -28,8 +28,8 @@ O mobile reutiliza a mesma validação de login. Senha/hash não fazem parte da 
 O OpenAPI declara esses schemas e o endpoint de login da #24.
 
 As funções de autorização devem ser chamadas pelos services com usuário lido do banco,
-nunca com role/isActive enviados pelo cliente. São políticas preparatórias: a proteção
-de rotas será implementada na #26. Tarefas exigem também validar propriedade.
+nunca com role/isActive enviados pelo cliente. A proteção de rotas foi aplicada na
+#26, conforme ADR-005. Tarefas exigem também validar propriedade na implementação do módulo.
 
 ## Verificação
 

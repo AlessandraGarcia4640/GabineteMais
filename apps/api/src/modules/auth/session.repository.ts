@@ -23,6 +23,20 @@ export interface SessionRepository {
   withToken: <T>(hash: string, operation: (record: LockedRefreshToken | null) => Promise<T>) => Promise<T>;
 }
 
+export interface SessionSnapshot {
+  id: string;
+  expiresAt: Date;
+  revokedAt: Date | null;
+  user: UserSummary;
+}
+
+export function findSession(id: string): Promise<SessionSnapshot | null> {
+  return prisma.authSession.findUnique({ where: { id }, select: {
+    id: true, expiresAt: true, revokedAt: true,
+    user: { select: { id: true, name: true, email: true, role: true, isActive: true } },
+  } });
+}
+
 export const sessionRepository: SessionRepository = {
   async create({ id, userId, expiresAt, tokenHash }) {
     await prisma.authSession.create({ data: {

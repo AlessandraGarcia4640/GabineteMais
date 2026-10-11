@@ -23,6 +23,7 @@ processo. É adequado à instância única do protótipo; múltiplas instâncias
 store compartilhado. Não habilitar trust proxy indiscriminadamente: configurar
 os proxies conhecidos ao introduzir hospedagem. Respostas de login não são cacheáveis.
 
-Refresh/logout foram acrescentados na #25, conforme ADR-004. RBAC nas rotas (#26),
-convites e tela de login (#34) ainda ficam nas próximas entregas.
+Refresh/logout foram acrescentados na #25, conforme ADR-004. Autenticação/RBAC
+das rotas foram aplicados na #26, conforme ADR-005. Convites e tela de login (#34)
+ainda ficam nas próximas entregas.
 TLS é necessário ao hospedar a API.

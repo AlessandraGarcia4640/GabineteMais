@@ -1,5 +1,5 @@
 import type { UserSummary } from '@gabinete-plus/shared';
-import type { LockedRefreshToken, NewSession, SessionRepository } from './session.repository.js';
+import type { LockedRefreshToken, NewSession, SessionRepository, SessionSnapshot } from './session.repository.js';
 
 interface SessionState {
   id: string;
@@ -13,6 +13,11 @@ export class MemorySessions implements SessionRepository {
   private pending = Promise.resolve();
 
   constructor(public user: UserSummary) {}
+
+  findSession(id: string): Promise<SessionSnapshot | null> {
+    const session = this.sessions.get(id);
+    return Promise.resolve(session ? { ...session, user: this.user } : null);
+  }
 
   create(session: NewSession): Promise<void> {
     this.sessions.set(session.id, { id: session.id, expiresAt: session.expiresAt, revokedAt: null });

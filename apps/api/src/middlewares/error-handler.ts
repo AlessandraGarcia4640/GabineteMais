@@ -8,6 +8,7 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
   response.set('Cache-Control', 'no-store');
 
   if (error instanceof AppError) {
+    if (error.code === 'UNAUTHENTICATED') response.set('WWW-Authenticate', 'Bearer');
     response.status(error.status).json({ error: { code: error.code, message: error.message } });
     return;
   }
