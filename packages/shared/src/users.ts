@@ -51,5 +51,5 @@ export type RefreshResponse = LoginResponse;
 export const logoutRequestSchema = refreshRequestSchema;
 
 export const apiErrorSchema = z.object({
-  error: z.object({ code: z.string().min(1), message: z.string().min(1) }),
+  error: z.object({ code: z.string().min(1), message: z.string().min(1), details: z.json().optional() }),
 });

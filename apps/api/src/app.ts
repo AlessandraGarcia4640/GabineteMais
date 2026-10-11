@@ -1,3 +1,4 @@
+import { createDocumentationRouter } from './routes/documentation.js';
 import { tasksRepository } from './modules/tasks/tasks.repository.js';
 import { TasksService } from './modules/tasks/tasks.service.js';
 import { createTasksRouter } from './modules/tasks/tasks.router.js';
@@ -39,6 +40,7 @@ export const createApp = (loginService = new LoginService({
   app.use(helmet());
   app.use(cors());
   app.use(express.json({ limit: '1mb' }));
+  if (env.NODE_ENV !== 'production') app.use('/docs', createDocumentationRouter());
   app.use('/health', healthRouter);
   app.use('/auth', createAuthRouter(loginService, authorization));
   app.use('/users', createUserAccessRouter(authorization, new UserAccessService(authorization, { findUser: userLookup }),

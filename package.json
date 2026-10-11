@@ -18,7 +18,8 @@
     "check": "pnpm --filter @gabinete-plus/shared build && pnpm typecheck && pnpm lint && pnpm test",
     "db:generate": "pnpm --filter @gabinete-plus/api prisma:generate",
     "db:migrate": "pnpm --filter @gabinete-plus/api prisma:migrate",
-    "db:seed": "pnpm --filter @gabinete-plus/api seed"
+    "db:seed": "pnpm --filter @gabinete-plus/api seed",
+    "docs:generate": "pnpm --filter @gabinete-plus/shared build && pnpm --filter @gabinete-plus/api docs:generate"
   },
   "devDependencies": {
     "@eslint/js": "latest",

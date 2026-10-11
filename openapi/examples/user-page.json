@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "id": "mock-user",
+      "name": "Pessoa Fictícia",
+      "email": "assessor@example.invalid",
+      "role": "ASSESSOR",
+      "isActive": true,
+      "position": "ASSESSOR",
+      "createdAt": "2026-10-11T12:00:00Z",
+      "updatedAt": "2026-10-11T12:00:00Z"
+    }
+  ],
+  "nextCursor": null
+}
