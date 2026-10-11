@@ -33,6 +33,11 @@ model User {
   authSessions AuthSession[]
   createdRoutines Routine[] @relation("RoutineCreator")
   updatedRoutines Routine[] @relation("RoutineEditor")
+  createdChecklistTemplates ChecklistTemplate[] @relation("ChecklistCreator")
+  updatedChecklistTemplates ChecklistTemplate[] @relation("ChecklistEditor")
+  createdChecklistRuns ChecklistRun[] @relation("RunCreator")
+  assignedChecklistRuns ChecklistRun[] @relation("RunAssignee")
+  completedChecklistItems ChecklistRunItem[] @relation("ItemCompleter")
 
   @@map("users")
 }
@@ -105,8 +110,84 @@ model Routine {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  checklistTemplates ChecklistTemplate[]
+  checklistRuns ChecklistRun[]
+
   @@index([isArchived, id])
   @@index([frequency, isArchived, id])
   @@index([category, isArchived, id])
   @@map("routines")
+}
+
+enum ChecklistStatus {
+  POR_FAZER
+  EM_ANDAMENTO
+  CONCLUIDA
+}
+
+model ChecklistTemplate {
+  id String @id @default(cuid())
+  routineId String
+  routine Routine @relation(fields: [routineId], references: [id], onDelete: Restrict)
+  title String @db.VarChar(200)
+  items String[]
+  version Int @default(1)
+  isArchived Boolean @default(false)
+  createdById String
+  createdBy User @relation("ChecklistCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById String
+  updatedBy User @relation("ChecklistEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  runs ChecklistRun[]
+
+  @@index([routineId, isArchived, id])
+  @@map("checklist_templates")
+}
+
+model ChecklistRun {
+  id String @id @default(cuid())
+  templateId String
+  template ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  routineId String
+  routine Routine @relation(fields: [routineId], references: [id], onDelete: Restrict)
+  assigneeId String
+  assignee User @relation("RunAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  createdById String
+  createdBy User @relation("RunCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  titleSnapshot String
+  routineTitleSnapshot String
+  instructionsSnapshot String
+  frequencySnapshot RoutineFrequency
+  templateVersion Int
+  periodKey String @db.VarChar(40)
+  periodStart DateTime @db.Date
+  periodEnd DateTime @db.Date
+  status ChecklistStatus @default(POR_FAZER)
+  totalItems Int
+  completedItems Int @default(0)
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items ChecklistRunItem[]
+
+  @@unique([templateId, periodKey])
+  @@index([assigneeId, periodStart, id])
+  @@index([routineId, periodStart, id])
+  @@map("checklist_runs")
+}
+
+model ChecklistRunItem {
+  id String @id @default(cuid())
+  runId String
+  run ChecklistRun @relation(fields: [runId], references: [id], onDelete: Restrict)
+  position Int
+  text String
+  isCompleted Boolean @default(false)
+  completedById String?
+  completedBy User? @relation("ItemCompleter", fields: [completedById], references: [id], onDelete: Restrict)
+  completedAt DateTime?
+
+  @@unique([runId, position])
+  @@map("checklist_run_items")
 }

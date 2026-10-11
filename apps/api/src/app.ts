@@ -18,13 +18,16 @@ import { ManagementService } from './modules/users/management.service.js';
 import { routinesRepository } from './modules/routines/routines.repository.js';
 import { RoutinesService } from './modules/routines/routines.service.js';
 import { createRoutinesRouter } from './modules/routines/routines.router.js';
+import { checklistsRepository } from './modules/checklists/checklists.repository.js';
+import { ChecklistsService } from './modules/checklists/checklists.service.js';
+import { createChecklistsRouter } from './modules/checklists/checklists.router.js';
 
 export const createApp = (loginService = new LoginService({
   findUser: findCredentialUser, issueToken: createAccessTokenIssuer(env.JWT_ACCESS_SECRET),
   sessions: sessionRepository,
 }), authorization = new AuthorizationService({
   verifyToken: createAccessTokenVerifier(env.JWT_ACCESS_SECRET), findSession,
-}), userLookup = findPublicUserById, usersRepository = managementRepository, routineRepository = routinesRepository): Express => {
+}), userLookup = findPublicUserById, usersRepository = managementRepository, routineRepository = routinesRepository, checklistRepository = checklistsRepository): Express => {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet());
@@ -35,6 +38,7 @@ export const createApp = (loginService = new LoginService({
   app.use('/users', createUserAccessRouter(authorization, new UserAccessService(authorization, { findUser: userLookup }),
     new ManagementService(authorization, usersRepository)));
   app.use('/routines', createRoutinesRouter(authorization, new RoutinesService(authorization, routineRepository)));
+  app.use('/checklists', createChecklistsRouter(authorization, new ChecklistsService(authorization, checklistRepository)));
   app.use(errorHandler);
   return app;
 };
