@@ -38,6 +38,8 @@ model User {
   createdChecklistRuns ChecklistRun[] @relation("RunCreator")
   assignedChecklistRuns ChecklistRun[] @relation("RunAssignee")
   completedChecklistItems ChecklistRunItem[] @relation("ItemCompleter")
+  createdContacts Contact[] @relation("ContactCreator")
+  updatedContacts Contact[] @relation("ContactEditor")
 
   @@map("users")
 }
@@ -190,4 +192,28 @@ model ChecklistRunItem {
 
   @@unique([runId, position])
   @@map("checklist_run_items")
+}
+
+model Contact {
+  id String @id @default(cuid())
+  name String @db.VarChar(150)
+  organization String @db.VarChar(200)
+  jobTitle String @default("") @db.VarChar(150)
+  phones String[] @default([])
+  email String? @db.VarChar(254)
+  notes String @default("")
+  tags String[] @default([])
+  isKeyContact Boolean @default(false)
+  isArchived Boolean @default(false)
+  searchText String
+  createdById String
+  createdBy User @relation("ContactCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById String
+  updatedBy User @relation("ContactEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isArchived, id])
+  @@index([isKeyContact, isArchived, id])
+  @@map("contacts")
 }

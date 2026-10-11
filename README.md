@@ -42,3 +42,6 @@ cadastro, edição e arquivamento em `/routines`, com seed fictício.
 
 [Checklists](docs/checklists.md) têm modelos versionados, execução por período,
 marcação com autoria, progresso e histórico em `/checklists`.
+
+[Contatos institucionais](docs/contatos.md) oferecem busca, tags, contatos-chave,
+cadastro, edição e arquivamento em `/contacts`.
