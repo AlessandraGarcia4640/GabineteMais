@@ -8,12 +8,13 @@ const actor = { id: 'user-test', name: 'Pessoa Fictícia', email: 'user@example.
 
 describe('token de acesso', () => {
   it('assina identidade e perfil com validade de 15 minutos', async () => {
-    const token = await createAccessTokenIssuer(secret)({ ...actor, role: 'ASSESSOR' });
+    const token = await createAccessTokenIssuer(secret)({ ...actor, role: 'ASSESSOR' }, 'session-test');
     const { payload, protectedHeader } = await jwtVerify(token, key, {
       algorithms: ['HS256'], issuer: ACCESS_TOKEN_ISSUER, audience: ACCESS_TOKEN_AUDIENCE,
     });
     expect(protectedHeader).toEqual({ alg: 'HS256', typ: 'JWT' });
     expect(payload.sub).toBe(actor.id);
+    expect(payload.sid).toBe('session-test');
     expect(payload.role).toBe('ASSESSOR');
     expect(payload).not.toHaveProperty('email');
     if (typeof payload.exp !== 'number' || typeof payload.iat !== 'number') throw new Error('Token sem datas.');
@@ -25,7 +26,7 @@ describe('token de acesso', () => {
   });
 
   it('rejeita assinatura adulterada ou chave diferente', async () => {
-    const token = await createAccessTokenIssuer(secret)({ ...actor, role: 'ASSESSOR' });
+    const token = await createAccessTokenIssuer(secret)({ ...actor, role: 'ASSESSOR' }, 'session-test');
     await expect(jwtVerify(token + 'x', key)).rejects.toThrow();
     await expect(jwtVerify(token, new TextEncoder().encode('outro-segredo-ficticio-para-token-24'))).rejects.toThrow();
   });
