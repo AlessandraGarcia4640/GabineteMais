@@ -22,7 +22,9 @@
     "cors": "latest",
     "dotenv": "latest",
     "express": "^5.0.0",
+    "express-rate-limit": "^8.0.0",
     "helmet": "latest",
+    "jose": "^6.1.0",
     "pg": "latest",
     "zod": "latest"
   },

@@ -1,0 +1,12 @@
+{
+  "accessToken": "mock-access-token-do-not-use",
+  "tokenType": "Bearer",
+  "expiresIn": 900,
+  "user": {
+    "id": "mock-user",
+    "name": "Pessoa Fictícia",
+    "email": "assessor@example.invalid",
+    "role": "ASSESSOR",
+    "isActive": true
+  }
+}
