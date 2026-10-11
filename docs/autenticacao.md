@@ -17,7 +17,7 @@ no `.env` local ignorado pelo Git. O campo vazio em `.env.example` é intenciona
 ## Endpoint
 
 POST /auth/login, corpo JSON: email e password. Espaços nas extremidades do e-mail
-são removidos; a senha não é alterada. E-mail é consultado exatamente como armazenado.
+são removidos; a senha não é alterada. E-mail é consultado sem distinguir caixa.
 Campos extras (incluindo role/permissões) são rejeitados.
 
 ```powershell
@@ -79,5 +79,5 @@ Ele cria banco isolado, aplica migrations, prepara usuários e verifica login,
 rotação, replay, concorrência, rollback, expiração, logout e desativação;
 ao final remove somente o banco criado pelo teste.
 
-CRUD de usuários, convites e tela mobile ainda não estão implementados.
+CRUD administrativo de usuários foi implementado na #27; convites e tela mobile ainda não estão implementados.
 Esses endpoints não completam sozinhos RF00. Veja ADR-003, ADR-004 e ADR-005.

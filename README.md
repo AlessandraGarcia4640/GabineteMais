@@ -34,5 +34,5 @@ seed com senha local e regras de cargos. A API expõe `/health` e os endpoints
 `POST /auth/login`, `/auth/refresh` e `/auth/logout`.
 Configure a chave JWT e consulte [autenticação](docs/autenticacao.md) antes de iniciar.
 GET `/auth/me` consulta o acesso atual. GET `/users/:id/permissions` é restrito à
-chefia. As rotas protegidas verificam sessão e perfil atuais; gestão de usuários
-segue na issue #27.
+chefia. As rotas protegidas verificam sessão e perfil atuais. A [gestão de usuários](docs/gestao-usuarios.md)
+inclui cadastro administrativo, edição de perfil, histórico de cargos e desativação.
