@@ -16,7 +16,7 @@ it.skipIf(!process.env.TEST_DATABASE_URL)('snapshots, concorrência, progresso, 
   let created = false; await admin.connect();
   try {
     await admin.query(`CREATE DATABASE "${databaseName}"`); created = true; await client.connect();
-    for (const name of ['20260731235902_init', '20261011000100_user_positions', '20261011000200_auth_sessions', '20261011000300_routines', '20261011000400_checklists']) {
+    for (const name of ['20260731235902_init', '20261011000100_user_positions', '20261011000200_auth_sessions', '20261011000300_routines', '20261011000400_checklists', '20261011000500_contacts', '20261011000600_tasks']) {
       await client.query(await readFile(new URL(`../../../prisma/migrations/${name}/migration.sql`, import.meta.url), 'utf8'));
     }
     process.env.DATABASE_URL = url.toString();

@@ -13,6 +13,7 @@ export interface ChecklistScope { routineId?: string; templateId?: string; runId
 export interface ChecklistMutation {
   actor: UserSummary | null; session: SessionSnapshot | null; routine: Routine | null;
   template: TemplateRecord | null; run: RunRecord | null;
+  hasCompletedTask: () => Promise<boolean>;
   assignee: (id: string) => Promise<UserSummary | null>;
   existingRun: (templateId: string, periodKey: string) => Promise<RunRecord | null>;
   createTemplate: (routineId: string, title: string, items: string[]) => Promise<TemplateRecord>;
@@ -61,6 +62,7 @@ export const checklistsRepository: ChecklistsRepository = {
       const template = templateId ? await transaction.checklistTemplate.findUnique({ where: { id: templateId }, include: { routine: true } }) : null;
       const run = scope.runId ? await transaction.checklistRun.findUnique({ where: { id: scope.runId }, include: runInclude }) : null;
       return operation({ actor, session, routine, template, run,
+        hasCompletedTask: async () => !!(scope.runId && await transaction.task.findFirst({ where: { checklistRunId: scope.runId, status: 'CONCLUIDA' }, select: { id: true } })),
         assignee: (id) => transaction.user.findUnique({ where: { id }, select: actorSelect }),
         existingRun: (id, periodKey) => transaction.checklistRun.findUnique({ where: { templateId_periodKey: { templateId: id, periodKey } }, include: runInclude }),
         createTemplate: (id, title, items) => transaction.checklistTemplate.create({ data: { routineId: id, title, items, createdById: actorId, updatedById: actorId }, include: { routine: true } }),

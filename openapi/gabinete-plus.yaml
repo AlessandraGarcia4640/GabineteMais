@@ -1305,6 +1305,350 @@ paths:
         "500": *a21
       parameters:
         - *a22
+  /tasks:
+    get:
+      summary: Lista por prazo ascendente, sem prazo ao final, prioridade descendente e id
+      operationId: listTasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            maxLength: 512
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - ABERTA
+              - EM_ANDAMENTO
+              - CONCLUIDA
+              - CANCELADA
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum:
+              - BAIXA
+              - NORMAL
+              - ALTA
+              - URGENTE
+        - name: assigneeId
+          in: query
+          schema: &a32
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: routineId
+          in: query
+          schema: *a32
+        - name: q
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+        - name: dueFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dueTo
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: overdue
+          in: query
+          schema:
+            type: string
+            enum:
+              - "true"
+              - "false"
+      responses:
+        "200":
+          description: Lista por prazo ascendente, sem prazo ao final, prioridade descendente e id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskPage"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/TaskNotFound"
+        "409":
+          $ref: "#/components/responses/TaskConflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    post:
+      summary: Cria tarefa própria; CHEFE também atribui a outro membro ativo
+      operationId: createTask
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTask"
+      responses:
+        "201":
+          description: Cria tarefa própria; CHEFE também atribui a outro membro ativo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+              examples:
+                ficticio:
+                  externalValue: ./examples/task.json
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/TaskNotFound"
+        "409":
+          $ref: "#/components/responses/TaskConflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /tasks/{id}:
+    get:
+      summary: Consulta tarefa
+      operationId: getTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - &a33
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+      responses:
+        "200":
+          description: Consulta tarefa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+              examples:
+                ficticio:
+                  externalValue: ./examples/task.json
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/TaskNotFound"
+        "409":
+          $ref: "#/components/responses/TaskConflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    patch:
+      summary: Criador ou CHEFE edita tarefa não encerrada
+      operationId: updateTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - *a33
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTask"
+      responses:
+        "200":
+          description: Criador ou CHEFE edita tarefa não encerrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+              examples:
+                ficticio:
+                  externalValue: ./examples/task.json
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/TaskNotFound"
+        "409":
+          $ref: "#/components/responses/TaskConflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    delete:
+      summary: Criador ou CHEFE cancela preservando registro
+      operationId: cancelTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - *a33
+      responses:
+        "204":
+          description: Criador ou CHEFE cancela preservando registro
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/TaskNotFound"
+        "409":
+          $ref: "#/components/responses/TaskConflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /tasks/{id}/assignee:
+    patch:
+      summary: Criador ou CHEFE reatribui a membro ativo compatível com checklist
+      operationId: assignTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignTask"
+      responses:
+        "200":
+          description: Criador ou CHEFE reatribui a membro ativo compatível com checklist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+              examples:
+                ficticio:
+                  externalValue: ./examples/task.json
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/TaskNotFound"
+        "409":
+          $ref: "#/components/responses/TaskConflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /tasks/{id}/status:
+    patch:
+      summary: Responsável ou CHEFE executa ABERTA → EM_ANDAMENTO → CONCLUIDA; criador ou CHEFE cancela
+      operationId: changeTaskStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeTaskStatus"
+      responses:
+        "200":
+          description: Responsável ou CHEFE executa ABERTA → EM_ANDAMENTO → CONCLUIDA; criador ou CHEFE cancela
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+              examples:
+                ficticio:
+                  externalValue: ./examples/task.json
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/TaskNotFound"
+        "409":
+          $ref: "#/components/responses/TaskConflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /tasks/{id}/history:
+    get:
+      summary: Consulta eventos de criação, edição, atribuição e status
+      operationId: taskHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            maxLength: 512
+      responses:
+        "200":
+          description: Consulta eventos de criação, edição, atribuição e status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskEventPage"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/TaskNotFound"
+        "409":
+          $ref: "#/components/responses/TaskConflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
 components:
   responses:
     Unauthenticated:
@@ -1336,6 +1680,24 @@ components:
       content:
         application/json:
           schema: {$ref: '#/components/schemas/ApiError'}
+    TaskNotFound:
+      description: Registro não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    TaskConflict:
+      description: Conflito de regra de negócio
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Forbidden:
+      description: Operação não autorizada
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
   securitySchemes:
     bearerAuth:
       type: http
@@ -2175,6 +2537,261 @@ components:
           maxItems: 100
           items:
             $ref: "#/components/schemas/Contact"
+        nextCursor:
+          type:
+            - string
+            - "null"
+      required:
+        - items
+        - nextCursor
+    CreateTask:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 4000
+        instructions:
+          type: string
+          maxLength: 12000
+        dueDate:
+          type: &a23
+            - string
+            - "null"
+          format: date
+        priority:
+          type: string
+          enum:
+            - BAIXA
+            - NORMAL
+            - ALTA
+            - URGENTE
+        assigneeId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        routineId: &a24
+          type: *a23
+        checklistRunId: *a24
+        contactId: *a24
+      required:
+        - title
+    UpdateTask:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 4000
+        instructions:
+          type: string
+          maxLength: 12000
+        dueDate:
+          type:
+            - string
+            - "null"
+          format: date
+        priority:
+          type: string
+          enum:
+            - BAIXA
+            - NORMAL
+            - ALTA
+            - URGENTE
+      required: []
+      minProperties: 1
+    AssignTask:
+      type: object
+      additionalProperties: false
+      properties:
+        assigneeId:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+        - assigneeId
+    ChangeTaskStatus:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum:
+            - ABERTA
+            - EM_ANDAMENTO
+            - CONCLUIDA
+            - CANCELADA
+      required:
+        - status
+    Task:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 4000
+        instructions:
+          type: string
+          maxLength: 12000
+        dueDate:
+          type: &a26
+            - string
+            - "null"
+          format: date
+        priority:
+          type: string
+          enum:
+            - BAIXA
+            - NORMAL
+            - ALTA
+            - URGENTE
+        id: &a25
+          type: string
+          minLength: 1
+          maxLength: 128
+        assigneeId: *a25
+        routineId: &a27
+          type: *a26
+        checklistRunId: *a27
+        contactId: *a27
+        createdById: *a25
+        updatedById: *a25
+        status:
+          type: string
+          enum:
+            - ABERTA
+            - EM_ANDAMENTO
+            - CONCLUIDA
+            - CANCELADA
+        isOverdue:
+          type: boolean
+        startedAt: &a28
+          type: *a26
+          format: date-time
+        completedAt: *a28
+        completedById: *a27
+        cancelledAt: *a28
+        cancelledById: *a27
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - title
+        - description
+        - instructions
+        - dueDate
+        - priority
+        - id
+        - assigneeId
+        - routineId
+        - checklistRunId
+        - contactId
+        - createdById
+        - updatedById
+        - status
+        - isOverdue
+        - startedAt
+        - completedAt
+        - completedById
+        - cancelledAt
+        - cancelledById
+        - createdAt
+        - updatedAt
+    TaskEvent:
+      type: object
+      additionalProperties: false
+      properties:
+        id: &a29
+          type: string
+          minLength: 1
+          maxLength: 128
+        taskId: *a29
+        actorId: *a29
+        type:
+          type: string
+          enum:
+            - CREATED
+            - EDITED
+            - REASSIGNED
+            - STATUS_CHANGED
+        fromStatus:
+          type:
+            - string
+            - "null"
+          enum: &a30
+            - ABERTA
+            - EM_ANDAMENTO
+            - CONCLUIDA
+            - CANCELADA
+        toStatus:
+          type:
+            - string
+            - "null"
+          enum: *a30
+        fromAssigneeId: &a31
+          type:
+            - string
+            - "null"
+        toAssigneeId: *a31
+        changedFields:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - taskId
+        - actorId
+        - type
+        - fromStatus
+        - toStatus
+        - fromAssigneeId
+        - toAssigneeId
+        - changedFields
+        - createdAt
+    TaskPage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/Task"
+        nextCursor:
+          type:
+            - string
+            - "null"
+      required:
+        - items
+        - nextCursor
+    TaskEventPage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/TaskEvent"
         nextCursor:
           type:
             - string
