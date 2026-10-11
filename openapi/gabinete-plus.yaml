@@ -1104,6 +1104,207 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/MarkChecklistItem"
+  /contacts:
+    get:
+      operationId: listContacts
+      summary: Consulta contatos paginados com busca por nome, órgão e tags
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactPage"
+        "400": &a18
+          $ref: "#/components/responses/InvalidInput"
+        "401": &a19
+          $ref: "#/components/responses/Unauthenticated"
+        "403": &a20
+          description: FORBIDDEN
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500": &a21
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: q
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+        - name: organization
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+        - name: tag
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 40
+        - name: isArchived
+          in: query
+          schema:
+            type: string
+            enum:
+              - "true"
+              - "false"
+            default: "false"
+        - name: isKeyContact
+          in: query
+          schema:
+            type: string
+            enum:
+              - "true"
+              - "false"
+    post:
+      operationId: createContact
+      summary: Cadastra contato; chefia
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Resposta; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+              examples:
+                ficticio:
+                  externalValue: ./examples/contact.json
+          headers:
+            Location:
+              schema:
+                type: string
+        "400": *a18
+        "401": *a19
+        "403": *a20
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500": *a21
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContact"
+  /contacts/{id}:
+    get:
+      operationId: getContact
+      summary: Consulta contato
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "400": &a18
+          $ref: "#/components/responses/InvalidInput"
+        "401": &a19
+          $ref: "#/components/responses/Unauthenticated"
+        "403": &a20
+          description: FORBIDDEN
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: CONTACT_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500": &a21
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - &a22
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+    patch:
+      operationId: updateContact
+      summary: Edita contato; chefia
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "400": *a18
+        "401": *a19
+        "403": *a20
+        "404":
+          description: CONTACT_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: CONTACT_ARCHIVED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500": *a21
+      parameters:
+        - *a22
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContact"
+    delete:
+      operationId: archiveContact
+      summary: Arquiva sem apagar; idempotente; chefia
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Arquivado; sem corpo
+        "400": *a18
+        "401": *a19
+        "403": *a20
+        "404":
+          description: CONTACT_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500": *a21
+      parameters:
+        - *a22
 components:
   responses:
     Unauthenticated:
@@ -1806,3 +2007,178 @@ components:
           type:
             - string
             - "null"
+    CreateContact:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        organization:
+          type: string
+          minLength: 1
+          maxLength: 200
+        jobTitle:
+          type: string
+          maxLength: 150
+        phones:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 3
+            maxLength: 40
+            description: 8–20 dígitos com formato de telefone/ramal
+        email:
+          type:
+            - string
+            - "null"
+          format: email
+          maxLength: 254
+        notes:
+          type: string
+          maxLength: 4000
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+          description: Normalizadas em minúsculas, sem repetição
+        isKeyContact:
+          type: boolean
+      required:
+        - name
+        - organization
+      additionalProperties: false
+    UpdateContact:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        organization:
+          type: string
+          minLength: 1
+          maxLength: 200
+        jobTitle:
+          type: string
+          maxLength: 150
+        phones:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 3
+            maxLength: 40
+            description: 8–20 dígitos com formato de telefone/ramal
+        email:
+          type:
+            - string
+            - "null"
+          format: email
+          maxLength: 254
+        notes:
+          type: string
+          maxLength: 4000
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+          description: Normalizadas em minúsculas, sem repetição
+        isKeyContact:
+          type: boolean
+      required: []
+      additionalProperties: false
+      minProperties: 1
+    Contact:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        organization:
+          type: string
+          minLength: 1
+          maxLength: 200
+        jobTitle:
+          type: string
+          maxLength: 150
+        phones:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 3
+            maxLength: 40
+            description: 8–20 dígitos com formato de telefone/ramal
+        email:
+          type:
+            - string
+            - "null"
+          format: email
+          maxLength: 254
+        notes:
+          type: string
+          maxLength: 4000
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+          description: Normalizadas em minúsculas, sem repetição
+        isKeyContact:
+          type: boolean
+        id:
+          type: string
+          minLength: 1
+        isArchived:
+          type: boolean
+        createdById:
+          type: string
+        updatedById:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - name
+        - organization
+        - jobTitle
+        - phones
+        - email
+        - notes
+        - tags
+        - isKeyContact
+        - id
+        - isArchived
+        - createdById
+        - updatedById
+        - createdAt
+        - updatedAt
+    ContactPage:
+      type: object
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/Contact"
+        nextCursor:
+          type:
+            - string
+            - "null"
+      required:
+        - items
+        - nextCursor

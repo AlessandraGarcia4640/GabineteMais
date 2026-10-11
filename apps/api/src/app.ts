@@ -21,13 +21,16 @@ import { createRoutinesRouter } from './modules/routines/routines.router.js';
 import { checklistsRepository } from './modules/checklists/checklists.repository.js';
 import { ChecklistsService } from './modules/checklists/checklists.service.js';
 import { createChecklistsRouter } from './modules/checklists/checklists.router.js';
+import { contactsRepository } from './modules/contacts/contacts.repository.js';
+import { ContactsService } from './modules/contacts/contacts.service.js';
+import { createContactsRouter } from './modules/contacts/contacts.router.js';
 
 export const createApp = (loginService = new LoginService({
   findUser: findCredentialUser, issueToken: createAccessTokenIssuer(env.JWT_ACCESS_SECRET),
   sessions: sessionRepository,
 }), authorization = new AuthorizationService({
   verifyToken: createAccessTokenVerifier(env.JWT_ACCESS_SECRET), findSession,
-}), userLookup = findPublicUserById, usersRepository = managementRepository, routineRepository = routinesRepository, checklistRepository = checklistsRepository): Express => {
+}), userLookup = findPublicUserById, usersRepository = managementRepository, routineRepository = routinesRepository, checklistRepository = checklistsRepository, contactRepository = contactsRepository): Express => {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet());
@@ -39,6 +42,7 @@ export const createApp = (loginService = new LoginService({
     new ManagementService(authorization, usersRepository)));
   app.use('/routines', createRoutinesRouter(authorization, new RoutinesService(authorization, routineRepository)));
   app.use('/checklists', createChecklistsRouter(authorization, new ChecklistsService(authorization, checklistRepository)));
+  app.use('/contacts', createContactsRouter(authorization, new ContactsService(authorization, contactRepository)));
   app.use(errorHandler);
   return app;
 };

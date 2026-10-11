@@ -5,6 +5,7 @@ import { hashPassword } from '../src/modules/users/password.js';
 import { seedDemoUsers } from '../src/modules/users/users.repository.js';
 import { seedDemoRoutines } from '../src/modules/routines/routines.repository.js';
 import { seedDemoChecklists } from '../src/modules/checklists/checklists.repository.js';
+import { seedDemoContacts } from '../src/modules/contacts/contacts.repository.js';
 
 try {
   if (env.NODE_ENV === 'production') throw new Error('Seed de demonstração não permitido em produção.');
@@ -12,6 +13,7 @@ try {
   await seedDemoUsers(await hashPassword(password));
   await seedDemoRoutines();
   await seedDemoChecklists();
+  await seedDemoContacts();
   console.log('Usuários fictícios preparados. Contas existentes foram preservadas.');
 } finally {
   await prisma.$disconnect();
