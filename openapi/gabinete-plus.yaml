@@ -485,6 +485,211 @@ paths:
             minLength: 1
             maxLength: 128
           description: ID retornado em nextCursor; ordenação crescente por id
+  /routines:
+    get:
+      operationId: listRoutines
+      summary: Consulta atividades paginadas; arquivadas excluídas por padrão
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoutinePage"
+        "400": &a6
+          $ref: "#/components/responses/InvalidInput"
+        "401": &a7
+          $ref: "#/components/responses/Unauthenticated"
+        "403": &a8
+          description: FORBIDDEN
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500": &a9
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: isArchived
+          in: query
+          schema:
+            type: string
+            enum:
+              - "true"
+              - "false"
+            default: "false"
+        - name: frequency
+          in: query
+          schema:
+            type: string
+            enum:
+              - DIARIA
+              - SEMANAL
+              - QUINZENAL
+              - MENSAL
+              - EVENTUAL
+              - PERSONALIZADA
+              - A_DEFINIR
+        - name: category
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+        - name: defaultPosition
+          in: query
+          schema:
+            $ref: "#/components/schemas/UserPosition"
+        - name: q
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+          description: Busca por título/descrição
+    post:
+      operationId: createRoutine
+      summary: Cadastra atividade; somente chefia
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Resposta; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Routine"
+              examples:
+                ficticio:
+                  externalValue: ./examples/routine.json
+          headers:
+            Location:
+              schema:
+                type: string
+        "400": *a6
+        "401": *a7
+        "403": *a8
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500": *a9
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoutine"
+  /routines/{id}:
+    get:
+      operationId: getRoutine
+      summary: Consulta detalhe de atividade ativa ou arquivada
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Routine"
+        "400": &a6
+          $ref: "#/components/responses/InvalidInput"
+        "401": &a7
+          $ref: "#/components/responses/Unauthenticated"
+        "403": &a8
+          description: FORBIDDEN
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: ROUTINE_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500": &a9
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - &a10
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+    patch:
+      operationId: updateRoutine
+      summary: Edita atividade; somente chefia
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resposta; no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Routine"
+        "400": *a6
+        "401": *a7
+        "403": *a8
+        "404":
+          description: ROUTINE_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: ROUTINE_ARCHIVED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+        "500": *a9
+      parameters:
+        - *a10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRoutine"
+    delete:
+      operationId: archiveRoutine
+      summary: Arquiva sem apagar; idempotente; somente chefia
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Arquivada; sem corpo
+        "400": *a6
+        "401": *a7
+        "403": *a8
+        "404":
+          description: ROUTINE_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500": *a9
+      parameters:
+        - *a10
 components:
   responses:
     Unauthenticated:
@@ -696,6 +901,217 @@ components:
           maxItems: 100
           items:
             $ref: "#/components/schemas/UserPositionHistory"
+        nextCursor:
+          type:
+            - string
+            - "null"
+    CreateRoutine:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - category
+        - frequency
+      description: PERSONALIZADA exige frequencyDetails não nulo. Campos omitidos recebem valores vazios/null/false.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        frequency:
+          type: string
+          enum:
+            - DIARIA
+            - SEMANAL
+            - QUINZENAL
+            - MENSAL
+            - EVENTUAL
+            - PERSONALIZADA
+            - A_DEFINIR
+        description:
+          type: string
+          maxLength: 4000
+        instructions:
+          type: string
+          maxLength: 12000
+        steps:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+        frequencyDetails:
+          type:
+            - string
+            - "null"
+          minLength: 1
+          maxLength: 2000
+        specificDate:
+          type:
+            - string
+            - "null"
+          format: date
+        defaultPosition:
+          anyOf:
+            - $ref: "#/components/schemas/UserPosition"
+            - type: "null"
+        essentialForTransition:
+          type: boolean
+    UpdateRoutine:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      description: Validação considera os dados atuais e o patch; autoria/status não são aceitos.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        frequency:
+          type: string
+          enum:
+            - DIARIA
+            - SEMANAL
+            - QUINZENAL
+            - MENSAL
+            - EVENTUAL
+            - PERSONALIZADA
+            - A_DEFINIR
+        description:
+          type: string
+          maxLength: 4000
+        instructions:
+          type: string
+          maxLength: 12000
+        steps:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+        frequencyDetails:
+          type:
+            - string
+            - "null"
+          minLength: 1
+          maxLength: 2000
+        specificDate:
+          type:
+            - string
+            - "null"
+          format: date
+        defaultPosition:
+          anyOf:
+            - $ref: "#/components/schemas/UserPosition"
+            - type: "null"
+        essentialForTransition:
+          type: boolean
+    Routine:
+      type: object
+      required:
+        - title
+        - category
+        - frequency
+        - description
+        - instructions
+        - steps
+        - frequencyDetails
+        - specificDate
+        - defaultPosition
+        - essentialForTransition
+        - id
+        - isArchived
+        - createdById
+        - updatedById
+        - createdAt
+        - updatedAt
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        frequency:
+          type: string
+          enum:
+            - DIARIA
+            - SEMANAL
+            - QUINZENAL
+            - MENSAL
+            - EVENTUAL
+            - PERSONALIZADA
+            - A_DEFINIR
+        description:
+          type: string
+          maxLength: 4000
+        instructions:
+          type: string
+          maxLength: 12000
+        steps:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+        frequencyDetails:
+          type:
+            - string
+            - "null"
+          minLength: 1
+          maxLength: 2000
+        specificDate:
+          type:
+            - string
+            - "null"
+          format: date
+        defaultPosition:
+          anyOf:
+            - $ref: "#/components/schemas/UserPosition"
+            - type: "null"
+        essentialForTransition:
+          type: boolean
+        id:
+          type: string
+          minLength: 1
+        isArchived:
+          type: boolean
+        createdById:
+          type: string
+          minLength: 1
+        updatedById:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RoutinePage:
+      type: object
+      required:
+        - items
+        - nextCursor
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/Routine"
         nextCursor:
           type:
             - string

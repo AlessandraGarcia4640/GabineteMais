@@ -36,3 +36,6 @@ Configure a chave JWT e consulte [autenticação](docs/autenticacao.md) antes de
 GET `/auth/me` consulta o acesso atual. GET `/users/:id/permissions` é restrito à
 chefia. As rotas protegidas verificam sessão e perfil atuais. A [gestão de usuários](docs/gestao-usuarios.md)
 inclui cadastro administrativo, edição de perfil, histórico de cargos e desativação.
+
+O módulo [rotinas e atividades](docs/rotinas-atividades.md) oferece consulta,
+cadastro, edição e arquivamento em `/routines`, com seed fictício.
