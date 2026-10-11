@@ -23,3 +23,12 @@ pnpm dev:mobile
 ```powershell
 pnpm check
 ```
+
+O contrato compartilhado é compilado automaticamente pelos comandos da raiz.
+Após alterações no Prisma, execute `pnpm db:generate` antes da verificação.
+
+## Usuários de demonstração
+
+Consulte [usuários e permissões](docs/usuarios-e-permissoes.md) para migrations,
+seed com senha local e regras de cargos. Login e gestão de usuários serão
+implementados nas issues #24–#27; a API ainda expõe somente `/health`.

@@ -8,13 +8,14 @@
         "android": "expo start --android",
         "ios": "expo start --ios",
         "web": "expo start --web",
-        "lint": "expo lint",
+        "lint": "expo lint --max-warnings=0",
         "dev": "expo start",
         "typecheck": "tsc --noEmit",
         "test": "echo 'Testes mobile serÃ£o adicionados na Fase 4.'"
     },
     "dependencies": {
         "@expo/vector-icons": "^15.0.3",
+        "@gabinete-plus/shared": "workspace:*",
         "@hookform/resolvers": "^5.5.7",
         "@react-navigation/bottom-tabs": "^7.4.0",
         "@react-navigation/elements": "^2.6.3",

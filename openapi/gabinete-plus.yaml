@@ -9,3 +9,38 @@ paths:
       responses:
         "200":
           description: API disponível
+components:
+  schemas:
+    UserRole:
+      type: string
+      enum: [CHEFE, ASSESSOR, APOIO]
+    UserPosition:
+      type: string
+      enum: [MAGISTRADO_GESTOR, ASSESSOR_CHEFE, ASSESSOR, APOIO]
+    UserSummary:
+      type: object
+      required: [id, name, email, role, isActive]
+      properties:
+        id: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/UserRole' }
+        isActive: { type: boolean }
+    UserPositionHistory:
+      type: object
+      description: Histórico de cargo; endedAt, quando preenchido, deve ser posterior a startedAt.
+      required: [id, userId, position, role, startedAt, endedAt]
+      properties:
+        id: { type: string, minLength: 1 }
+        userId: { type: string, minLength: 1 }
+        position: { $ref: '#/components/schemas/UserPosition' }
+        role: { $ref: '#/components/schemas/UserRole' }
+        startedAt: { type: string, format: date-time }
+        endedAt: { type: [string, 'null'], format: date-time }
+    LoginRequest:
+      description: Contrato preparado para a issue 24; endpoint de login ainda não implementado.
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, maxLength: 128, writeOnly: true }

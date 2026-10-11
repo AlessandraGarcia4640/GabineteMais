@@ -13,6 +13,13 @@ enum UserRole {
   APOIO
 }
 
+enum UserPosition {
+  MAGISTRADO_GESTOR
+  ASSESSOR_CHEFE
+  ASSESSOR
+  APOIO
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -22,6 +29,20 @@ model User {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  positionHistory UserPositionHistory[]
 
   @@map("users")
+}
+
+model UserPositionHistory {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  position  UserPosition
+  role      UserRole
+  startedAt DateTime     @default(now())
+  endedAt   DateTime?
+
+  @@index([userId, startedAt])
+  @@map("user_position_history")
 }
