@@ -3,6 +3,55 @@ info:
   title: Gabinete+ API
   version: 0.1.0
 paths:
+  /auth/login:
+    post:
+      summary: Autentica usuário ativo e emite token de acesso
+      description: Credenciais inválidas e usuário desativado retornam a mesma resposta. Limite de 20 tentativas por IP a cada 15 minutos.
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Login válido; resposta com Cache-Control no-store
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+              examples:
+                ficticio:
+                  externalValue: ./examples/login-success.json
+        '400':
+          description: Entrada inválida (VALIDATION_ERROR) ou JSON malformado (INVALID_JSON)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '401':
+          description: Credenciais inválidas ou usuário desativado (INVALID_CREDENTIALS)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '413':
+          description: Corpo excede 1 MB (BODY_TOO_LARGE)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '429':
+          description: Limite de tentativas excedido (AUTH_RATE_LIMITED)
+          headers:
+            Retry-After:
+              schema: { type: integer }
+              description: Segundos até a próxima tentativa permitida
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '500':
+          description: Falha interna (INTERNAL_ERROR)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
   /health:
     get:
       summary: Verifica o estado da API
@@ -10,6 +59,11 @@ paths:
         "200":
           description: API disponível
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     UserRole:
       type: string
@@ -38,9 +92,29 @@ components:
         startedAt: { type: string, format: date-time }
         endedAt: { type: [string, 'null'], format: date-time }
     LoginRequest:
-      description: Contrato preparado para a issue 24; endpoint de login ainda não implementado.
+      description: E-mail sem espaços nas extremidades; consulta exata, sem conversão de maiúsculas. Perfis e permissões não são aceitos na entrada.
       type: object
+      additionalProperties: false
       required: [email, password]
       properties:
         email: { type: string, format: email }
         password: { type: string, minLength: 8, maxLength: 128, writeOnly: true }
+    LoginResponse:
+      type: object
+      required: [accessToken, tokenType, expiresIn, user]
+      properties:
+        accessToken: { type: string, minLength: 1 }
+        tokenType: { type: string, const: Bearer }
+        expiresIn: { type: integer, const: 900 }
+        user: { $ref: '#/components/schemas/UserSummary' }
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, minLength: 1 }
+            message: { type: string, minLength: 1 }
+            details: { description: Detalhes opcionais de validação }

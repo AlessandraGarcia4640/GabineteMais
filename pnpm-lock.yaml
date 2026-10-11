@@ -59,6 +59,12 @@ importers:
       "@node-rs/argon2":
         specifier: ^2.2.2
         version: 2.2.2
+      jose:
+        specifier: ^6.1.0
+        version: 6.1.0
+      express-rate-limit:
+        specifier: ^8.0.0
+        version: 8.0.0(express@5.2.1)
     devDependencies:
       '@types/cors':
         specifier: latest
@@ -6013,6 +6019,19 @@ packages:
       - arm
     os:
       - android
+  jose@6.1.0:
+    resolution:
+      integrity: sha512-TTQJyoEoKcC1lscpVDCSsVgYzUDg/0Bt3WE//WiTPK6uOCQC2KZS4MpugbMWt/zyjkopgZoXhZuCi00gLudfUA==
+  express-rate-limit@8.0.0:
+    resolution:
+      integrity: sha512-FXEAp2ccTeN1ZSO+sPHRHWB0/CrTP5asFBjUaNeD9A0v3iPmgFbLu24vqPjiM9utszI58VGlMokjXQ0W9Dbmjw==
+    engines:
+      node: ">= 16"
+    peerDependencies:
+      express: ">= 4.11"
+  ip@2.0.1:
+    resolution:
+      integrity: sha512-lJUL9imLTNi1ZfXT+DU6rBBdbiKGBuay9B6xGSPVjUeQwaH1RIGqef8RZkUtHioLmSNpPR5M4HVKJGm1j8FWVQ==
 
 snapshots:
 
@@ -12606,3 +12625,9 @@ snapshots:
     optional: true
   "@node-rs/argon2-android-arm-eabi@2.2.2":
     optional: true
+  jose@6.1.0: {}
+  express-rate-limit@8.0.0(express@5.2.1):
+    dependencies:
+      express: 5.2.1
+      ip: 2.0.1
+  ip@2.0.1: {}

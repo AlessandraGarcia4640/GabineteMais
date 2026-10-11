@@ -27,7 +27,19 @@ export const positionHistorySchema = z.object({
 });
 
 export const loginRequestSchema = z.object({
-  email: z.email('Informe um e-mail válido.'),
+  email: z.string().trim().pipe(z.email('Informe um e-mail válido.')),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.').max(128),
-});
+}).strict();
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
+
+export const loginResponseSchema = z.object({
+  accessToken: z.string().min(1),
+  tokenType: z.literal('Bearer'),
+  expiresIn: z.literal(900),
+  user: userSummarySchema,
+});
+export type LoginResponse = z.infer<typeof loginResponseSchema>;
+
+export const apiErrorSchema = z.object({
+  error: z.object({ code: z.string().min(1), message: z.string().min(1) }),
+});

@@ -17,18 +17,19 @@ Não publique a senha local no repositório.
 
 Contas: `magistrado@example.invalid`, `chefia@example.invalid`,
 `assessor1@example.invalid`, `assessor2@example.invalid`, `apoio@example.invalid`.
-Essas contas ficam preparadas para login; o endpoint ainda será implementado na #24.
+Essas contas podem usar POST /auth/login; configure JWT_ACCESS_SECRET conforme
+`docs/autenticacao.md` antes de executar a API, o seed e os testes.
 
 ## Contratos e decisões
 
 Veja ADR-002 para cargos, matriz de permissões, histórico e substituição temporária.
 `shared` exporta contratos públicos de usuário e histórico, além de entrada de login.
 O mobile reutiliza a mesma validação de login. Senha/hash não fazem parte da resposta pública.
-O OpenAPI declara esses schemas sem anunciar endpoints ainda inexistentes.
+O OpenAPI declara esses schemas e o endpoint de login da #24.
 
 As funções de autorização devem ser chamadas pelos services com usuário lido do banco,
-nunca com role/isActive enviados pelo cliente. São políticas preparatórias: ainda
-não existem rotas autenticadas nesta entrega. Tarefas exigem também validar propriedade.
+nunca com role/isActive enviados pelo cliente. São políticas preparatórias: a proteção
+de rotas será implementada na #26. Tarefas exigem também validar propriedade.
 
 ## Verificação
 
