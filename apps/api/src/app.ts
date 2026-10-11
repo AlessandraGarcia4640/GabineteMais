@@ -1,3 +1,6 @@
+import { tasksRepository } from './modules/tasks/tasks.repository.js';
+import { TasksService } from './modules/tasks/tasks.service.js';
+import { createTasksRouter } from './modules/tasks/tasks.router.js';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
@@ -30,7 +33,7 @@ export const createApp = (loginService = new LoginService({
   sessions: sessionRepository,
 }), authorization = new AuthorizationService({
   verifyToken: createAccessTokenVerifier(env.JWT_ACCESS_SECRET), findSession,
-}), userLookup = findPublicUserById, usersRepository = managementRepository, routineRepository = routinesRepository, checklistRepository = checklistsRepository, contactRepository = contactsRepository): Express => {
+}), userLookup = findPublicUserById, usersRepository = managementRepository, routineRepository = routinesRepository, checklistRepository = checklistsRepository, contactRepository = contactsRepository, taskRepository = tasksRepository): Express => {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet());
@@ -43,6 +46,7 @@ export const createApp = (loginService = new LoginService({
   app.use('/routines', createRoutinesRouter(authorization, new RoutinesService(authorization, routineRepository)));
   app.use('/checklists', createChecklistsRouter(authorization, new ChecklistsService(authorization, checklistRepository)));
   app.use('/contacts', createContactsRouter(authorization, new ContactsService(authorization, contactRepository)));
+  app.use('/tasks', createTasksRouter(authorization, new TasksService(authorization, taskRepository)));
   app.use(errorHandler);
   return app;
 };

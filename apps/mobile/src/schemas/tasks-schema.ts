@@ -1,0 +1,1 @@
+export { createTaskSchema, updateTaskSchema, taskSchema, taskPageSchema, taskListQuerySchema, taskHistoryQuerySchema, taskEventPageSchema, assignTaskSchema, changeTaskStatusSchema } from '@gabinete-plus/shared';

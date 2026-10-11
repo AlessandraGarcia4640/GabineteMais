@@ -115,6 +115,7 @@ export class ChecklistsService {
       if (run.assigneeId !== live.user.id && live.user.role !== 'CHEFE') throw forbidden();
       const item = run.items.find((entry) => entry.id === itemId); if (!item) throw missing('ITEM');
       if (item.isCompleted === isCompleted) return runView(run);
+      if (!isCompleted && await context.hasCompletedTask()) throw new AppError('CHECKLIST_TASK_COMPLETED', 'Checklist vinculado a tarefa concluída não pode ser reaberto.', 409);
       const count = run.completedItems + (isCompleted ? 1 : -1);
       const status = count === run.totalItems ? 'CONCLUIDA' : count === 0 ? 'POR_FAZER' : 'EM_ANDAMENTO';
       return runView(await context.mark(id, itemId, isCompleted, count, status, new Date()));

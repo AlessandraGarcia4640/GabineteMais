@@ -26,7 +26,7 @@ function fixture(role: UserRole = 'ASSESSOR') {
     return Promise.resolve(run);
   });
   const context: ChecklistMutation = { actor: user, session: { id: principal.sessionId, user, expiresAt: principal.expiresAt, revokedAt: null },
-    routine, template, run, existingRun, createRun, mark,
+    routine, template, run, existingRun, createRun, mark, hasCompletedTask: () => Promise.resolve(false),
     assignee: (id) => Promise.resolve({ ...user, id }),
     createTemplate: () => Promise.resolve(template), updateTemplate: () => Promise.resolve(template), archiveTemplate: () => Promise.resolve(),
   };
@@ -87,4 +87,12 @@ it('calcula conclusão e reabertura ao marcar/desmarcar itens', async () => {
   const reopened = await service.mark(principal, run.id, 'item-0', false);
   expect(reopened.progress).toBe(50); expect(reopened.status).toBe('EM_ANDAMENTO'); expect(reopened.completedAt).toBeNull();
   expect(reopened.items[0]?.completedById).toBeNull();
+});
+
+it('não reabre checklist vinculado a tarefa concluída', async () => {
+  const { service, principal, context, run, mark } = fixture();
+  const item = run.items[0]; if (!item) throw new Error('Checklist vazio.'); item.isCompleted = true;
+  context.hasCompletedTask = () => Promise.resolve(true);
+  await expect(service.mark(principal, run.id, item.id, false)).rejects.toMatchObject({ code: 'CHECKLIST_TASK_COMPLETED' });
+  expect(mark).not.toHaveBeenCalled();
 });

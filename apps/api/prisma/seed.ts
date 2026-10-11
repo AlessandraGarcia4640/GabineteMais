@@ -1,3 +1,4 @@
+import { seedDemoTasks } from '../src/modules/tasks/tasks.repository.js';
 import { z } from 'zod';
 import { env } from '../src/lib/env.js';
 import { prisma } from '../src/lib/prisma.js';
@@ -14,6 +15,7 @@ try {
   await seedDemoRoutines();
   await seedDemoChecklists();
   await seedDemoContacts();
+  await seedDemoTasks();
   console.log('Usuários fictícios preparados. Contas existentes foram preservadas.');
 } finally {
   await prisma.$disconnect();
