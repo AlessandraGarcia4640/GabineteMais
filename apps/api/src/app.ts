@@ -15,13 +15,16 @@ import { createUserAccessRouter } from './modules/users/user-access.router.js';
 import { findPublicUserById } from './modules/users/users.repository.js';
 import { managementRepository } from './modules/users/management.repository.js';
 import { ManagementService } from './modules/users/management.service.js';
+import { routinesRepository } from './modules/routines/routines.repository.js';
+import { RoutinesService } from './modules/routines/routines.service.js';
+import { createRoutinesRouter } from './modules/routines/routines.router.js';
 
 export const createApp = (loginService = new LoginService({
   findUser: findCredentialUser, issueToken: createAccessTokenIssuer(env.JWT_ACCESS_SECRET),
   sessions: sessionRepository,
 }), authorization = new AuthorizationService({
   verifyToken: createAccessTokenVerifier(env.JWT_ACCESS_SECRET), findSession,
-}), userLookup = findPublicUserById, usersRepository = managementRepository): Express => {
+}), userLookup = findPublicUserById, usersRepository = managementRepository, routineRepository = routinesRepository): Express => {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet());
@@ -31,6 +34,7 @@ export const createApp = (loginService = new LoginService({
   app.use('/auth', createAuthRouter(loginService, authorization));
   app.use('/users', createUserAccessRouter(authorization, new UserAccessService(authorization, { findUser: userLookup }),
     new ManagementService(authorization, usersRepository)));
+  app.use('/routines', createRoutinesRouter(authorization, new RoutinesService(authorization, routineRepository)));
   app.use(errorHandler);
   return app;
 };

@@ -31,6 +31,8 @@ model User {
   updatedAt    DateTime @updatedAt
   positionHistory UserPositionHistory[]
   authSessions AuthSession[]
+  createdRoutines Routine[] @relation("RoutineCreator")
+  updatedRoutines Routine[] @relation("RoutineEditor")
 
   @@map("users")
 }
@@ -71,4 +73,40 @@ model RefreshToken {
 
   @@index([sessionId])
   @@map("refresh_tokens")
+}
+
+enum RoutineFrequency {
+  DIARIA
+  SEMANAL
+  QUINZENAL
+  MENSAL
+  EVENTUAL
+  PERSONALIZADA
+  A_DEFINIR
+}
+
+model Routine {
+  id String @id @default(cuid())
+  title String @db.VarChar(200)
+  category String @db.VarChar(100)
+  frequency RoutineFrequency
+  description String @default("")
+  instructions String @default("")
+  steps String[] @default([])
+  frequencyDetails String?
+  specificDate DateTime? @db.Date
+  defaultPosition UserPosition?
+  essentialForTransition Boolean @default(false)
+  isArchived Boolean @default(false)
+  createdById String
+  createdBy User @relation("RoutineCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById String
+  updatedBy User @relation("RoutineEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isArchived, id])
+  @@index([frequency, isArchived, id])
+  @@index([category, isArchived, id])
+  @@map("routines")
 }
