@@ -8,9 +8,11 @@ import { createAccessTokenIssuer } from './modules/auth/access-token.js';
 import { findCredentialUser } from './modules/auth/auth.repository.js';
 import { createAuthRouter } from './modules/auth/auth.router.js';
 import { LoginService } from './modules/auth/auth.service.js';
+import { sessionRepository } from './modules/auth/session.repository.js';
 
 export const createApp = (loginService = new LoginService({
   findUser: findCredentialUser, issueToken: createAccessTokenIssuer(env.JWT_ACCESS_SECRET),
+  sessions: sessionRepository,
 })): Express => {
   const app = express();
   app.disable('x-powered-by');

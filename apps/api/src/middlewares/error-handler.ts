@@ -5,6 +5,7 @@ import { AppError } from '../lib/app-error.js';
 export const errorHandler: ErrorRequestHandler = (error, request, response, next) => {
   void request;
   void next;
+  response.set('Cache-Control', 'no-store');
 
   if (error instanceof AppError) {
     response.status(error.status).json({ error: { code: error.code, message: error.message } });

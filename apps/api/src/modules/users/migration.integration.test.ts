@@ -19,6 +19,7 @@ it.skipIf(!process.env.TEST_DATABASE_URL)('migra usuários existentes sem perder
       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)`,
     ['existing-user', 'Pessoa Fictícia', 'existing@example.invalid', 'existing-hash', 'CHEFE']);
     await client.query(await readFile(new URL('../../../prisma/migrations/20261011000100_user_positions/migration.sql', import.meta.url), 'utf8'));
+    await client.query(await readFile(new URL('../../../prisma/migrations/20261011000200_auth_sessions/migration.sql', import.meta.url), 'utf8'));
     const users = await client.query('SELECT id, "passwordHash" FROM users');
     const userRows = z.array(z.object({ id: z.string(), passwordHash: z.string() })).parse(users.rows);
     expect(userRows).toEqual([{ id: 'existing-user', passwordHash: 'existing-hash' }]);

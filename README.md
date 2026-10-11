@@ -30,6 +30,7 @@ Após alterações no Prisma, execute `pnpm db:generate` antes da verificação.
 ## Usuários de demonstração
 
 Consulte [usuários e permissões](docs/usuarios-e-permissoes.md) para migrations,
-seed com senha local e regras de cargos. A API expõe `/health` e `POST /auth/login`.
+seed com senha local e regras de cargos. A API expõe `/health` e os endpoints
+`POST /auth/login`, `/auth/refresh` e `/auth/logout`.
 Configure a chave JWT e consulte [autenticação](docs/autenticacao.md) antes de iniciar.
-Refresh, autorização de rotas e gestão de usuários seguem nas issues #25–#27.
+Autorização de rotas e gestão de usuários seguem nas issues #26–#27.

@@ -25,11 +25,35 @@ $payload = @{ email = 'chefia@example.invalid'; password = $env:DEMO_SEED_PASSWO
 Invoke-RestMethod -Method Post -Uri http://localhost:3333/auth/login -ContentType 'application/json' -Body $payload
 ```
 
-200 retorna accessToken, tokenType Bearer, expiresIn 900 e usuário público.
+200 retorna accessToken, refreshToken, refreshExpiresAt, tokenType Bearer,
+expiresIn 900 e usuário público. Refresh tokens têm 256 bits aleatórios e somente
+seus hashes são persistidos; a sessão expira sete dias após o login.
 401 retorna INVALID_CREDENTIALS para senha incorreta, conta inexistente ou inativa.
 400 indica validação ou JSON inválido; 413 indica corpo maior que 1 MB; 429 indica
 20 tentativas por IP em 15 minutos. O servidor nunca devolve passwordHash.
 O contrato completo e exemplo fictício estão em `openapi/`.
+
+## Renovação e logout — issue #25
+
+POST /auth/refresh recebe `{ "refreshToken": "token atual" }` e retorna o mesmo
+formato do login, com novos tokens. refreshExpiresAt não muda. Token anterior
+fica consumido; reutilizá-lo revoga a sessão inteira. Token expirado/revogado,
+desconhecido ou usuário desativado recebem 401 INVALID_REFRESH_TOKEN.
+
+POST /auth/logout recebe o mesmo formato e retorna 204 sem corpo, inclusive
+em chamadas repetidas ou token desconhecido. Revoga somente a sessão informada,
+preservando outros dispositivos. Qualquer token dessa sessão, inclusive antigo,
+pode ser usado para revogá-la. Limites separados: login 20, refresh 60, logout
+120 chamadas por IP em 15 minutos. Todas as respostas desses endpoints usam no-store.
+
+No cliente, serializar refresh e guardar o novo token antes da próxima renovação.
+Após 401, limpar os tokens e solicitar login. Não repetir refresh antigo quando
+houver dúvida se foi consumido. Ao sair, limpar access e refresh do armazenamento
+seguro mesmo se a rede falhar; a revogação no servidor só ocorre se ele receber logout.
+Não armazenar tokens no Zustand.
+
+Access tokens incluem sid. Continuam assinados até expirar; a checagem de sessão
+revogada para rejeitá-los imediatamente será aplicada às rotas protegidas na #26.
 
 ## Estado dos consumidores
 
@@ -43,7 +67,8 @@ accessToken no Zustand atual. O exemplo de OpenAPI é um mock, não um JWT utili
 rate limit, assinatura e expiração de JWT, além da base da #23.
 No CI, TEST_DATABASE_URL habilita o teste adicional com PostgreSQL 16 real.
 Ele cria banco isolado, aplica migrations, prepara usuários e verifica login,
-senha incorreta e desativação; ao final remove somente o banco criado pelo teste.
+rotação, replay, concorrência, rollback, expiração, logout e desativação;
+ao final remove somente o banco criado pelo teste.
 
-Refresh/logout, autenticação de rotas, convites e tela mobile ainda não estão
-implementados. O login não completa sozinho RF00. Veja ADR-003.
+Autenticação de rotas, convites e tela mobile ainda não estão implementados.
+Esses endpoints não completam sozinhos RF00. Veja ADR-003 e ADR-004.

@@ -6,6 +6,7 @@ import { hashPassword } from '../users/password.js';
 import { createAccessTokenIssuer } from './access-token.js';
 import { LoginService } from './auth.service.js';
 import type { CredentialUser } from './auth.repository.js';
+import { MemorySessions } from './memory-session.test-helper.js';
 
 const password = 'Senha-ficticia-login-24';
 const testSecret = 'segredo-ficticio-somente-para-testes-24';
@@ -17,7 +18,8 @@ async function fixture(isActive = true, exists = true) {
   };
   const findUser = vi.fn((email: string) => Promise.resolve(exists && email === candidate.email ? candidate : null));
   const issueToken = vi.fn(createAccessTokenIssuer(testSecret));
-  return { app: createApp(new LoginService({ findUser, issueToken })), findUser, issueToken };
+  const sessions = new MemorySessions(candidate);
+  return { app: createApp(new LoginService({ findUser, issueToken, sessions })), findUser, issueToken };
 }
 
 describe('POST /auth/login', () => {
@@ -77,6 +79,7 @@ describe('POST /auth/login', () => {
     expect(limited.status).toBe(429);
     expect(apiErrorSchema.parse(limited.body).error.code).toBe('AUTH_RATE_LIMITED');
     expect(findUser).toHaveBeenCalledTimes(20);
+    expect((await request(app).post('/auth/logout').send({ refreshToken: 'A'.repeat(43) })).status).toBe(204);
     expect((await request(app).get('/health')).status).toBe(200);
   });
 });
