@@ -62,3 +62,11 @@ e atualização dos schemas com `pnpm docs:generate`.
 
 A documentação cobre os endpoints implementados de RF00–RF04. RF05 e RF06
 permanecem planejados. A interface local fica desabilitada em produção.
+
+## Login no aplicativo
+
+O app possui login integrado à API, rotas protegidas e recuperação da sessão com
+armazenamento seguro no Android/iOS. Configure `apps/mobile/.env` e consulte
+[o guia do login mobile](docs/login-mobile.md). No navegador, a sessão fica em memória.
+Após entrar, esta etapa mostra identidade, perfil e saída; as demais telas core
+serão implementadas nas próximas etapas da Fase 4.

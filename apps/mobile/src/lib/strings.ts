@@ -1,0 +1,23 @@
+export const strings = {
+  brand: 'Gabinete+',
+  auth: {
+    title: 'Acesse seu gabinete', subtitle: 'Organize atividades e dê continuidade ao trabalho da equipe.',
+    email: 'E-mail institucional', emailPlaceholder: 'seu.nome@instituicao.br', password: 'Senha',
+    showPassword: 'Mostrar senha', hidePassword: 'Ocultar senha', submit: 'Entrar', submitting: 'Entrando…',
+    invitation: 'O acesso é disponibilizado pela chefia do gabinete.',
+    invalidEmail: 'Informe um e-mail válido.', invalidPassword: 'Informe uma senha com pelo menos 8 caracteres.',
+    webSession: 'Neste navegador, entre novamente ao atualizar a página.',
+    restoring: 'Recuperando sua sessão…', recoveryTitle: 'Não foi possível recuperar sua sessão', retry: 'Tentar novamente', returnToLogin: 'Voltar ao login',
+    invalidCredentials: 'E-mail ou senha incorretos. Confira os dados e tente novamente.',
+    sessionExpired: 'Sua sessão terminou. Entre novamente para continuar.',
+    network: 'Não foi possível conectar. Confira sua conexão e tente novamente.',
+    rateLimited: 'Muitas tentativas de acesso. Aguarde alguns minutos e tente novamente.',
+    configuration: 'O acesso está indisponível. Entre em contato com a pessoa responsável pelo aplicativo.',
+    unexpected: 'Não foi possível concluir o acesso. Tente novamente mais tarde.',
+    storage: 'Não foi possível acessar o armazenamento seguro. Tente novamente.',
+    logoutOffline: 'Você saiu deste aparelho. Não foi possível confirmar o encerramento no servidor.',
+  },
+  session: { title: 'Meu gabinete', welcome: 'Bem-vinda(o),', description: 'Você está conectado ao Gabinete+.',
+    profile: 'Perfil de acesso', logout: 'Sair da conta', leaving: 'Saindo…',
+    roles: { CHEFE: 'Chefia', ASSESSOR: 'Assessoria', APOIO: 'Apoio' } },
+};
