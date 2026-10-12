@@ -1,5 +1,20 @@
 export const strings = {
   brand: 'Gabinete+',
+  dashboard: {
+    title: 'Hoje', greeting: 'Olá,', shortcuts: 'Acesso rápido', tasksShortcut: 'Tarefas', routinesShortcut: 'Rotinas de hoje', profileShortcut: 'Meu perfil',
+    tasksTitle: 'Minhas pendências', tasksDescription: 'Até cinco tarefas abertas ou em andamento, por prazo e prioridade.',
+    routinesTitle: 'Rotinas de hoje', routinesDescription: 'Rotinas diárias e atividades agendadas para hoje.',
+    emptyTasks: 'Você não tem tarefas pendentes.', emptyRoutines: 'Não há rotinas previstas para hoje.',
+    emptyStatus: 'Não há tarefas neste status.',
+    loading: 'Carregando informações…', error: 'Não foi possível carregar as informações.', retry: 'Tentar novamente',
+    refresh: 'Atualizar', viewTasks: 'Ver minhas tarefas', viewRoutines: 'Ver todas as rotinas de hoje',
+    moreTasks: 'Há outras pendências na lista de tarefas.', moreRoutines: 'Há outras rotinas previstas para hoje.',
+    loadMore: 'Carregar mais', loadingMore: 'Carregando mais…', updatingError: 'Não foi possível atualizar. Tente novamente.',
+    pendingList: 'Minhas tarefas', open: 'Abertas', progress: 'Em andamento', noDueDate: 'Sem prazo', dueDate: 'Prazo', overdue: 'Em atraso',
+    status: { ABERTA: 'Aberta', EM_ANDAMENTO: 'Em andamento', CONCLUIDA: 'Concluída', CANCELADA: 'Cancelada' },
+    priority: { BAIXA: 'Baixa', NORMAL: 'Normal', ALTA: 'Alta', URGENTE: 'Urgente' },
+    frequency: { DIARIA: 'Diária', SEMANAL: 'Semanal', QUINZENAL: 'Quinzenal', MENSAL: 'Mensal', EVENTUAL: 'Eventual', PERSONALIZADA: 'Personalizada', A_DEFINIR: 'A definir' },
+  },
   auth: {
     title: 'Acesse seu gabinete', subtitle: 'Organize atividades e dê continuidade ao trabalho da equipe.',
     email: 'E-mail institucional', emailPlaceholder: 'seu.nome@instituicao.br', password: 'Senha',

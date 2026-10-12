@@ -25,6 +25,7 @@ export const routinesRepository: RoutinesRepository = {
   list(query) {
     return prisma.routine.findMany({ where: {
       isArchived: query.isArchived,
+      ...(query.scheduledFor ? { AND: [{ OR: [{ frequency: 'DIARIA', specificDate: null }, { specificDate: new Date(`${query.scheduledFor}T00:00:00.000Z`) }] }] } : {}),
       ...(query.cursor ? { id: { gt: query.cursor } } : {}),
       ...(query.frequency ? { frequency: query.frequency } : {}),
       ...(query.category ? { category: query.category } : {}),
