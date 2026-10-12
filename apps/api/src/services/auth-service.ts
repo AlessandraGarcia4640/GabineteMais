@@ -97,6 +97,6 @@ export const refreshSession = async (input: unknown) => {
 
 export const getAuthenticatedUser = async (userId: string) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user || !user.isActive) return null;
+  if (!user?.isActive) return null;
   return publicUser(user);
 };
