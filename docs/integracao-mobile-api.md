@@ -22,7 +22,7 @@ O cliente HTTP real valida respostas pelos schemas compartilhados. A jornada com
 ## Inconsistências e limites registrados
 
 - URL com credenciais/query/fragmento antes era aceita: corrigido no cliente, rejeitando configuração antes de enviar credenciais.
-- RF05 (orientações versionadas) e RF06 (guia/snapshot de transição) continuam planejados, sem módulos/rotas/schema/telas próprios. Orientações copiadas de rotina não equivalem ao RF05; este guia documental não implementa RF06. O aceite do MVP completo continua aberto por essas lacunas.
+- RF05 implementa orientações com busca, Markdown, manutenção pela chefia e histórico preservado. RF06 (guia/snapshot de transição) continua pendente; o aceite completo também depende da validação em aparelhos e com usuários.
 - Núcleo RF00–RF04 tem integração automatizada, mas execução em aparelhos Android/iOS, build distribuível e revisão com usuários/Figma seguem pendentes.
 - Checklist para outra pessoa pode ser iniciado pela API; a UI de tarefas vincula execuções já criadas. Não há fila offline nem controle de versão de campos concorrentes.
 - Testes de transporte não comprovam conectividade Wi-Fi, certificados, políticas HTTP dos builds nativos ou uso de rede em aparelhos. Esses itens requerem validação manual no ambiente de demonstração.

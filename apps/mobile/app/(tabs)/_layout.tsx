@@ -22,4 +22,10 @@ export default function SessionLayout() { return <Stack>
   <Stack.Screen name="tarefa/[id]" options={{ title: strings.tasks.details }} />
   <Stack.Screen name="tarefa/[id]/editar" options={{ title: strings.tasks.edit }} />
   <Stack.Screen name="tarefa/[id]/historico" options={{ title: strings.tasks.history }} />
+  <Stack.Screen name="orientacoes" options={{ title: strings.guidelines.title }} />
+  <Stack.Screen name="orientacao/nova" options={{ title: strings.guidelines.title }} />
+  <Stack.Screen name="orientacao/[id]" options={{ title: strings.guidelines.title }} />
+  <Stack.Screen name="orientacao/[id]/editar" options={{ title: strings.guidelines.title }} />
+  <Stack.Screen name="orientacao/[id]/versoes" options={{ title: strings.guidelines.title }} />
+  <Stack.Screen name="orientacao/[id]/versao/[version]" options={{ title: strings.guidelines.title }} />
 </Stack>; }

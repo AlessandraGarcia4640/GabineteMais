@@ -6,3 +6,4 @@ export * from './routines.js';
 export * from './checklists.js';
 export * from './contacts.js';
 export * from './tasks.js';
+export * from './guidelines.js';

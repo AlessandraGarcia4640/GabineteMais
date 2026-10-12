@@ -26,11 +26,11 @@
     "test:integration": "pnpm --filter @gabinete-plus/shared build && pnpm --filter @gabinete-plus/api test:integration"
   },
   "devDependencies": {
-    "@eslint/js": "latest",
-    "@types/node": "latest",
-    "eslint": "latest",
-    "prettier": "latest",
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.1.2",
+    "eslint": "10.8.0",
+    "prettier": "3.9.6",
     "typescript": "5.9.3",
-    "typescript-eslint": "latest"
+    "typescript-eslint": "8.65.0"
   }
 }
