@@ -53,8 +53,8 @@ export function RoutineForm({ routine, onSaved, onCancel }: { routine?: Routine;
       <Choice label={strings.routines.noPosition} selected={field.value === ''} disabled={busy} onPress={() => field.onChange('')} />
       {userPositionSchema.options.map((position) => <Choice key={position} label={strings.routines.positions[position]} selected={field.value === position} disabled={busy} onPress={() => field.onChange(position)} />)}</View>} />
     <Text style={styles.label}>{strings.routines.essential}</Text><Controller control={form.control} name="essentialForTransition" render={({ field }) => <View style={styles.choices}>
-      <Choice label={strings.routines.yes} selected={field.value} disabled={busy} onPress={() => field.onChange(true)} />
-      <Choice label={strings.routines.no} selected={!field.value} disabled={busy} onPress={() => field.onChange(false)} /></View>} />
+      <Choice context={strings.routines.essential} label={strings.routines.yes} selected={field.value} disabled={busy} onPress={() => field.onChange(true)} />
+      <Choice context={strings.routines.essential} label={strings.routines.no} selected={!field.value} disabled={busy} onPress={() => field.onChange(false)} /></View>} />
     <Text style={styles.label}>{strings.routines.steps}</Text>
   </View>;
   const footer = <View style={styles.footer}>

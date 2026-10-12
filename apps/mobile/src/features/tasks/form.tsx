@@ -44,7 +44,7 @@ export function TaskForm({ task, onSaved, onCancel }: { task?: Task; onSaved: (t
   }
   const busy = save.isPending || form.formState.isSubmitting; const fields = ['title', 'description', 'instructions', 'dueDate'] satisfies (keyof TaskFormValues)[];
   return <Screen keyboard>
-    <FlashList data={fields} keyExtractor={(field) => field} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
+    <FlashList data={fields} keyExtractor={(field) => field} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" accessibilityElementsHidden={!!picker} importantForAccessibility={picker ? 'no-hide-descendants' : 'auto'}
       renderItem={({ item }) => <View style={styles.section}><Controller control={form.control} name={item} render={({ field, fieldState }) => <TextField label={item === 'title' ? strings.tasks.name : strings.tasks[item]}
         value={typeof field.value === 'string' ? field.value : ''} onChangeText={field.onChange} onBlur={field.onBlur} editable={!busy} multiline={item === 'description' || item === 'instructions'} placeholder={item === 'dueDate' ? strings.routines.datePlaceholder : undefined}
         errorText={fieldState.error ? strings.tasks.validation[item] : undefined} />} /></View>}

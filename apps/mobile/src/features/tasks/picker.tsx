@@ -15,7 +15,7 @@ export function ResourcePicker({ kind, assigneeId, routineId, onSelect, onClose 
   const api = useTasksApi(); const { user } = useSession(); const query = useInfiniteQuery({ queryKey: ['task-choices', kind, user?.id, assigneeId, routineId], enabled: !!user, retry: false, initialPageParam: '',
     queryFn: ({ pageParam, signal }) => api.choices(kind, pageParam, assigneeId, routineId, signal), getNextPageParam: (page) => page.nextCursor || undefined });
   const data = [...new Map((query.data?.pages.flatMap((page) => page.items) ?? []).map((item) => [item.id, item])).values()];
-  return <Modal visible animationType="slide" onRequestClose={onClose}><Screen edges={['top', 'bottom', 'left', 'right']}><View style={styles.content}><Text accessibilityRole="header" style={styles.title}>{labels[kind]}</Text><Button label={strings.routines.cancel} secondary onPress={onClose} /></View>
+  return <Modal visible animationType="slide" onRequestClose={onClose}><Screen modal edges={['top', 'bottom', 'left', 'right']}><View style={styles.content}><Text accessibilityRole="header" style={styles.title}>{labels[kind]}</Text><Button label={strings.routines.cancel} secondary onPress={onClose} /></View>
     {query.isPending ? <LoadingState /> : query.isError && !query.data ? <ErrorState retry={() => void query.refetch()} /> : <FlashList data={data} keyExtractor={(item) => item.id} contentContainerStyle={styles.content}
       renderItem={({ item }) => <Card label={item.label} onPress={() => onSelect(item)}><Text style={styles.label}>{item.label}</Text></Card>}
       ListEmptyComponent={<EmptyState message={strings.tasks.selectionEmpty} />} ListFooterComponent={<View style={styles.section}>
