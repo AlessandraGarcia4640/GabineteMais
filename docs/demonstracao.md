@@ -18,6 +18,6 @@ Três rotinas (diária, semanal, eventual), contatos fictícios e modelo de e-ma
 
 Entrar como assessor 1, abrir tarefa em andamento, consultar checklist, concluir itens e finalizar tarefa. Como apoio, consultar pendência urgente. Como chefia, verificar histórico e recursos de atribuição/arquivo. Sem dados processuais ou canais reais; nenhum e-mail usa domínio entregável.
 
-Idempotência refere-se à mesma referência e registros intactos: repetir não duplica itens/eventos nem redefine snapshots/status/textos. Teste PostgreSQL roda seed duas vezes, verifica papéis/estados/progresso, preservação de senha e alteração feita pelo usuário. CI também executa o comando de seed duas vezes. O seed também inclui orientações fictícias essenciais de RF05; RF06 continua pendente.
+Idempotência refere-se à mesma referência e registros intactos: repetir não duplica itens/eventos nem redefine snapshots/status/textos. Teste PostgreSQL roda seed duas vezes, verifica papéis/estados/progresso, preservação de senha e alteração feita pelo usuário. CI também executa o comando de seed duas vezes. O seed também inclui orientações fictícias essenciais de RF05; RF06 agrega as fontes do seed e inclui visão geral e notas fictícias; a chefia pode gerar uma cópia pelo aplicativo.
 
 O ensaio revelou um teste legado de usuários que inativava conta diretamente no banco configurado por TEST_DATABASE_URL. Ele foi migrado para a fixture de banco próprio, evitando contaminação do ambiente de seed. A proteção do seed contra reativação/sobrescrita foi preservada.

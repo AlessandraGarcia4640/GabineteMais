@@ -1,0 +1,5 @@
+CREATE TABLE transition_settings (id TEXT PRIMARY KEY, overview TEXT NOT NULL DEFAULT '', notes TEXT NOT NULL DEFAULT '', revision INTEGER NOT NULL DEFAULT 0 CHECK (revision >= 0), "updatedById" TEXT REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE, "updatedAt" TIMESTAMP(3) NOT NULL);
+CREATE TABLE transition_snapshots (id TEXT PRIMARY KEY, title VARCHAR(200) NOT NULL, version INTEGER NOT NULL CHECK (version > 0), "authorId" TEXT NOT NULL REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE, "authorName" TEXT NOT NULL, content JSONB NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE UNIQUE INDEX transition_snapshots_version_key ON transition_snapshots(version);
+CREATE FUNCTION protect_transition_snapshot() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Transition snapshots are immutable'; END; $$;
+CREATE TRIGGER transition_snapshot_immutable BEFORE UPDATE OR DELETE ON transition_snapshots FOR EACH ROW EXECUTE FUNCTION protect_transition_snapshot();

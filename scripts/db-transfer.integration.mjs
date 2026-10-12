@@ -11,7 +11,7 @@ const options = parseOptions(['--container', process.env.GABINETE_TEST_CONTAINER
 function command(args) { const result = spawnSync('docker', args, { shell: false, windowsHide: true, encoding: 'utf8' }); if (result.error) throw result.error; if (result.status !== 0) throw new Error(result.stderr || 'Falha Docker/PostgreSQL.'); return result.stdout.trim(); }
 function query(database, sql) { return command(['exec', options.container, 'psql', '--username', user, '--dbname', database, '--set', 'ON_ERROR_STOP=1', '-Atc', sql]); }
 function fingerprint(database) {
-  const tables = ['users', 'user_position_history', 'routines', 'contacts', 'checklist_templates', 'checklist_runs', 'checklist_run_items', 'tasks', 'task_events', 'guidelines', 'guideline_versions', '_prisma_migrations'];
+  const tables = ['users', 'user_position_history', 'routines', 'contacts', 'checklist_templates', 'checklist_runs', 'checklist_run_items', 'tasks', 'task_events', 'guidelines', 'guideline_versions', 'transition_settings', 'transition_snapshots', '_prisma_migrations'];
   return tables.map((table) => query(database, `SELECT count(*)::text || ':' || COALESCE(md5(string_agg(row_to_json(t)::text, '|' ORDER BY id)), '') FROM ${table} t`));
 }
 let created = false;

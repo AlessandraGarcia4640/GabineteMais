@@ -1,0 +1,4 @@
+import { expect, it } from 'vitest';
+import { transitionContentSchema, transitionQuerySchema, createTransitionSnapshotSchema, updateTransitionSchema } from './transition.js';
+it('guia limita páginas, seleciona seção válida e rejeita consultas imprevistas', () => { expect(transitionQuerySchema.parse({})).toEqual({ section: 'ROUTINES', limit: 20 }); expect(transitionQuerySchema.safeParse({ section: 'OTHER' }).success).toBe(false); expect(transitionQuerySchema.safeParse({ limit: 101 }).success).toBe(false); });
+it('curadoria e snapshot exigem revisão e título válido', () => { expect(createTransitionSnapshotSchema.safeParse({ title: '  ', expectedRevision: 0 }).success).toBe(false); expect(updateTransitionSchema.safeParse({ overview: '', notes: '', expectedRevision: -1 }).success).toBe(false); expect(transitionContentSchema.parse({ overview: '', notes: '', routines: [], guidelines: [], contacts: [], tasks: [] }).tasks).toEqual([]); });

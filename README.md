@@ -60,15 +60,14 @@ O contrato também está disponível em `/docs/openapi.json` e `/docs/openapi.ya
 Consulte [o guia OpenAPI](docs/api-openapi.md) para autenticação, exemplos, permissões
 e atualização dos schemas com `pnpm docs:generate`.
 
-A documentação cobre os endpoints implementados de RF00–RF05. RF06
-permanece planejado. A interface local fica desabilitada em produção.
+A documentação cobre os endpoints implementados de RF00–RF06. A interface local fica desabilitada em produção.
 
 ## Login no aplicativo
 
 O app possui login integrado à API, rotas protegidas e recuperação da sessão com
 armazenamento seguro no Android/iOS. Configure `apps/mobile/.env` e consulte
 [o guia do login mobile](docs/login-mobile.md). No navegador, a sessão fica em memória.
-O perfil e a saída ficam disponíveis na área protegida. RF00–RF05 possuem fluxos
+O perfil e a saída ficam disponíveis na área protegida. RF00–RF06 possuem fluxos
 mobile de consulta, manutenção e execução integrados à API.
 
 [Rotinas no aplicativo](docs/rotinas-mobile.md) já possuem catálogo, busca, filtros,
@@ -84,5 +83,4 @@ Consulte [contatos mobile](docs/contatos-mobile.md), [checklists mobile](docs/ch
 Para recriar os cenários fictícios, veja [demonstração](docs/demonstracao.md).
 O [guia de operação e continuidade](docs/operacao-e-transicao.md) reúne instalação,
 configuração, manutenção e backup/restauração verificável. Componentes estão documentados
-em [src/components](apps/mobile/src/components/README.md). RF06 e validação em aparelhos
-seguem pendentes. O núcleo RF00–RF04 foi integrado à main pelo PR #97.
+em [src/components](apps/mobile/src/components/README.md). A [transição](docs/guia-transicao.md) possui guia vivo e cópias imutáveis; validação em aparelhos e com usuários permanece pendente. O núcleo RF00–RF04 foi integrado à main pelo PR #97.

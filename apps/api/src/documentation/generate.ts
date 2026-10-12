@@ -1,3 +1,4 @@
+import { transitionPaths } from './transition-paths.js';
 import { readFile, writeFile } from 'node:fs/promises';
 import { parseDocument } from 'yaml';
 import { generatedContractSchemas, generatedQueryParameters } from './contracts.js';
@@ -6,7 +7,7 @@ import { guidelinesPaths } from './guidelines-paths.js';
 const path = new URL('../../../../openapi/gabinete-plus.yaml', import.meta.url);
 const document = parseDocument(await readFile(path, 'utf8'));
 if (document.errors.length) throw new Error('OpenAPI YAML inválido.');
-for (const [path, value] of Object.entries(guidelinesPaths)) document.setIn(['paths', path], document.createNode(value));
+for (const [path, value] of Object.entries({ ...guidelinesPaths, ...transitionPaths })) document.setIn(['paths', path], document.createNode(value));
 for (const [name, schema] of Object.entries(generatedContractSchemas())) {
   document.setIn(['components', 'schemas', name], document.createNode(schema));
 }

@@ -1,3 +1,4 @@
+import { seedDemoTransition } from '../src/modules/transition/transition.repository.js';
 import { z } from 'zod';
 import { env } from '../src/lib/env.js';
 import { prisma } from '../src/lib/prisma.js';
@@ -12,6 +13,7 @@ try {
   const day = demoDateSchema.parse(process.env.DEMO_REFERENCE_DATE ?? todayInGabinete());
   await seedDemoDataset(await hashPassword(password), day);
   await seedDemoGuidelines();
+  await seedDemoTransition();
   console.log(`Demonstração fictícia preparada para ${day}. Contas, snapshots e alterações existentes foram preservados.`);
 } finally {
   await prisma.$disconnect();

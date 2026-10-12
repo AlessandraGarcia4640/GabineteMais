@@ -3,7 +3,7 @@ info:
   title: Gabinete+ API
   version: 0.2.0
   description: |-
-    API implementada de RF00–RF05: autenticação, equipe, atividades, checklists, contatos, tarefas e orientações com histórico. RF06 (transição) permanece planejado. Interface local: /docs; contrato em /docs/openapi.json e /docs/openapi.yaml, habilitados em desenvolvimento/teste.
+    API implementada de RF00–RF06: autenticação, equipe, atividades, checklists, contatos, tarefas, RF05 orientações com histórico e RF06 guia de transição com cópias imutáveis. Interface local: /docs; contrato em /docs/openapi.json e /docs/openapi.yaml, habilitados em desenvolvimento/teste.
 
     Login retorna accessToken Bearer válido por 900 segundos e refreshToken opaco com prazo absoluto de sete dias. No botão Authorize informe apenas accessToken. Refresh/logout recebem refreshToken no corpo e não exigem Bearer. Renovação rotativa invalida o token anterior; reutilização revoga a sessão. Logout é idempotente. Sessão, atividade do usuário e perfil são consultados no banco a cada chamada protegida. Tokens dos exemplos são fictícios.
 
@@ -2026,7 +2026,7 @@ paths:
                 ficticio:
                   value:
                     items:
-                      - &a4
+                      - &a1
                         title: Orientação fictícia
                         category: SESSOES
                         content: |-
@@ -2111,7 +2111,7 @@ paths:
                 $ref: "#/components/schemas/Guideline"
               examples:
                 ficticio:
-                  value: *a4
+                  value: *a1
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -2165,7 +2165,7 @@ paths:
                 $ref: "#/components/schemas/Guideline"
               examples:
                 ficticio:
-                  value: &a1
+                  value: &a2
                     title: Orientação fictícia
                     category: SESSOES
                     content: |-
@@ -2224,7 +2224,7 @@ paths:
                 $ref: "#/components/schemas/Guideline"
               examples:
                 ficticio:
-                  value: *a1
+                  value: *a2
         "400":
           $ref: "#/components/responses/InvalidInput"
         "401":
@@ -2436,6 +2436,327 @@ paths:
             type: integer
             minimum: 1
             maximum: 2147483647
+  /transition-guide:
+    get:
+      operationId: getTransitionGuide
+      summary: Consulta seção paginada do guia vivo
+      tags:
+        - Transition
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Consulta seção paginada do guia vivo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransitionGuide"
+              examples:
+                ficticio:
+                  value:
+                    settings:
+                      overview: Visão geral fictícia
+                      notes: Notas fictícias
+                      revision: 1
+                    generatedAt: 2026-10-12T12:00:00Z
+                    section:
+                      kind: ROUTINES
+                      items: []
+                      nextCursor: null
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Cópia não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: TRANSITION_NOT_FOUND
+                      message: Cópia de transição não encontrada.
+      parameters:
+        - name: section
+          in: query
+          schema:
+            default: ROUTINES
+            type: string
+            enum:
+              - ROUTINES
+              - GUIDELINES
+              - CONTACTS
+              - TASKS
+        - name: limit
+          in: query
+          schema:
+            default: 20
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+    patch:
+      operationId: updateTransition
+      summary: Edita visão geral e anotações pela chefia
+      tags:
+        - Transition
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Edita visão geral e anotações pela chefia
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransitionSettings"
+              examples:
+                ficticio:
+                  value:
+                    overview: Visão geral fictícia
+                    notes: Notas fictícias
+                    revision: 1
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Cópia não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: TRANSITION_NOT_FOUND
+                      message: Cópia de transição não encontrada.
+        "409":
+          description: Revisão desatualizada, concorrência ou seção com mais de 100 itens
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: TRANSITION_CONFLICT
+                      message: O guia mudou. Reabra as informações.
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTransition"
+            examples:
+              ficticio:
+                value:
+                  overview: Visão geral fictícia
+                  notes: Notas fictícias
+                  expectedRevision: 0
+  /transition-guide/snapshots:
+    get:
+      operationId: listTransitionSnapshots
+      summary: Consulta cópias preservadas paginadas
+      tags:
+        - Transition
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Consulta cópias preservadas paginadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransitionSnapshotPage"
+              examples:
+                ficticio:
+                  value:
+                    items:
+                      - id: demo-transition
+                        title: Estado fictício do gabinete
+                        version: 1
+                        authorId: demo-chief
+                        authorName: Chefia fictícia
+                        createdAt: 2026-10-12T12:00:00Z
+                    nextCursor: null
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Cópia não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: TRANSITION_NOT_FOUND
+                      message: Cópia de transição não encontrada.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            default: 20
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: cursor
+          in: query
+          schema:
+            type: integer
+            exclusiveMinimum: 0
+            maximum: 2147483647
+    post:
+      operationId: createTransitionSnapshot
+      summary: Gera cópia imutável das seis seções
+      tags:
+        - Transition
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Gera cópia imutável das seis seções
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransitionSnapshot"
+              examples:
+                ficticio:
+                  value:
+                    id: demo-transition
+                    title: Estado fictício do gabinete
+                    version: 1
+                    authorId: demo-chief
+                    authorName: Chefia fictícia
+                    createdAt: 2026-10-12T12:00:00Z
+                    content:
+                      overview: Visão geral fictícia
+                      notes: Notas fictícias
+                      routines: []
+                      guidelines: []
+                      contacts: []
+                      tasks: []
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Cópia não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: TRANSITION_NOT_FOUND
+                      message: Cópia de transição não encontrada.
+        "409":
+          description: Revisão desatualizada, concorrência ou seção com mais de 100 itens
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: TRANSITION_CONFLICT
+                      message: O guia mudou. Reabra as informações.
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransitionSnapshot"
+            examples:
+              ficticio:
+                value:
+                  title: Estado fictício do gabinete
+                  expectedRevision: 1
+  /transition-guide/snapshots/{id}:
+    get:
+      operationId: getTransitionSnapshot
+      summary: Reabre estado preservado do gabinete
+      tags:
+        - Transition
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Reabre estado preservado do gabinete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransitionSnapshot"
+              examples:
+                ficticio:
+                  value:
+                    id: demo-transition
+                    title: Estado fictício do gabinete
+                    version: 1
+                    authorId: demo-chief
+                    authorName: Chefia fictícia
+                    createdAt: 2026-10-12T12:00:00Z
+                    content:
+                      overview: Visão geral fictícia
+                      notes: Notas fictícias
+                      routines: []
+                      guidelines: []
+                      contacts: []
+                      tasks: []
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Cópia não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: TRANSITION_NOT_FOUND
+                      message: Cópia de transição não encontrada.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
 components:
   responses:
     Unauthenticated:
@@ -2565,12 +2886,14 @@ components:
         - tasks:read
         - contacts:read
         - guidelines:read
+        - transition:read
         - profile:update-self
         - tasks:execute-assigned
         - team:manage
         - activities:manage
         - contacts:manage
         - guidelines:manage
+        - transition:manage
         - tasks:assign
         - substitutions:manage
         - checklists:read
@@ -2616,12 +2939,14 @@ components:
               - tasks:read
               - contacts:read
               - guidelines:read
+              - transition:read
               - profile:update-self
               - tasks:execute-assigned
               - team:manage
               - activities:manage
               - contacts:manage
               - guidelines:manage
+              - transition:manage
               - tasks:assign
               - substitutions:manage
               - checklists:read
@@ -2654,12 +2979,14 @@ components:
               - tasks:read
               - contacts:read
               - guidelines:read
+              - transition:read
               - profile:update-self
               - tasks:execute-assigned
               - team:manage
               - activities:manage
               - contacts:manage
               - guidelines:manage
+              - transition:manage
               - tasks:assign
               - substitutions:manage
               - checklists:read
@@ -5078,6 +5405,976 @@ components:
               - essentialForTransition
               - id
               - guidelineId
+              - version
+              - authorId
+              - authorName
+              - createdAt
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - items
+        - nextCursor
+    TransitionGuide:
+      type: object
+      properties:
+        settings:
+          type: object
+          properties:
+            overview:
+              type: string
+              maxLength: 12000
+            notes:
+              type: string
+              maxLength: 12000
+            revision:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+          required:
+            - overview
+            - notes
+            - revision
+        generatedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+        section:
+          oneOf:
+            - type: object
+              properties:
+                kind:
+                  type: string
+                  const: ROUTINES
+                items:
+                  maxItems: 100
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                        minLength: 1
+                        maxLength: 200
+                      category:
+                        type: string
+                        minLength: 1
+                        maxLength: 100
+                      frequency:
+                        type: string
+                        enum:
+                          - DIARIA
+                          - SEMANAL
+                          - QUINZENAL
+                          - MENSAL
+                          - EVENTUAL
+                          - PERSONALIZADA
+                          - A_DEFINIR
+                      description:
+                        type: string
+                        maxLength: 4000
+                      instructions:
+                        type: string
+                        maxLength: 12000
+                      steps:
+                        maxItems: 100
+                        type: array
+                        items:
+                          type: string
+                          minLength: 1
+                          maxLength: 500
+                      frequencyDetails:
+                        anyOf:
+                          - type: string
+                            minLength: 1
+                            maxLength: 2000
+                          - type: "null"
+                      specificDate:
+                        anyOf:
+                          - type: string
+                            format: date
+                            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                          - type: "null"
+                      defaultPosition:
+                        anyOf:
+                          - type: string
+                            enum:
+                              - MAGISTRADO_GESTOR
+                              - ASSESSOR_CHEFE
+                              - ASSESSOR
+                              - APOIO
+                          - type: "null"
+                      essentialForTransition:
+                        type: boolean
+                      id:
+                        type: string
+                        minLength: 1
+                      isArchived:
+                        type: boolean
+                      createdById:
+                        type: string
+                        minLength: 1
+                      updatedById:
+                        type: string
+                        minLength: 1
+                      createdAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                    required:
+                      - title
+                      - category
+                      - frequency
+                      - description
+                      - instructions
+                      - steps
+                      - frequencyDetails
+                      - specificDate
+                      - defaultPosition
+                      - essentialForTransition
+                      - id
+                      - isArchived
+                      - createdById
+                      - updatedById
+                      - createdAt
+                      - updatedAt
+                nextCursor:
+                  anyOf:
+                    - type: string
+                    - type: "null"
+              required:
+                - kind
+                - items
+                - nextCursor
+            - type: object
+              properties:
+                kind:
+                  type: string
+                  const: GUIDELINES
+                items:
+                  maxItems: 100
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                        minLength: 1
+                        maxLength: 200
+                      category:
+                        type: string
+                        enum:
+                          - SESSOES
+                          - PRAZOS
+                          - ATENDIMENTO
+                          - EQUIPE
+                          - MAGISTRADO
+                          - OUTROS
+                      content:
+                        type: string
+                        minLength: 1
+                        maxLength: 24000
+                      essentialForTransition:
+                        type: boolean
+                      id:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
+                      isArchived:
+                        type: boolean
+                      version:
+                        type: integer
+                        exclusiveMinimum: 0
+                        maximum: 9007199254740991
+                      createdById:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
+                      updatedById:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
+                      authorName:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                    required:
+                      - title
+                      - category
+                      - content
+                      - essentialForTransition
+                      - id
+                      - isArchived
+                      - version
+                      - createdById
+                      - updatedById
+                      - authorName
+                      - createdAt
+                      - updatedAt
+                nextCursor:
+                  anyOf:
+                    - type: string
+                    - type: "null"
+              required:
+                - kind
+                - items
+                - nextCursor
+            - type: object
+              properties:
+                kind:
+                  type: string
+                  const: CONTACTS
+                items:
+                  maxItems: 100
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        minLength: 1
+                        maxLength: 150
+                      organization:
+                        type: string
+                        minLength: 1
+                        maxLength: 200
+                      jobTitle:
+                        type: string
+                        maxLength: 150
+                      phones:
+                        maxItems: 10
+                        type: array
+                        items:
+                          type: string
+                          minLength: 3
+                          maxLength: 40
+                      email:
+                        anyOf:
+                          - type: string
+                            maxLength: 254
+                          - type: "null"
+                      notes:
+                        type: string
+                        maxLength: 4000
+                      tags:
+                        maxItems: 20
+                        type: array
+                        items:
+                          type: string
+                          minLength: 1
+                          maxLength: 40
+                      isKeyContact:
+                        type: boolean
+                      id:
+                        type: string
+                        minLength: 1
+                      isArchived:
+                        type: boolean
+                      createdById:
+                        type: string
+                        minLength: 1
+                      updatedById:
+                        type: string
+                        minLength: 1
+                      createdAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                    required:
+                      - name
+                      - organization
+                      - jobTitle
+                      - phones
+                      - email
+                      - notes
+                      - tags
+                      - isKeyContact
+                      - id
+                      - isArchived
+                      - createdById
+                      - updatedById
+                      - createdAt
+                      - updatedAt
+                nextCursor:
+                  anyOf:
+                    - type: string
+                    - type: "null"
+              required:
+                - kind
+                - items
+                - nextCursor
+            - type: object
+              properties:
+                kind:
+                  type: string
+                  const: TASKS
+                items:
+                  maxItems: 100
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                        minLength: 1
+                        maxLength: 200
+                      description:
+                        type: string
+                        maxLength: 4000
+                      instructions:
+                        type: string
+                        maxLength: 12000
+                      dueDate:
+                        anyOf:
+                          - type: string
+                            format: date
+                            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                          - type: "null"
+                      priority:
+                        type: string
+                        enum:
+                          - BAIXA
+                          - NORMAL
+                          - ALTA
+                          - URGENTE
+                      id:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
+                      assigneeId:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
+                      routineId:
+                        anyOf:
+                          - type: string
+                            minLength: 1
+                            maxLength: 128
+                          - type: "null"
+                      checklistRunId:
+                        anyOf:
+                          - type: string
+                            minLength: 1
+                            maxLength: 128
+                          - type: "null"
+                      contactId:
+                        anyOf:
+                          - type: string
+                            minLength: 1
+                            maxLength: 128
+                          - type: "null"
+                      createdById:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
+                      updatedById:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
+                      status:
+                        type: string
+                        enum:
+                          - ABERTA
+                          - EM_ANDAMENTO
+                          - CONCLUIDA
+                          - CANCELADA
+                      isOverdue:
+                        type: boolean
+                      startedAt:
+                        anyOf:
+                          - type: string
+                            format: date-time
+                            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                          - type: "null"
+                      completedAt:
+                        anyOf:
+                          - type: string
+                            format: date-time
+                            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                          - type: "null"
+                      completedById:
+                        anyOf:
+                          - type: string
+                            minLength: 1
+                            maxLength: 128
+                          - type: "null"
+                      cancelledAt:
+                        anyOf:
+                          - type: string
+                            format: date-time
+                            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                          - type: "null"
+                      cancelledById:
+                        anyOf:
+                          - type: string
+                            minLength: 1
+                            maxLength: 128
+                          - type: "null"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      assigneeName:
+                        type: string
+                        minLength: 1
+                    required:
+                      - title
+                      - description
+                      - instructions
+                      - dueDate
+                      - priority
+                      - id
+                      - assigneeId
+                      - routineId
+                      - checklistRunId
+                      - contactId
+                      - createdById
+                      - updatedById
+                      - status
+                      - isOverdue
+                      - startedAt
+                      - completedAt
+                      - completedById
+                      - cancelledAt
+                      - cancelledById
+                      - createdAt
+                      - updatedAt
+                      - assigneeName
+                nextCursor:
+                  anyOf:
+                    - type: string
+                    - type: "null"
+              required:
+                - kind
+                - items
+                - nextCursor
+      required:
+        - settings
+        - generatedAt
+        - section
+    TransitionSettings:
+      type: object
+      properties:
+        overview:
+          type: string
+          maxLength: 12000
+        notes:
+          type: string
+          maxLength: 12000
+        revision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+        - overview
+        - notes
+        - revision
+    UpdateTransition:
+      type: object
+      properties:
+        overview:
+          type: string
+          maxLength: 12000
+        notes:
+          type: string
+          maxLength: 12000
+        expectedRevision:
+          type: integer
+          minimum: 0
+          maximum: 2147483646
+      required:
+        - overview
+        - notes
+        - expectedRevision
+      additionalProperties: false
+    CreateTransitionSnapshot:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        expectedRevision:
+          type: integer
+          minimum: 0
+          maximum: 2147483646
+      required:
+        - title
+        - expectedRevision
+      additionalProperties: false
+    TransitionSnapshot:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        version:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+        authorId:
+          type: string
+          minLength: 1
+        authorName:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+        content:
+          type: object
+          properties:
+            overview:
+              type: string
+              maxLength: 12000
+            notes:
+              type: string
+              maxLength: 12000
+            routines:
+              maxItems: 100
+              type: array
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                  category:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                  frequency:
+                    type: string
+                    enum:
+                      - DIARIA
+                      - SEMANAL
+                      - QUINZENAL
+                      - MENSAL
+                      - EVENTUAL
+                      - PERSONALIZADA
+                      - A_DEFINIR
+                  description:
+                    type: string
+                    maxLength: 4000
+                  instructions:
+                    type: string
+                    maxLength: 12000
+                  steps:
+                    maxItems: 100
+                    type: array
+                    items:
+                      type: string
+                      minLength: 1
+                      maxLength: 500
+                  frequencyDetails:
+                    anyOf:
+                      - type: string
+                        minLength: 1
+                        maxLength: 2000
+                      - type: "null"
+                  specificDate:
+                    anyOf:
+                      - type: string
+                        format: date
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                      - type: "null"
+                  defaultPosition:
+                    anyOf:
+                      - type: string
+                        enum:
+                          - MAGISTRADO_GESTOR
+                          - ASSESSOR_CHEFE
+                          - ASSESSOR
+                          - APOIO
+                      - type: "null"
+                  essentialForTransition:
+                    type: boolean
+                  id:
+                    type: string
+                    minLength: 1
+                  isArchived:
+                    type: boolean
+                  createdById:
+                    type: string
+                    minLength: 1
+                  updatedById:
+                    type: string
+                    minLength: 1
+                  createdAt:
+                    type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                required:
+                  - title
+                  - category
+                  - frequency
+                  - description
+                  - instructions
+                  - steps
+                  - frequencyDetails
+                  - specificDate
+                  - defaultPosition
+                  - essentialForTransition
+                  - id
+                  - isArchived
+                  - createdById
+                  - updatedById
+                  - createdAt
+                  - updatedAt
+            guidelines:
+              maxItems: 100
+              type: array
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                  category:
+                    type: string
+                    enum:
+                      - SESSOES
+                      - PRAZOS
+                      - ATENDIMENTO
+                      - EQUIPE
+                      - MAGISTRADO
+                      - OUTROS
+                  content:
+                    type: string
+                    minLength: 1
+                    maxLength: 24000
+                  essentialForTransition:
+                    type: boolean
+                  id:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                  isArchived:
+                    type: boolean
+                  version:
+                    type: integer
+                    exclusiveMinimum: 0
+                    maximum: 9007199254740991
+                  createdById:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                  updatedById:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                  authorName:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                required:
+                  - title
+                  - category
+                  - content
+                  - essentialForTransition
+                  - id
+                  - isArchived
+                  - version
+                  - createdById
+                  - updatedById
+                  - authorName
+                  - createdAt
+                  - updatedAt
+            contacts:
+              maxItems: 100
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    minLength: 1
+                    maxLength: 150
+                  organization:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                  jobTitle:
+                    type: string
+                    maxLength: 150
+                  phones:
+                    maxItems: 10
+                    type: array
+                    items:
+                      type: string
+                      minLength: 3
+                      maxLength: 40
+                  email:
+                    anyOf:
+                      - type: string
+                        maxLength: 254
+                      - type: "null"
+                  notes:
+                    type: string
+                    maxLength: 4000
+                  tags:
+                    maxItems: 20
+                    type: array
+                    items:
+                      type: string
+                      minLength: 1
+                      maxLength: 40
+                  isKeyContact:
+                    type: boolean
+                  id:
+                    type: string
+                    minLength: 1
+                  isArchived:
+                    type: boolean
+                  createdById:
+                    type: string
+                    minLength: 1
+                  updatedById:
+                    type: string
+                    minLength: 1
+                  createdAt:
+                    type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                required:
+                  - name
+                  - organization
+                  - jobTitle
+                  - phones
+                  - email
+                  - notes
+                  - tags
+                  - isKeyContact
+                  - id
+                  - isArchived
+                  - createdById
+                  - updatedById
+                  - createdAt
+                  - updatedAt
+            tasks:
+              maxItems: 100
+              type: array
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                  description:
+                    type: string
+                    maxLength: 4000
+                  instructions:
+                    type: string
+                    maxLength: 12000
+                  dueDate:
+                    anyOf:
+                      - type: string
+                        format: date
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                      - type: "null"
+                  priority:
+                    type: string
+                    enum:
+                      - BAIXA
+                      - NORMAL
+                      - ALTA
+                      - URGENTE
+                  id:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                  assigneeId:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                  routineId:
+                    anyOf:
+                      - type: string
+                        minLength: 1
+                        maxLength: 128
+                      - type: "null"
+                  checklistRunId:
+                    anyOf:
+                      - type: string
+                        minLength: 1
+                        maxLength: 128
+                      - type: "null"
+                  contactId:
+                    anyOf:
+                      - type: string
+                        minLength: 1
+                        maxLength: 128
+                      - type: "null"
+                  createdById:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                  updatedById:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                  status:
+                    type: string
+                    enum:
+                      - ABERTA
+                      - EM_ANDAMENTO
+                      - CONCLUIDA
+                      - CANCELADA
+                  isOverdue:
+                    type: boolean
+                  startedAt:
+                    anyOf:
+                      - type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      - type: "null"
+                  completedAt:
+                    anyOf:
+                      - type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      - type: "null"
+                  completedById:
+                    anyOf:
+                      - type: string
+                        minLength: 1
+                        maxLength: 128
+                      - type: "null"
+                  cancelledAt:
+                    anyOf:
+                      - type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                      - type: "null"
+                  cancelledById:
+                    anyOf:
+                      - type: string
+                        minLength: 1
+                        maxLength: 128
+                      - type: "null"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+                  assigneeName:
+                    type: string
+                    minLength: 1
+                required:
+                  - title
+                  - description
+                  - instructions
+                  - dueDate
+                  - priority
+                  - id
+                  - assigneeId
+                  - routineId
+                  - checklistRunId
+                  - contactId
+                  - createdById
+                  - updatedById
+                  - status
+                  - isOverdue
+                  - startedAt
+                  - completedAt
+                  - completedById
+                  - cancelledAt
+                  - cancelledById
+                  - createdAt
+                  - updatedAt
+                  - assigneeName
+          required:
+            - overview
+            - notes
+            - routines
+            - guidelines
+            - contacts
+            - tasks
+      required:
+        - id
+        - title
+        - version
+        - authorId
+        - authorName
+        - createdAt
+        - content
+    TransitionSnapshotPage:
+      type: object
+      properties:
+        items:
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                minLength: 1
+              title:
+                type: string
+                minLength: 1
+                maxLength: 200
+              version:
+                type: integer
+                exclusiveMinimum: 0
+                maximum: 9007199254740991
+              authorId:
+                type: string
+                minLength: 1
+              authorName:
+                type: string
+                minLength: 1
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - id
+              - title
               - version
               - authorId
               - authorName
