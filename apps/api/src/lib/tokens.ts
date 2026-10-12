@@ -7,19 +7,19 @@ import { env } from './env.js';
 
 export type AuthRole = 'CHEFE' | 'ASSESSOR' | 'APOIO';
 
-type AccessPayload = {
+interface BasePayload {
   sub: string;
-  role: AuthRole;
   iat: number;
   exp: number;
-};
+}
 
-type RefreshPayload = {
-  sub: string;
+interface AccessPayload extends BasePayload {
+  role: AuthRole;
+}
+
+interface RefreshPayload extends BasePayload {
   tokenType: 'refresh';
-  iat: number;
-  exp: number;
-};
+}
 
 const base64url = (value: string): string =>
   Buffer.from(value, 'utf8').toString('base64url');
@@ -33,7 +33,9 @@ const ttlSeconds = (value: string): number => {
 
   const amount = Number(match[1]);
   const unit = match[2];
-  const multiplier = unit === 's' ? 1 : unit === 'm' ? 60 : unit === 'h' ? 3600 : 86400;
+  const multiplier =
+    unit === 's' ? 1 : unit === 'm' ? 60 : unit === 'h' ? 3600 : 86400;
+
   return amount * multiplier;
 };
 
@@ -52,13 +54,14 @@ const createToken = (
     }),
   );
   const unsigned = `${header}.${body}`;
+
   return `${unsigned}.${signPart(unsigned, secret)}`;
 };
 
-const verifyToken = <T extends { exp: number }>(
+const verifyRawToken = (
   token: string,
   secret: string,
-): T => {
+): Record<string, unknown> => {
   const [header, body, signature] = token.split('.');
   if (!header || !body || !signature) throw new Error('INVALID_TOKEN');
 
@@ -73,59 +76,78 @@ const verifyToken = <T extends { exp: number }>(
     throw new Error('INVALID_TOKEN_SIGNATURE');
   }
 
-  const payload = JSON.parse(
+  const parsed: unknown = JSON.parse(
     Buffer.from(body, 'base64url').toString('utf8'),
-  ) as T;
+  );
 
-  if (!payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) {
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('INVALID_TOKEN_PAYLOAD');
+  }
+
+  return parsed as Record<string, unknown>;
+};
+
+const readBasePayload = (payload: Record<string, unknown>): BasePayload => {
+  if (
+    typeof payload.sub !== 'string' ||
+    typeof payload.iat !== 'number' ||
+    typeof payload.exp !== 'number'
+  ) {
+    throw new Error('INVALID_TOKEN_PAYLOAD');
+  }
+
+  if (payload.exp <= Math.floor(Date.now() / 1000)) {
     throw new Error('TOKEN_EXPIRED');
   }
 
-  return payload;
+  return {
+    sub: payload.sub,
+    iat: payload.iat,
+    exp: payload.exp,
+  };
 };
 
-export const signAccessToken = async (
+export const signAccessToken = (
   userId: string,
   role: AuthRole,
-): Promise<string> =>
+): string =>
   createToken(
     { sub: userId, role },
     env.JWT_ACCESS_SECRET,
     env.JWT_ACCESS_TTL,
   );
 
-export const signRefreshToken = async (userId: string): Promise<string> =>
+export const signRefreshToken = (userId: string): string =>
   createToken(
     { sub: userId, tokenType: 'refresh' },
     env.JWT_REFRESH_SECRET,
     env.JWT_REFRESH_TTL,
   );
 
-export const verifyAccessToken = async (
-  token: string,
-): Promise<AccessPayload> => {
-  const payload = verifyToken<AccessPayload>(token, env.JWT_ACCESS_SECRET);
+export const verifyAccessToken = (token: string): AccessPayload => {
+  const raw = verifyRawToken(token, env.JWT_ACCESS_SECRET);
+  const base = readBasePayload(raw);
 
   if (
-    !payload.sub ||
-    !['CHEFE', 'ASSESSOR', 'APOIO'].includes(payload.role)
+    raw.role !== 'CHEFE' &&
+    raw.role !== 'ASSESSOR' &&
+    raw.role !== 'APOIO'
   ) {
     throw new Error('INVALID_ACCESS_TOKEN');
   }
 
-  return payload;
+  return { ...base, role: raw.role };
 };
 
-export const verifyRefreshToken = async (
-  token: string,
-): Promise<RefreshPayload> => {
-  const payload = verifyToken<RefreshPayload>(token, env.JWT_REFRESH_SECRET);
+export const verifyRefreshToken = (token: string): RefreshPayload => {
+  const raw = verifyRawToken(token, env.JWT_REFRESH_SECRET);
+  const base = readBasePayload(raw);
 
-  if (!payload.sub || payload.tokenType !== 'refresh') {
+  if (raw.tokenType !== 'refresh') {
     throw new Error('INVALID_REFRESH_TOKEN');
   }
 
-  return payload;
+  return { ...base, tokenType: 'refresh' };
 };
 
 export const hashToken = (token: string): string =>
