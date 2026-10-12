@@ -4,7 +4,7 @@ import {
   login,
   refreshSession,
 } from '../services/auth-service.js';
-import { requireAuth } from '../middlewares/auth.js';
+import { getAuthContext, requireAuth } from '../middlewares/auth.js';
 
 export const authRouter = Router();
 
@@ -63,7 +63,9 @@ authRouter.post('/refresh', async (request, response, next) => {
 
 authRouter.get('/me', requireAuth, async (request, response, next) => {
   try {
-    if (!request.auth) {
+    const auth = getAuthContext(request);
+
+    if (!auth) {
       response.status(401).json({
         error: {
           code: 'UNAUTHORIZED',
@@ -73,7 +75,7 @@ authRouter.get('/me', requireAuth, async (request, response, next) => {
       return;
     }
 
-    const user = await getAuthenticatedUser(request.auth.userId);
+    const user = await getAuthenticatedUser(auth.userId);
 
     if (!user) {
       response.status(401).json({
