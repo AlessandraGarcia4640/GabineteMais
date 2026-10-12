@@ -1,5 +1,6 @@
 export const strings = {
   brand: 'Gabinete+',
+  feedback: { loading: 'Carregando informações…', error: 'Não foi possível carregar as informações.', retry: 'Tentar novamente', refresh: 'Atualizar', loadMore: 'Carregar mais', loadingMore: 'Carregando mais…', updatingError: 'Não foi possível atualizar. Tente novamente.' },
   tasks: {
     title: 'Tarefas', details: 'Detalhes da tarefa', create: 'Nova tarefa', edit: 'Editar tarefa', history: 'Histórico da tarefa', empty: 'Nenhuma tarefa encontrada.',
     name: 'Título', description: 'Descrição', instructions: 'Orientações', dueDate: 'Prazo', priority: 'Prioridade', search: 'Buscar tarefas', mine: 'Minhas tarefas', all: 'Todas as tarefas', allStatuses: 'Todos os status', allPriorities: 'Todas as prioridades', overdue: 'Somente em atraso', anyDeadline: 'Todos os prazos',
@@ -67,10 +68,8 @@ export const strings = {
     routinesTitle: 'Rotinas de hoje', routinesDescription: 'Rotinas diárias e atividades agendadas para hoje.',
     emptyTasks: 'Você não tem tarefas pendentes.', emptyRoutines: 'Não há rotinas previstas para hoje.',
     emptyStatus: 'Não há tarefas neste status.',
-    loading: 'Carregando informações…', error: 'Não foi possível carregar as informações.', retry: 'Tentar novamente',
-    refresh: 'Atualizar', viewTasks: 'Ver minhas tarefas', viewRoutines: 'Ver todas as rotinas de hoje',
+    viewTasks: 'Ver minhas tarefas', viewRoutines: 'Ver todas as rotinas de hoje',
     moreTasks: 'Há outras pendências na lista de tarefas.', moreRoutines: 'Há outras rotinas previstas para hoje.',
-    loadMore: 'Carregar mais', loadingMore: 'Carregando mais…', updatingError: 'Não foi possível atualizar. Tente novamente.',
     pendingList: 'Minhas tarefas', open: 'Abertas', progress: 'Em andamento', noDueDate: 'Sem prazo', dueDate: 'Prazo', overdue: 'Em atraso',
     status: { ABERTA: 'Aberta', EM_ANDAMENTO: 'Em andamento', CONCLUIDA: 'Concluída', CANCELADA: 'Cancelada' },
     priority: { BAIXA: 'Baixa', NORMAL: 'Normal', ALTA: 'Alta', URGENTE: 'Urgente' },

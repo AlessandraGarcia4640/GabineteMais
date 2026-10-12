@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
+import { Screen } from '../../components/screen';
 import { FlashList } from '@shopify/flash-list';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,7 +31,7 @@ export function ChecklistForm({ routine, template, onSaved, onCancel }: { routin
     } catch (error) { setMessage(error instanceof Error ? checklistError(error) : strings.routines.requestError); }
   }
   const busy = save.isPending || form.formState.isSubmitting;
-  return <SafeAreaView style={styles.screen} edges={['bottom']}><KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+  return <Screen keyboard>
     <FlashList data={items.fields} keyExtractor={(item) => item.id} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
       ListHeaderComponent={<View style={styles.section}><Text style={styles.title}>{routine.title}</Text><Controller control={form.control} name="title" render={({ field, fieldState }) => <TextField label={strings.checklists.name} value={field.value} onChangeText={field.onChange} onBlur={field.onBlur} editable={!busy} errorText={fieldState.error ? strings.checklists.invalidTitle : undefined} />} /><Text style={styles.label}>{strings.checklists.items}</Text></View>}
       renderItem={({ index }) => <View style={styles.section}><Controller control={form.control} name={`items.${index}.text`} render={({ field, fieldState }) => <TextField label={strings.checklists.item(index)} value={field.value} multiline onChangeText={field.onChange} onBlur={field.onBlur} editable={!busy} errorText={fieldState.error ? strings.checklists.invalidItems : undefined} />} />
@@ -45,5 +45,5 @@ export function ChecklistForm({ routine, template, onSaved, onCancel }: { routin
         <Button label={strings.routines.cancel} secondary disabled={busy} onPress={() => { if (dirty) setDiscard(true); else onCancel(); }} />
         {discard && <><Text>{strings.routines.unsavedTitle}</Text><Button label={strings.routines.discard} onPress={onCancel} /><Button label={strings.routines.continueEditing} secondary onPress={() => setDiscard(false)} /></>}
       </View>} />
-  </KeyboardAvoidingView></SafeAreaView>;
+  </Screen>;
 }

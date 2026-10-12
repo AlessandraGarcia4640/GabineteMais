@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
+import { Screen } from '../../components/screen';
 import { FlashList } from '@shopify/flash-list';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +10,7 @@ import { Button } from '../../components/button';
 import { TextField } from '../../components/text-field';
 import { strings } from '../../lib/strings';
 import { useSession, useSessionManager } from '../../providers/session-provider';
-import { Choice } from '../routines/choice';
+import { Choice } from '../../components/choice';
 import { taskError, useTasksApi } from './hooks';
 import { initialTaskValues, taskChanges, taskFormSchema, taskPayload, type TaskFormValues } from './model';
 import { ResourcePicker } from './picker';
@@ -43,7 +43,7 @@ export function TaskForm({ task, onSaved, onCancel }: { task?: Task; onSaved: (t
     if (kind === 'routine') form.setValue('checklistRunId', null, { shouldDirty: true }); setLabels({ ...labels, [kind]: null, ...(kind === 'routine' ? { run: null } : {}) });
   }
   const busy = save.isPending || form.formState.isSubmitting; const fields = ['title', 'description', 'instructions', 'dueDate'] satisfies (keyof TaskFormValues)[];
-  return <SafeAreaView style={styles.screen} edges={['bottom']}><KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+  return <Screen keyboard>
     <FlashList data={fields} keyExtractor={(field) => field} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
       renderItem={({ item }) => <View style={styles.section}><Controller control={form.control} name={item} render={({ field, fieldState }) => <TextField label={item === 'title' ? strings.tasks.name : strings.tasks[item]}
         value={typeof field.value === 'string' ? field.value : ''} onChangeText={field.onChange} onBlur={field.onBlur} editable={!busy} multiline={item === 'description' || item === 'instructions'} placeholder={item === 'dueDate' ? strings.routines.datePlaceholder : undefined}
@@ -61,5 +61,5 @@ export function TaskForm({ task, onSaved, onCancel }: { task?: Task; onSaved: (t
         {discard && <><Text>{strings.routines.unsavedTitle}</Text><Button label={strings.routines.discard} onPress={onCancel} /><Button label={strings.routines.continueEditing} secondary onPress={() => setDiscard(false)} /></>}
       </View>} />
     {!!picker && <ResourcePicker kind={picker} assigneeId={assigneeId} routineId={routineId} onSelect={(option) => select(picker, option)} onClose={() => setPicker(null)} />}
-  </KeyboardAvoidingView></SafeAreaView>;
+  </Screen>;
 }

@@ -1,9 +1,9 @@
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { theme } from '../lib/theme';
 interface Props extends TextInputProps { label: string; errorText?: string }
-export function TextField({ label, errorText, ...props }: Props) {
+export function TextField({ label, errorText, style, ...props }: Props) {
   return <View style={styles.field}><Text style={styles.label}>{label}</Text>
-    <TextInput {...props} accessibilityLabel={label} placeholderTextColor={theme.muted} selectionColor={theme.primary} style={[styles.input, !!errorText && styles.invalid]} />
+    <TextInput {...props} accessibilityLabel={label} accessibilityHint={errorText ?? props.accessibilityHint} placeholderTextColor={theme.muted} selectionColor={theme.primary} style={[styles.input, style, !!errorText && styles.invalid]} />
     {!!errorText && <Text accessibilityLiveRegion="polite" style={styles.error}>{errorText}</Text>}
   </View>;
 }

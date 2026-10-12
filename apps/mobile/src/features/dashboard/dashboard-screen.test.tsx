@@ -33,7 +33,7 @@ it('estado vazio não é mostrado enquanto tarefas ainda carregam', async () => 
     return parsed.searchParams.get('status') === 'ABERTA' ? new Promise((resolve) => { finish = resolve; }) : json({ items: [], nextCursor: null });
   });
   fixture.show(<DashboardScreen />); expect(screen.queryByText(strings.dashboard.emptyTasks)).toBeNull(); await screen.findByText(strings.dashboard.emptyRoutines);
-  expect(screen.getByText(strings.dashboard.loading)).toBeTruthy(); await act(async () => { finish(new Response(JSON.stringify({ items: [], nextCursor: null }))); });
+  expect(screen.getByText(strings.feedback.loading)).toBeTruthy(); await act(async () => { finish(new Response(JSON.stringify({ items: [], nextCursor: null }))); });
   await screen.findByText(strings.dashboard.emptyTasks);
 });
 it('falha de uma seção não apaga a outra e a tentativa manual recupera tarefas', async () => {
@@ -43,6 +43,6 @@ it('falha de uma seção não apaga a outra e a tentativa manual recupera tarefa
     if (parsed.searchParams.get('status') === 'ABERTA') return fail ? json({ error: { code: 'INTERNAL_ERROR', message: 'Interno' } }, 503) : json({ items: [taskFixture()], nextCursor: null });
     return json({ items: [], nextCursor: null });
   });
-  fixture.show(<DashboardScreen />); await screen.findByText(strings.dashboard.error); expect(screen.getByText('Rotina fictícia')).toBeTruthy(); expect(screen.queryByText(strings.dashboard.emptyTasks)).toBeNull();
-  fail = false; fireEvent.press(screen.getByRole('button', { name: strings.dashboard.retry })); await screen.findByText('Tarefa fictícia');
+  fixture.show(<DashboardScreen />); await screen.findByText(strings.feedback.error); expect(screen.getByText('Rotina fictícia')).toBeTruthy(); expect(screen.queryByText(strings.dashboard.emptyTasks)).toBeNull();
+  fail = false; fireEvent.press(screen.getByRole('button', { name: strings.feedback.retry })); await screen.findByText('Tarefa fictícia');
 });

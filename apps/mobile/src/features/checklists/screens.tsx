@@ -1,6 +1,8 @@
 import { useState, type ReactElement } from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
+import { Card } from '../../components/card';
+import { Checkbox } from '../../components/checkbox';
+import { Screen } from '../../components/screen';
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -11,9 +13,9 @@ import { useSession, useSessionManager } from '../../providers/session-provider'
 import { strings } from '../../lib/strings';
 import { Button } from '../../components/button';
 import { TextField } from '../../components/text-field';
-import { Choice } from '../routines/choice';
+import { Choice } from '../../components/choice';
 import { useRoutine } from '../routines/hooks';
-import { LoadingState, EmptyState, ErrorState } from '../dashboard/cards';
+import { LoadingState, EmptyState, ErrorState } from '../../components/feedback';
 import { gabineteDate, displayDate } from '../dashboard/model';
 import { checklistError, useChecklistsApi, useMarkItem, useRun, useRuns, useTemplate, useTemplates } from './hooks';
 import { dateInput, startFormSchema, startPayload } from './model';
@@ -22,25 +24,25 @@ import { styles } from './styles';
 function identifier(value: string | string[] | undefined): string | undefined { const valid = userIdParamsSchema.safeParse({ id: value }); return valid.success ? valid.data.id : undefined; }
 function Page<T extends { id: string }>({ data, query, header, empty, render }: { data: T[]; header: ReactElement; empty: string; render: (item: T) => ReactElement;
   query: { isPending: boolean; isError: boolean; isRefetching: boolean; isFetchingNextPage: boolean; hasNextPage: boolean; isFetchNextPageError: boolean; refetch: () => Promise<object>; fetchNextPage: () => Promise<object> } }) {
-  return <SafeAreaView style={styles.screen} edges={['bottom']}>{query.isPending ? <View>{header}<LoadingState /></View> : query.isError && !data.length ? <View>{header}<ErrorState retry={() => void query.refetch()} /></View> :
+  return <Screen>{query.isPending ? <View>{header}<LoadingState /></View> : query.isError && !data.length ? <View>{header}<ErrorState retry={() => void query.refetch()} /></View> :
     <FlashList data={[...new Map(data.map((item) => [item.id, item])).values()]} keyExtractor={(item) => item.id} contentContainerStyle={styles.content} ListHeaderComponent={header} renderItem={({ item }) => render(item)}
       refreshing={query.isRefetching} onRefresh={() => void query.refetch()} ListEmptyComponent={<EmptyState message={empty} />}
       ListFooterComponent={<View style={styles.section}>{query.isError && <ErrorState updating retry={() => { if (query.isFetchNextPageError) void query.fetchNextPage(); else void query.refetch(); }} />}
-        {query.hasNextPage && <Button label={strings.dashboard.loadMore} loading={query.isFetchingNextPage} disabled={query.isRefetching} onPress={() => void query.fetchNextPage()} />}</View>} />}</SafeAreaView>;
+        {query.hasNextPage && <Button label={strings.feedback.loadMore} loading={query.isFetchingNextPage} disabled={query.isRefetching} onPress={() => void query.fetchNextPage()} />}</View>} />}</Screen>;
 }
 export function ChecklistListScreen() {
   const params = useLocalSearchParams(); const routineId = identifier(params.routineId); const [archived, setArchived] = useState(false); const query = useTemplates(archived, routineId); const router = useRouter();
   return <Page query={query} data={query.data?.pages.flatMap((page) => page.items) ?? []} empty={strings.checklists.empty}
     header={<View style={styles.section}><Button label={strings.checklists.history} secondary onPress={() => router.push('/execucoes')} />
       <View style={styles.choices}><Choice label={strings.checklists.active} selected={!archived} onPress={() => setArchived(false)} /><Choice label={strings.checklists.archived} selected={archived} onPress={() => setArchived(true)} /></View></View>}
-    render={(item) => <Pressable style={styles.card} accessibilityRole="button" accessibilityLabel={item.title} onPress={() => router.push({ pathname: '/checklist/[id]', params: { id: item.id } })}><Text style={styles.label}>{item.title}</Text><Text>{strings.checklists.version(item.version)}</Text></Pressable>} />;
+    render={(item) => <Card label={item.title} onPress={() => router.push({ pathname: '/checklist/[id]', params: { id: item.id } })}><Text style={styles.label}>{item.title}</Text><Text>{strings.checklists.version(item.version)}</Text></Card>} />;
 }
 export function ChecklistHistoryScreen() {
   const params = useLocalSearchParams(); const templateId = identifier(params.templateId); const [mine, setMine] = useState(true); const query = useRuns(mine, templateId); const router = useRouter();
   return <Page query={query} data={query.data?.pages.flatMap((page) => page.items) ?? []} empty={strings.checklists.emptyRuns}
     header={<View style={styles.section}><View style={styles.choices}><Choice label={strings.checklists.mine} selected={mine} onPress={() => setMine(true)} /><Choice label={strings.checklists.allRuns} selected={!mine} onPress={() => setMine(false)} /></View></View>}
-    render={(item) => <Pressable style={styles.card} accessibilityRole="button" accessibilityLabel={`${item.titleSnapshot} ${displayDate(item.periodStart)}`} onPress={() => router.push({ pathname: '/execucao/[id]', params: { id: item.id } })}>
-      <Text style={styles.label}>{item.titleSnapshot}</Text><Text>{item.routineTitleSnapshot}</Text><Text>{displayDate(item.periodStart)} · {strings.checklists.status[item.status]}</Text><Text>{strings.checklists.progress(item.completedItems, item.totalItems)}</Text></Pressable>} />;
+    render={(item) => <Card label={`${item.titleSnapshot} ${displayDate(item.periodStart)}`} onPress={() => router.push({ pathname: '/execucao/[id]', params: { id: item.id } })}>
+      <Text style={styles.label}>{item.titleSnapshot}</Text><Text>{item.routineTitleSnapshot}</Text><Text>{displayDate(item.periodStart)} · {strings.checklists.status[item.status]}</Text><Text>{strings.checklists.progress(item.completedItems, item.totalItems)}</Text></Card>} />;
 }
 export function ChecklistDetailScreen() {
   const params = useLocalSearchParams(); const id = identifier(params.id); const query = useTemplate(id); const routine = useRoutine(query.data?.routineId); const api = useChecklistsApi();
@@ -57,11 +59,11 @@ export function ChecklistDetailScreen() {
   if (query.isPending) return <LoadingState />;
   if (query.isError) return <View><Text style={styles.error}>{checklistError(query.error)}</Text><ErrorState retry={() => void query.refetch()} /></View>;
   const template = query.data; const blocked = template.isArchived || routine.data?.isArchived; const busy = start.isPending || archive.isPending;
-  return <SafeAreaView style={styles.screen} edges={['bottom']}><FlashList data={template.items.map((text, index) => ({ text, index }))} keyExtractor={(item) => String(item.index)} contentContainerStyle={styles.content}
+  return <Screen><FlashList data={template.items.map((text, index) => ({ text, index }))} keyExtractor={(item) => String(item.index)} contentContainerStyle={styles.content}
     ListHeaderComponent={<View style={styles.section}><Text accessibilityRole="header" style={styles.title}>{template.title}</Text><Text>{strings.checklists.version(template.version)}</Text>
       <Button label={routine.data?.title ?? strings.routines.details} secondary onPress={() => router.push({ pathname: '/rotina/[id]', params: { id: template.routineId } })} />
       {blocked && <Text>{strings.checklists.archivedLabel}</Text>}</View>}
-    renderItem={({ item }) => <View style={styles.card}><Text style={styles.label}>{strings.checklists.item(item.index)}</Text><Text style={styles.text}>{item.text}</Text></View>}
+    renderItem={({ item }) => <Card><Text style={styles.label}>{strings.checklists.item(item.index)}</Text><Text style={styles.text}>{item.text}</Text></Card>}
     ListFooterComponent={<View style={styles.section}><Button label={strings.checklists.history} secondary onPress={() => router.push({ pathname: '/execucoes', params: { templateId: template.id } })} />
       {routine.isPending && <LoadingState />}{routine.isError && <ErrorState retry={() => void routine.refetch()} />}
       {!blocked && !!routine.data && <><Text>{strings.checklists.startHelp}</Text><Controller control={form.control} name="date" render={({ field, fieldState }) => <TextField label={strings.checklists.date} placeholder={strings.routines.datePlaceholder} value={field.value} onChangeText={field.onChange} onBlur={field.onBlur} editable={!busy} errorText={fieldState.error ? strings.routines.validation.specificDate : undefined} />} />
@@ -70,7 +72,7 @@ export function ChecklistDetailScreen() {
       {start.isError && <Text accessibilityRole="alert" style={styles.error}>{checklistError(start.error)}</Text>}
       {archive.isError && <Text accessibilityRole="alert" style={styles.error}>{checklistError(archive.error)}</Text>}
       {user?.role === 'CHEFE' && !template.isArchived && (!confirm ? <Button label={strings.checklists.archive} disabled={busy} secondary onPress={() => setConfirm(true)} /> : <><Text>{strings.checklists.archiveHelp}</Text><Button label={strings.checklists.confirmArchive} loading={archive.isPending} disabled={busy} onPress={() => archive.mutate()} /><Button label={strings.routines.cancel} secondary disabled={busy} onPress={() => setConfirm(false)} /></>)}
-    </View>} /></SafeAreaView>;
+    </View>} /></Screen>;
 }
 export function ChecklistRunScreen() {
   const params = useLocalSearchParams(); const id = identifier(params.id); const query = useRun(id); const mark = useMarkItem(id); const { user } = useSession();
@@ -78,14 +80,13 @@ export function ChecklistRunScreen() {
   if (query.isPending) return <LoadingState />;
   if (query.isError) return <View><Text style={styles.error}>{checklistError(query.error)}</Text><ErrorState retry={() => void query.refetch()} /></View>;
   const run = query.data; const editable = user?.role === 'CHEFE' || run.assigneeId === user?.id;
-  return <SafeAreaView style={styles.screen} edges={['bottom']}><FlashList data={run.items} keyExtractor={(item) => item.id} contentContainerStyle={styles.content} refreshing={query.isRefetching} onRefresh={() => void query.refetch()}
+  return <Screen><FlashList data={run.items} keyExtractor={(item) => item.id} contentContainerStyle={styles.content} refreshing={query.isRefetching} onRefresh={() => void query.refetch()}
     ListHeaderComponent={<View style={styles.section}><Text accessibilityRole="header" style={styles.title}>{run.titleSnapshot}</Text><Text>{run.routineTitleSnapshot}</Text><Text>{displayDate(run.periodStart)} · {strings.checklists.version(run.templateVersion)}</Text>
       <Text>{strings.checklists.status[run.status]}</Text><Text accessibilityLiveRegion="polite">{strings.checklists.progress(run.completedItems, run.totalItems)}</Text>
       <Text>{strings.checklists.snapshot}</Text><Text style={styles.text}>{run.instructionsSnapshot}</Text><Text>{run.assigneeId === user?.id ? strings.checklists.owner : editable ? strings.checklists.chiefCanMark : strings.checklists.readOnly}</Text>
       {mark.isError && <Text accessibilityRole="alert" style={styles.error}>{checklistError(mark.error)}</Text>}</View>}
-    renderItem={({ item }) => <View style={styles.card}><Pressable accessibilityRole="checkbox" accessibilityLabel={item.text} accessibilityState={{ checked: item.isCompleted, disabled: !editable || mark.isPending || query.isRefetching }}
-      disabled={!editable || mark.isPending || query.isRefetching} onPress={() => mark.mark(item.id, !item.isCompleted)}><Text style={styles.label}>{item.isCompleted ? '☑' : '☐'} {item.text}</Text></Pressable>
-      {item.completedById && item.completedAt && <MarkAuthor id={item.completedById} date={item.completedAt} />}</View>} /></SafeAreaView>;
+    renderItem={({ item }) => <Card><Checkbox label={item.text} checked={item.isCompleted} disabled={!editable || mark.isPending || query.isRefetching} onChange={(done) => mark.mark(item.id, done)} />
+      {item.completedById && item.completedAt && <MarkAuthor id={item.completedById} date={item.completedAt} />}</Card>} /></Screen>;
 }
 function MarkAuthor({ id, date }: { id: string; date: string }) {
   const api = useChecklistsApi(); const { user } = useSession(); const person = useQuery({ queryKey: ['checklist-person', id, user?.id], enabled: !!user && user.id !== id, retry: false, queryFn: ({ signal }) => api.person(id, signal) });

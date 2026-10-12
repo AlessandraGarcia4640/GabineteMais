@@ -17,7 +17,7 @@ function response(value: object) { return Promise.resolve(new Response(JSON.stri
 it('consulta pagina por cursor e abre detalhes sem manutenção para assessor', async () => {
   fetcher.mockImplementation((url) => response({ items: [contactFixture({ id: String(url).includes('cursor=') ? 'contact-2' : 'contact-1', name: String(url).includes('cursor=') ? 'Suporte Fictício' : 'Secretaria Fictícia' })], nextCursor: String(url).includes('cursor=') ? null : 'contact-1' }));
   fixture.show(<ContactListScreen />); await screen.findByRole('button', { name: 'Secretaria Fictícia' }); expect(screen.queryByRole('button', { name: strings.contacts.create })).toBeNull();
-  fireEvent.press(screen.getByRole('button', { name: strings.dashboard.loadMore })); await screen.findByRole('button', { name: 'Suporte Fictício' }); expect(fetcher.mock.calls.some((call) => String(call[0]).includes('cursor=contact-1'))).toBe(true);
+  fireEvent.press(screen.getByRole('button', { name: strings.feedback.loadMore })); await screen.findByRole('button', { name: 'Suporte Fictício' }); expect(fetcher.mock.calls.some((call) => String(call[0]).includes('cursor=contact-1'))).toBe(true);
   fireEvent.press(screen.getByRole('button', { name: 'Secretaria Fictícia' })); expect(mockPush).toHaveBeenCalledWith({ pathname: '/contato/[id]', params: { id: 'contact-1' } });
 });
 it('filtros são enviados ao servidor e limpar volta ao catálogo ativo', async () => {
@@ -28,10 +28,10 @@ it('filtros são enviados ao servidor e limpar volta ao catálogo ativo', async 
   fireEvent.press(screen.getByRole('button', { name: strings.contacts.clearFilters })); await screen.findByText(strings.contacts.empty); expect(screen.getByLabelText(strings.contacts.search).props.value).toBe(''); expect(screen.getByRole('radio', { name: strings.contacts.active }).props.accessibilityState.checked).toBe(true);
 });
 it('falha inicial permite tentar novamente e falha na próxima página preserva registros', async () => {
-  fetcher.mockRejectedValue(new Error('offline')); fixture.show(<ContactListScreen />); await screen.findByText(strings.dashboard.error);
+  fetcher.mockRejectedValue(new Error('offline')); fixture.show(<ContactListScreen />); await screen.findByText(strings.feedback.error);
   fetcher.mockImplementation((url) => String(url).includes('cursor=') ? Promise.reject(new Error('offline')) : response({ items: [contactFixture()], nextCursor: 'contact-1' }));
-  fireEvent.press(screen.getByRole('button', { name: strings.dashboard.retry })); await screen.findByText('Secretaria Fictícia'); fireEvent.press(screen.getByRole('button', { name: strings.dashboard.loadMore }));
-  await screen.findByText(strings.dashboard.updatingError); expect(screen.getByRole('button', { name: 'Secretaria Fictícia' })).toBeTruthy();
+  fireEvent.press(screen.getByRole('button', { name: strings.feedback.retry })); await screen.findByText('Secretaria Fictícia'); fireEvent.press(screen.getByRole('button', { name: strings.feedback.loadMore }));
+  await screen.findByText(strings.feedback.updatingError); expect(screen.getByRole('button', { name: 'Secretaria Fictícia' })).toBeTruthy();
 });
 it('detalhes exibem canais, etiquetas e observações; consulta não oferece edição', async () => {
   mockParams = { id: 'contact-1' }; fetcher.mockImplementation(() => response(contactFixture())); fixture.show(<ContactDetailScreen />);

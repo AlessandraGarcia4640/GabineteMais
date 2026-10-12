@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
+import { Screen } from '../../components/screen';
 import { FlashList } from '@shopify/flash-list';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +10,7 @@ import { Button } from '../../components/button';
 import { TextField } from '../../components/text-field';
 import { strings } from '../../lib/strings';
 import { theme } from '../../lib/theme';
-import { Choice } from '../routines/choice';
+import { Choice } from '../../components/choice';
 import { useSession, useSessionManager } from '../../providers/session-provider';
 import { contactChanges, contactFormSchema, contactPayload, initialContactValues, type ContactFormValues } from './model';
 import { contactError, useContactsApi } from './hooks';
@@ -33,7 +33,7 @@ export function ContactForm({ contact, onSaved, onCancel }: { contact?: Contact;
     } catch (error) { setMessage(error instanceof Error ? contactError(error) : strings.contacts.requestError); }
   }
   const busy = save.isPending || form.formState.isSubmitting; const textFields = ['name', 'organization', 'jobTitle', 'email', 'notes'] satisfies (keyof ContactFormValues)[];
-  return <SafeAreaView style={styles.screen} edges={['bottom']}><KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+  return <Screen keyboard>
     <FlashList data={entries} keyExtractor={(entry) => `${entry.kind}:${entry.id}`} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
       ListHeaderComponent={<View style={styles.section}>{textFields.map((name) => <Controller key={name} control={form.control} name={name} render={({ field, fieldState }) => <TextField
         label={strings.contacts[name]} value={typeof field.value === 'string' ? field.value : ''} onChangeText={field.onChange} onBlur={field.onBlur} editable={!busy} multiline={name === 'notes'}
@@ -54,6 +54,6 @@ export function ContactForm({ contact, onSaved, onCancel }: { contact?: Contact;
         <Button label={strings.routines.cancel} secondary disabled={busy} onPress={() => { if (dirty) setDiscard(true); else onCancel(); }} />
         {discard && <><Text>{strings.routines.unsavedTitle}</Text><Text>{strings.routines.unsavedDescription}</Text><Button label={strings.routines.discard} onPress={onCancel} /><Button label={strings.routines.continueEditing} secondary onPress={() => setDiscard(false)} /></>}
       </View>} />
-  </KeyboardAvoidingView></SafeAreaView>;
+  </Screen>;
 }
-const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: theme.background }, content: { padding: 20 }, section: { gap: 12, paddingBottom: 20 }, label: { color: theme.text, fontSize: 16, fontWeight: '600' }, choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, error: { color: theme.danger } });
+const styles = StyleSheet.create({ content: { padding: 20 }, section: { gap: 12, paddingBottom: 20 }, label: { color: theme.text, fontSize: 16, fontWeight: '600' }, choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, error: { color: theme.danger } });
