@@ -24,8 +24,8 @@ it.skipIf(!process.env.TEST_DATABASE_URL)('orientações: cliente mobile real, c
     const noop = await admin.update(created.id, { expectedVersion: 2, title: current.title }); expect(noop.version).toBe(2);
     const first = guidelineVersionPageSchema.parse((await request(app).get(`/guidelines/${created.id}/versions`).query({ limit: 1 }).set('Authorization', `Bearer ${await member.authorized((token) => Promise.resolve(token))}`).expect(200)).body);
     expect(first.items[0]?.version).toBe(2); expect(first.nextCursor).toBe('2'); expect((await reader.history(created.id, first.nextCursor ?? undefined)).items[0]?.version).toBe(1);
-    await expect(fixture.client.query('UPDATE guideline_versions SET title = $1 WHERE guideline_id = $2', ['Indevido', created.id])).rejects.toThrow('immutable');
-    await expect(fixture.client.query('DELETE FROM guideline_versions WHERE guideline_id = $1', [created.id])).rejects.toThrow('immutable');
+    await expect(fixture.client.query('UPDATE guideline_versions SET title = $1 WHERE "guidelineId" = $2', ['Indevido', created.id])).rejects.toThrow('immutable');
+    await expect(fixture.client.query('DELETE FROM guideline_versions WHERE "guidelineId" = $1', [created.id])).rejects.toThrow('immutable');
     await admin.archive(created.id); await admin.archive(created.id); expect((await reader.get(created.id)).isArchived).toBe(true); expect((await reader.version(created.id, 1)).content).toBe(payload.content);
     await expect(admin.update(created.id, { expectedVersion: 2, title: 'Indevido' })).rejects.toMatchObject({ status: 409 });
     const { seedDemoGuidelines } = await import('../modules/guidelines/guidelines.repository.js'); await seedDemoGuidelines(); await seedDemoGuidelines();
