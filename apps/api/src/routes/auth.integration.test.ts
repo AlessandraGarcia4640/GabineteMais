@@ -169,4 +169,14 @@ describe('RF00 auth endpoints', () => {
     expect(replay.status).toBe(401);
     expect(replayBody.error.code).toBe('INVALID_REFRESH_TOKEN');
   });
+  it('rejeita refresh token inválido', async () => {
+    const response = await request(app).post('/auth/refresh').send({
+      refreshToken: 'token-invalido',
+    });
+    const body = errorResponseSchema.parse(response.body as unknown);
+
+    expect(response.status).toBe(401);
+    expect(body.error.code).toBe('INVALID_REFRESH_TOKEN');
+  });
+
 });
