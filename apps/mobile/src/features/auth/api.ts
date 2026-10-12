@@ -13,9 +13,11 @@ export interface AuthApi {
 export class HttpAuthApi implements AuthApi {
   constructor(private readonly configuredUrl: string | undefined, private readonly fetcher: typeof fetch = fetch) {}
   get baseUrl(): string {
-    const value = z.url().refine((url) => /^https?:\/\//.test(url)).safeParse(this.configuredUrl);
+    const value = z.url().safeParse(this.configuredUrl);
     if (!value.success) throw new AuthFailure('configuration');
-    return value.data.replace(/\/+$/, '');
+    const url = new URL(value.data);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new AuthFailure('configuration');
+    return url.toString().replace(/\/+$/, '');
   }
   private async request<T>(path: string, schema: z.ZodType<T>, body?: object, accessToken?: string, signal?: AbortSignal, method?: 'POST' | 'PATCH' | 'DELETE'): Promise<T> {
     const baseUrl = this.baseUrl; const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 12000);
