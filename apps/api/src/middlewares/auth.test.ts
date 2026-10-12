@@ -24,6 +24,14 @@ describe('auth middleware', () => {
     expect(response.status).toBe(401);
   });
 
+  it('rejeita access token inválido', async () => {
+    const response = await request(createTestApp())
+      .get('/protected')
+      .set('Authorization', 'Bearer token-invalido');
+
+    expect(response.status).toBe(401);
+  });
+
   it('aceita access token válido', async () => {
     const token = signAccessToken('user-1', 'ASSESSOR');
     const response = await request(createTestApp())
