@@ -1,18 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { verifyAccessToken, type AuthRole } from '../lib/tokens.js';
 
-declare global {
-  namespace Express {
-    interface Request {
-      auth?: {
-        userId: string;
-        role: AuthRole;
-      };
-    }
-  }
-}
-
-export const requireAuth = async (
+export const requireAuth = (
   request: Request,
   response: Response,
   next: NextFunction,
@@ -30,9 +19,9 @@ export const requireAuth = async (
   }
 
   try {
-    const payload = await verifyAccessToken(authorization.slice(7));
+    const payload = verifyAccessToken(authorization.slice(7));
     request.auth = {
-      userId: payload.sub as string,
+      userId: payload.sub,
       role: payload.role,
     };
     next();
