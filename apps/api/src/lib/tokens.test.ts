@@ -8,17 +8,17 @@ import {
 } from './tokens.js';
 
 describe('tokens', () => {
-  it('emite e valida access token com perfil', async () => {
-    const token = await signAccessToken('user-1', 'CHEFE');
-    const payload = await verifyAccessToken(token);
+  it('emite e valida access token com perfil', () => {
+    const token = signAccessToken('user-1', 'CHEFE');
+    const payload = verifyAccessToken(token);
 
     expect(payload.sub).toBe('user-1');
     expect(payload.role).toBe('CHEFE');
   });
 
-  it('emite e valida refresh token', async () => {
-    const token = await signRefreshToken('user-1');
-    const payload = await verifyRefreshToken(token);
+  it('emite e valida refresh token', () => {
+    const token = signRefreshToken('user-1');
+    const payload = verifyRefreshToken(token);
 
     expect(payload.sub).toBe('user-1');
     expect(payload.tokenType).toBe('refresh');
