@@ -1,21 +1,15 @@
-import { afterAll, describe, expect, it } from 'vitest';
-import { demoUsers } from './demo-users.js';
+import { describe, expect, it } from 'vitest';
+import { createIntegrationFixture } from '../../testing/database.test-helper.js';
 import { hashPassword, verifyPassword } from './password.js';
 
 describe.skipIf(!process.env.TEST_DATABASE_URL)('seed em PostgreSQL descartável', () => {
   it('preserva senha, ativação e histórico ao executar novamente', async () => {
-    const testUrl = process.env.TEST_DATABASE_URL;
-    if (!testUrl) throw new Error('TEST_DATABASE_URL é obrigatória.');
-    process.env.DATABASE_URL = testUrl;
+    const fixture = await createIntegrationFixture(); await fixture.reset();
+    try {
     const { prisma } = await import('../../lib/prisma.js');
     const { seedDemoUsers } = await import('./users.repository.js');
-    const emails = demoUsers.map((user) => user.email);
-    const unexpected = await prisma.user.count({ where: { email: { notIn: emails } } });
-    if (unexpected !== 0) throw new Error('Banco não é exclusivo da demonstração.');
-    await prisma.$transaction([
-      prisma.userPositionHistory.deleteMany({ where: { user: { email: { in: emails } } } }),
-      prisma.user.deleteMany({ where: { email: { in: emails } } }),
-    ]);
+    // This connection belongs only to the generated fixture database, never TEST_DATABASE_URL itself.
+    await fixture.client.query('TRUNCATE TABLE users CASCADE');
 
     const firstHash = await hashPassword('senha-primeira-ficticia');
     await seedDemoUsers(firstHash);
@@ -39,10 +33,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('seed em PostgreSQL descartável
     expect(after.map((user) => user.passwordHash)).toEqual(before.map((user) => user.passwordHash));
     expect(after.find((user) => user.email === 'apoio@example.invalid')?.isActive).toBe(false);
     for (const user of after) expect(await verifyPassword(user.passwordHash, 'senha-primeira-ficticia')).toBe(true);
+    } finally { await fixture.close(); }
   });
 
-  afterAll(async () => {
-    const { prisma } = await import('../../lib/prisma.js');
-    await prisma.$disconnect();
-  });
 });
