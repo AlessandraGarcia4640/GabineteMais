@@ -1,6 +1,7 @@
 import {
   createHash,
   createHmac,
+  randomUUID,
   timingSafeEqual,
 } from 'node:crypto';
 import { env } from './env.js';
@@ -19,6 +20,7 @@ interface AccessPayload extends BasePayload {
 
 interface RefreshPayload extends BasePayload {
   tokenType: 'refresh';
+  jti: string;
 }
 
 const base64url = (value: string): string =>
@@ -119,7 +121,7 @@ export const signAccessToken = (
 
 export const signRefreshToken = (userId: string): string =>
   createToken(
-    { sub: userId, tokenType: 'refresh' },
+    { sub: userId, tokenType: 'refresh', jti: randomUUID() },
     env.JWT_REFRESH_SECRET,
     env.JWT_REFRESH_TTL,
   );
@@ -143,11 +145,11 @@ export const verifyRefreshToken = (token: string): RefreshPayload => {
   const raw = verifyRawToken(token, env.JWT_REFRESH_SECRET);
   const base = readBasePayload(raw);
 
-  if (raw.tokenType !== 'refresh') {
+  if (raw.tokenType !== 'refresh' || typeof raw.jti !== 'string') {
     throw new Error('INVALID_REFRESH_TOKEN');
   }
 
-  return { ...base, tokenType: 'refresh' };
+  return { ...base, tokenType: 'refresh', jti: raw.jti };
 };
 
 export const hashToken = (token: string): string =>
