@@ -1,0 +1,14 @@
+{
+  "id": "mock-template",
+  "routineId": "mock-routine",
+  "title": "Checklist fictício",
+  "items": [
+    "Conferir expediente"
+  ],
+  "version": 1,
+  "isArchived": false,
+  "createdById": "mock-user",
+  "updatedById": "mock-user",
+  "createdAt": "2026-10-11T12:00:00Z",
+  "updatedAt": "2026-10-11T12:00:00Z"
+}

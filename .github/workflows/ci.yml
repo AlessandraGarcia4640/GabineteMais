@@ -8,6 +8,21 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: gabinete_test
+          POSTGRES_PASSWORD: gabinete_test
+          POSTGRES_DB: gabinete_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U gabinete_test -d gabinete_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      NODE_ENV: test
+      JWT_ACCESS_SECRET: issue24-ci-only-not-a-production-secret
+      DATABASE_URL: postgresql://gabinete_test:gabinete_test@localhost:5432/gabinete_test
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -18,4 +33,31 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate
+      - run: pnpm --filter @gabinete-plus/api exec prisma migrate deploy
       - run: pnpm check
+      - name: Confirm mobile stability
+        run: pnpm --filter @gabinete-plus/mobile test
+      - run: pnpm test:integration
+        env:
+          TEST_DATABASE_URL: postgresql://gabinete_test:gabinete_test@localhost:5432/gabinete_test
+      - name: Confirm integration stability
+        run: pnpm test:integration
+        env:
+          TEST_DATABASE_URL: postgresql://gabinete_test:gabinete_test@localhost:5432/gabinete_test
+      - run: pnpm db:seed
+        env:
+          DEMO_SEED_PASSWORD: demo-ci-password-only
+          DEMO_REFERENCE_DATE: '2026-10-12'
+      - run: pnpm db:seed
+        env:
+          DEMO_SEED_PASSWORD: demo-ci-password-only
+          DEMO_REFERENCE_DATE: '2026-10-12'
+      - name: Verify backup and restore in isolated database
+        run: node scripts/db-transfer.integration.mjs
+        env:
+          GABINETE_TEST_CONTAINER: ${{ job.services.postgres.id }}
+      - run: pnpm build
+      - run: pnpm --filter @gabinete-plus/mobile export:web
+        env:
+          EXPO_PUBLIC_API_URL: http://localhost:3333

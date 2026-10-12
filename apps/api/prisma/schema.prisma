@@ -13,6 +13,13 @@ enum UserRole {
   APOIO
 }
 
+enum UserPosition {
+  MAGISTRADO_GESTOR
+  ASSESSOR_CHEFE
+  ASSESSOR
+  APOIO
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -22,6 +29,277 @@ model User {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  positionHistory UserPositionHistory[]
+  authSessions AuthSession[]
+  createdRoutines Routine[] @relation("RoutineCreator")
+  updatedRoutines Routine[] @relation("RoutineEditor")
+  createdChecklistTemplates ChecklistTemplate[] @relation("ChecklistCreator")
+  updatedChecklistTemplates ChecklistTemplate[] @relation("ChecklistEditor")
+  createdChecklistRuns ChecklistRun[] @relation("RunCreator")
+  assignedChecklistRuns ChecklistRun[] @relation("RunAssignee")
+  completedChecklistItems ChecklistRunItem[] @relation("ItemCompleter")
+  createdContacts Contact[] @relation("ContactCreator")
+  updatedContacts Contact[] @relation("ContactEditor")
+  createdTasks Task[] @relation("TaskCreator")
+  updatedTasks Task[] @relation("TaskEditor")
+  assignedTasks Task[] @relation("TaskAssignee")
+  completedTasks Task[] @relation("TaskCompleter")
+  cancelledTasks Task[] @relation("TaskCanceller")
+  taskEvents TaskEvent[] @relation("TaskEventActor")
+  previousTaskAssignments TaskEvent[] @relation("TaskPreviousAssignee")
+  nextTaskAssignments TaskEvent[] @relation("TaskNextAssignee")
 
   @@map("users")
+}
+
+model UserPositionHistory {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  position  UserPosition
+  role      UserRole
+  startedAt DateTime     @default(now())
+  endedAt   DateTime?
+
+  @@index([userId, startedAt])
+  @@map("user_position_history")
+}
+
+model AuthSession {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+  refreshTokens RefreshToken[]
+
+  @@index([userId, revokedAt])
+  @@map("auth_sessions")
+}
+
+model RefreshToken {
+  id         String      @id @default(uuid())
+  sessionId  String
+  session    AuthSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tokenHash  String      @unique @db.Char(64)
+  createdAt  DateTime    @default(now())
+  consumedAt DateTime?
+
+  @@index([sessionId])
+  @@map("refresh_tokens")
+}
+
+enum RoutineFrequency {
+  DIARIA
+  SEMANAL
+  QUINZENAL
+  MENSAL
+  EVENTUAL
+  PERSONALIZADA
+  A_DEFINIR
+}
+
+model Routine {
+  id String @id @default(cuid())
+  title String @db.VarChar(200)
+  category String @db.VarChar(100)
+  frequency RoutineFrequency
+  description String @default("")
+  instructions String @default("")
+  steps String[] @default([])
+  frequencyDetails String?
+  specificDate DateTime? @db.Date
+  defaultPosition UserPosition?
+  essentialForTransition Boolean @default(false)
+  isArchived Boolean @default(false)
+  createdById String
+  createdBy User @relation("RoutineCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById String
+  updatedBy User @relation("RoutineEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  checklistTemplates ChecklistTemplate[]
+  checklistRuns ChecklistRun[]
+  tasks Task[]
+
+  @@index([isArchived, id])
+  @@index([frequency, isArchived, id])
+  @@index([category, isArchived, id])
+  @@map("routines")
+}
+
+enum ChecklistStatus {
+  POR_FAZER
+  EM_ANDAMENTO
+  CONCLUIDA
+}
+
+model ChecklistTemplate {
+  id String @id @default(cuid())
+  routineId String
+  routine Routine @relation(fields: [routineId], references: [id], onDelete: Restrict)
+  title String @db.VarChar(200)
+  items String[]
+  version Int @default(1)
+  isArchived Boolean @default(false)
+  createdById String
+  createdBy User @relation("ChecklistCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById String
+  updatedBy User @relation("ChecklistEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  runs ChecklistRun[]
+
+  @@index([routineId, isArchived, id])
+  @@map("checklist_templates")
+}
+
+model ChecklistRun {
+  id String @id @default(cuid())
+  templateId String
+  template ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  routineId String
+  routine Routine @relation(fields: [routineId], references: [id], onDelete: Restrict)
+  assigneeId String
+  assignee User @relation("RunAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  createdById String
+  createdBy User @relation("RunCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  titleSnapshot String
+  routineTitleSnapshot String
+  instructionsSnapshot String
+  frequencySnapshot RoutineFrequency
+  templateVersion Int
+  periodKey String @db.VarChar(40)
+  periodStart DateTime @db.Date
+  periodEnd DateTime @db.Date
+  status ChecklistStatus @default(POR_FAZER)
+  totalItems Int
+  completedItems Int @default(0)
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items ChecklistRunItem[]
+  tasks Task[]
+
+  @@unique([templateId, periodKey])
+  @@index([assigneeId, periodStart, id])
+  @@index([routineId, periodStart, id])
+  @@map("checklist_runs")
+}
+
+model ChecklistRunItem {
+  id String @id @default(cuid())
+  runId String
+  run ChecklistRun @relation(fields: [runId], references: [id], onDelete: Restrict)
+  position Int
+  text String
+  isCompleted Boolean @default(false)
+  completedById String?
+  completedBy User? @relation("ItemCompleter", fields: [completedById], references: [id], onDelete: Restrict)
+  completedAt DateTime?
+
+  @@unique([runId, position])
+  @@map("checklist_run_items")
+}
+
+model Contact {
+  id String @id @default(cuid())
+  name String @db.VarChar(150)
+  organization String @db.VarChar(200)
+  jobTitle String @default("") @db.VarChar(150)
+  phones String[] @default([])
+  email String? @db.VarChar(254)
+  notes String @default("")
+  tags String[] @default([])
+  isKeyContact Boolean @default(false)
+  isArchived Boolean @default(false)
+  searchText String
+  createdById String
+  createdBy User @relation("ContactCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById String
+  updatedBy User @relation("ContactEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tasks Task[]
+
+  @@index([isArchived, id])
+  @@index([isKeyContact, isArchived, id])
+  @@map("contacts")
+}
+
+enum TaskStatus {
+  ABERTA
+  EM_ANDAMENTO
+  CONCLUIDA
+  CANCELADA
+}
+enum TaskPriority {
+  BAIXA
+  NORMAL
+  ALTA
+  URGENTE
+}
+enum TaskEventType {
+  CREATED
+  EDITED
+  REASSIGNED
+  STATUS_CHANGED
+}
+model Task {
+  id String @id @default(cuid())
+  title String @db.VarChar(200)
+  description String @default("")
+  instructions String @default("")
+  dueDate DateTime? @db.Date
+  priority TaskPriority @default(NORMAL)
+  priorityRank Int @default(1)
+  status TaskStatus @default(ABERTA)
+  assigneeId String
+  assignee User @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  createdById String
+  createdBy User @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById String
+  updatedBy User @relation("TaskEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  routineId String?
+  routine Routine? @relation(fields: [routineId], references: [id], onDelete: Restrict)
+  checklistRunId String?
+  checklistRun ChecklistRun? @relation(fields: [checklistRunId], references: [id], onDelete: Restrict)
+  contactId String?
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  startedAt DateTime?
+  completedAt DateTime?
+  completedById String?
+  completedBy User? @relation("TaskCompleter", fields: [completedById], references: [id], onDelete: Restrict)
+  cancelledAt DateTime?
+  cancelledById String?
+  cancelledBy User? @relation("TaskCanceller", fields: [cancelledById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  events TaskEvent[]
+
+  @@index([status, assigneeId, dueDate])
+  @@index([dueDate, priorityRank, id])
+  @@index([checklistRunId, status])
+  @@map("tasks")
+}
+model TaskEvent {
+  id String @id @default(cuid())
+  taskId String
+  task Task @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  actorId String
+  actor User @relation("TaskEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+  type TaskEventType
+  fromStatus TaskStatus?
+  toStatus TaskStatus?
+  fromAssigneeId String?
+  fromAssignee User? @relation("TaskPreviousAssignee", fields: [fromAssigneeId], references: [id], onDelete: Restrict)
+  toAssigneeId String?
+  toAssignee User? @relation("TaskNextAssignee", fields: [toAssigneeId], references: [id], onDelete: Restrict)
+  changedFields String[] @default([])
+  createdAt DateTime @default(now())
+
+  @@index([taskId, id])
+  @@map("task_events")
 }

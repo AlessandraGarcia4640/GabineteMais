@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": "mock-contact",
+      "name": "Secretaria Fictícia",
+      "organization": "Tribunal de Demonstração",
+      "jobTitle": "Secretaria",
+      "phones": [],
+      "email": "secretaria@example.invalid",
+      "notes": "Contato fictício",
+      "tags": [
+        "secretaria",
+        "sessões"
+      ],
+      "isKeyContact": true,
+      "isArchived": false,
+      "createdById": "mock-user",
+      "updatedById": "mock-user",
+      "createdAt": "2026-10-11T12:00:00Z",
+      "updatedAt": "2026-10-11T12:00:00Z"
+    }
+  ],
+  "nextCursor": null
+}

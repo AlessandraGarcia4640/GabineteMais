@@ -8,21 +8,28 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src prisma.config.ts --max-warnings=0",
+    "lint": "eslint src prisma.config.ts vitest.integration.config.ts --max-warnings=0",
     "test": "vitest run",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "docs:generate": "tsx src/documentation/generate.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@gabinete-plus/shared": "workspace:*",
+    "@node-rs/argon2": "^2.2.2",
     "@prisma/adapter-pg": "latest",
     "@prisma/client": "latest",
     "cors": "latest",
     "dotenv": "latest",
     "express": "^5.0.0",
+    "express-rate-limit": "^8.0.0",
     "helmet": "latest",
+    "jose": "^6.1.0",
     "pg": "latest",
+    "swagger-ui-dist": "5.33.1",
+    "yaml": "2.9.0",
     "zod": "latest"
   },
   "devDependencies": {
@@ -33,6 +40,8 @@
     "prisma": "latest",
     "supertest": "latest",
     "tsx": "latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "@types/swagger-ui-dist": "3.30.6",
+    "@apidevtools/swagger-parser": "12.1.0"
   }
 }

@@ -1,0 +1,23 @@
+{
+  "id": "demo-task-conferencia",
+  "title": "Conferir expediente fictício",
+  "description": "",
+  "instructions": "",
+  "dueDate": null,
+  "priority": "NORMAL",
+  "assigneeId": "demo-assessor",
+  "routineId": null,
+  "checklistRunId": null,
+  "contactId": null,
+  "createdById": "demo-chief",
+  "updatedById": "demo-chief",
+  "status": "ABERTA",
+  "isOverdue": false,
+  "startedAt": null,
+  "completedAt": null,
+  "completedById": null,
+  "cancelledAt": null,
+  "cancelledById": null,
+  "createdAt": "2026-10-11T12:00:00Z",
+  "updatedAt": "2026-10-11T12:00:00Z"
+}

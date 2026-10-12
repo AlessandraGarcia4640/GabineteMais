@@ -8,17 +8,22 @@
     "pnpm": ">=11.0.0"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter @gabinete-plus/api --filter @gabinete-plus/mobile dev",
-    "dev:api": "pnpm --filter @gabinete-plus/api dev",
-    "dev:mobile": "pnpm --filter @gabinete-plus/mobile start",
+    "dev": "pnpm --filter @gabinete-plus/shared build && pnpm --parallel --filter @gabinete-plus/api --filter @gabinete-plus/mobile dev",
+    "dev:api": "pnpm --filter @gabinete-plus/shared build && pnpm --filter @gabinete-plus/api dev",
+    "dev:mobile": "pnpm --filter @gabinete-plus/shared build && pnpm --filter @gabinete-plus/mobile start",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
     "lint": "pnpm -r --if-present lint",
     "test": "pnpm -r --if-present test",
-    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "check": "pnpm --filter @gabinete-plus/shared build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:operations",
+    "test:operations": "node --test scripts/db-transfer.test.mjs",
+    "db:backup": "node --env-file=.env scripts/db-backup.mjs",
+    "db:restore": "node --env-file=.env scripts/db-restore.mjs",
     "db:generate": "pnpm --filter @gabinete-plus/api prisma:generate",
     "db:migrate": "pnpm --filter @gabinete-plus/api prisma:migrate",
-    "db:seed": "pnpm --filter @gabinete-plus/api seed"
+    "db:seed": "pnpm --filter @gabinete-plus/api seed",
+    "docs:generate": "pnpm --filter @gabinete-plus/shared build && pnpm --filter @gabinete-plus/api docs:generate",
+    "test:integration": "pnpm --filter @gabinete-plus/shared build && pnpm --filter @gabinete-plus/api test:integration"
   },
   "devDependencies": {
     "@eslint/js": "latest",
