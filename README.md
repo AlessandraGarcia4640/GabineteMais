@@ -5,7 +5,7 @@ Aplicativo mobile e API para gestão de rotinas administrativas em gabinetes de 
 ## Preparação
 
 ```powershell
-Copy-Item .env.example .env
+if (-not (Test-Path -LiteralPath .env)) { Copy-Item .env.example .env }
 Set-ExecutionPolicy -Scope Process Bypass
 .\bootstrap.ps1
 ```
@@ -68,11 +68,21 @@ permanecem planejados. A interface local fica desabilitada em produção.
 O app possui login integrado à API, rotas protegidas e recuperação da sessão com
 armazenamento seguro no Android/iOS. Configure `apps/mobile/.env` e consulte
 [o guia do login mobile](docs/login-mobile.md). No navegador, a sessão fica em memória.
-O perfil e a saída ficam disponíveis na área protegida; cadastro, edição e execução
-dos demais módulos continuarão nas próximas etapas da Fase 4.
+O perfil e a saída ficam disponíveis na área protegida. RF00–RF04 possuem fluxos
+mobile de consulta, manutenção e execução integrados à API.
 
 [Rotinas no aplicativo](docs/rotinas-mobile.md) já possuem catálogo, busca, filtros,
 detalhes e manutenção pela chefia, com passos ordenados e arquivamento confirmado.
 
 A tela [Hoje](docs/dashboard-mobile.md) exibe tarefas pendentes próprias e rotinas
 do dia obtidas da API, com atalhos para consultas paginadas e perfil.
+
+Consulte [contatos mobile](docs/contatos-mobile.md), [checklists mobile](docs/checklists-mobile.md),
+[tarefas mobile](docs/tarefas-mobile.md), [acessibilidade](docs/acessibilidade.md),
+[testes mobile](docs/testes-mobile.md) e [integração/limitações](docs/integracao-mobile-api.md).
+
+Para recriar os cenários fictícios, veja [demonstração](docs/demonstracao.md).
+O [guia de operação e continuidade](docs/operacao-e-transicao.md) reúne instalação,
+configuração, manutenção e backup/restauração verificável. Componentes estão documentados
+em [src/components](apps/mobile/src/components/README.md). RF05/RF06 e validação em aparelhos
+seguem pendentes; PRs empilhados em rascunho não estão automaticamente na main.
