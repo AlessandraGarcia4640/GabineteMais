@@ -8,3 +8,4 @@ export * from './contacts.js';
 export * from './tasks.js';
 export * from './guidelines.js';
 export * from './transition.js';
+export * from './connection.js';

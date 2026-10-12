@@ -8,7 +8,7 @@ import { ApiFailure } from '../../lib/api-error';
 import { strings } from '../../lib/strings';
 import { ChecklistsApi } from './api';
 import { optimisticMark } from './model';
-export function useChecklistsApi() { const manager = useSessionManager(); return useMemo(() => new ChecklistsApi(new HttpAuthApi(process.env.EXPO_PUBLIC_API_URL), manager), [manager]); }
+export function useChecklistsApi() { const manager = useSessionManager(); return useMemo(() => new ChecklistsApi(new HttpAuthApi(manager.apiUrl), manager), [manager]); }
 export function useTemplate(id?: string) { const api = useChecklistsApi(); const { user } = useSession(); return useQuery({ queryKey: ['checklist-template', id, user?.id], enabled: !!id && !!user, retry: false, queryFn: ({ signal }) => api.template(id ?? '', signal) }); }
 export function useRun(id?: string) { const api = useChecklistsApi(); const { user } = useSession(); return useQuery({ queryKey: ['checklist-run', id, user?.id], enabled: !!id && !!user, retry: false, queryFn: ({ signal }) => api.run(id ?? '', signal) }); }
 export function useTemplates(archived: boolean, routineId?: string) {

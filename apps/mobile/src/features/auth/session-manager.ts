@@ -6,6 +6,7 @@ import type { SessionStorage, StoredSession } from './storage.js';
 interface Dependencies { api: AuthApi; storage: SessionStorage; clearCache: () => void; now?: () => number }
 export class SessionManager {
   readonly store = createSessionStore();
+  get apiUrl(): string { return this.dependencies.api.baseUrl; }
   private credentials: LoginResponse | null = null;
   private accessExpiresAt = 0;
   private retainedRefreshToken: string | null = null;

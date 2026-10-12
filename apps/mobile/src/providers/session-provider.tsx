@@ -1,3 +1,4 @@
+import { useConnection } from '../features/auth/connection-gate';
 import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
 import { AppState } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -8,8 +9,8 @@ import { secureSessionStorage } from '../features/auth/storage';
 import { SessionManager } from '../features/auth/session-manager';
 export const SessionContext = createContext<SessionManager | null>(null);
 export function SessionProvider({ children }: PropsWithChildren) {
-  const client = useQueryClient();
-  const [manager] = useState(() => new SessionManager({ api: queryAuthApi(client, new HttpAuthApi(process.env.EXPO_PUBLIC_API_URL)), storage: secureSessionStorage, clearCache: () => client.clear() }));
+  const client = useQueryClient(); const connection = useConnection();
+  const [manager] = useState(() => new SessionManager({ api: queryAuthApi(client, new HttpAuthApi(connection?.url ?? process.env.EXPO_PUBLIC_API_URL)), storage: secureSessionStorage, clearCache: () => client.clear() }));
   useEffect(() => {
     void manager.start();
     const subscription = AppState.addEventListener('change', (state) => { if (state === 'active') void manager.validate(); });

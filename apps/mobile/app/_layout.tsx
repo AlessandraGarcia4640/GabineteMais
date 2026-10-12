@@ -1,3 +1,4 @@
+import { ConnectionGate } from '../src/features/auth/connection-gate';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -13,5 +14,5 @@ function SessionRoutes() {
   </Stack><StatusBar style="dark" /></SessionGate>;
 }
 export default function RootLayout() {
-  return <QueryProvider><SessionProvider><SafeAreaProvider><SessionRoutes /></SafeAreaProvider></SessionProvider></QueryProvider>;
+  return <QueryProvider><ConnectionGate><SessionProvider><SafeAreaProvider><SessionRoutes /></SafeAreaProvider></SessionProvider></ConnectionGate></QueryProvider>;
 }

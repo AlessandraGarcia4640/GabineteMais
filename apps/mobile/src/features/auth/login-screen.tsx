@@ -1,3 +1,4 @@
+import { useConnection } from './connection-gate';
 import { useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useMutation } from '@tanstack/react-query';
@@ -13,7 +14,7 @@ import { theme } from '../../lib/theme';
 import { useSession, useSessionManager } from '../../providers/session-provider';
 import { authMessage } from './errors';
 export function LoginScreen() {
-  const manager = useSessionManager(); const session = useSession();
+  const manager = useSessionManager(); const session = useSession(); const connection = useConnection();
   const [visible, setVisible] = useState(false); const [message, setMessage] = useState<string | null>(null);
   const form = useForm<LoginRequest>({ resolver: zodResolver(loginRequestSchema), defaultValues: { email: '', password: '' } });
   const login = useMutation({ mutationFn: (input: LoginRequest) => manager.login(input), retry: false, gcTime: 0 });
@@ -40,7 +41,7 @@ export function LoginScreen() {
     <Button label={visible ? strings.auth.hidePassword : strings.auth.showPassword} secondary disabled={login.isPending} onPress={() => setVisible(!visible)} />
     {!!notice && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{notice}</Text>}
     <Button label={login.isPending ? strings.auth.submitting : strings.auth.submit} loading={login.isPending} onPress={() => void form.handleSubmit(submit)()} />
-  </Card><Text style={styles.footnote}>{strings.auth.invitation}</Text>
+  </Card>{connection && <Button label={strings.connection.change} secondary disabled={login.isPending} onPress={() => { void connection.reset().catch(() => setMessage(strings.connection.storageError)); }} />}<Text style={styles.footnote}>{strings.auth.invitation}</Text>
     {Platform.OS === 'web' && <Text style={styles.footnote}>{strings.auth.webSession}</Text>}
   </AuthScreen>;
 }

@@ -84,3 +84,7 @@ Para recriar os cenários fictícios, veja [demonstração](docs/demonstracao.md
 O [guia de operação e continuidade](docs/operacao-e-transicao.md) reúne instalação,
 configuração, manutenção e backup/restauração verificável. Componentes estão documentados
 em [src/components](apps/mobile/src/components/README.md). A [transição](docs/guia-transicao.md) possui guia vivo e cópias imutáveis; validação em aparelhos e com usuários permanece pendente. O núcleo RF00–RF04 foi integrado à main pelo PR #97.
+
+## Prova de conceito Android
+
+Consulte [instalação Android](docs/android-validacao.md) e [protocolo de validação](docs/validacao/protocolo-poc.md). O instalador interno permite configurar o endereço do gabinete no primeiro acesso. A validação física e as sessões com participantes ainda devem ser registradas.

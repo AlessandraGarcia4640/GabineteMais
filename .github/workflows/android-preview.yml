@@ -1,0 +1,50 @@
+name: Android validation APK
+on:
+  pull_request:
+    paths: ['apps/mobile/**', 'packages/shared/**', 'pnpm-lock.yaml', '.github/workflows/android-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      EXPO_PREVIEW_ALLOW_HTTP: 'true'
+      NODE_ENV: production
+      CI: '1'
+      GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.workers.max=2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: pnpm install --frozen-lockfile --prod=false
+      - run: pnpm --filter @gabinete-plus/shared build
+      - name: Generate native validation project
+        run: pnpm --filter @gabinete-plus/mobile exec expo prebuild --platform android --no-install
+      - name: Build standalone internal APK
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,x86_64
+      - name: Record build identity and checksum
+        run: |
+          mkdir -p validation-apk
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk validation-apk/GabineteMais-validacao.apk
+          printf 'Repository: %s\nCommit: %s\nPurpose: internal validation; debug signing key\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > validation-apk/BUILD.txt
+          cd validation-apk
+          sha256sum GabineteMais-validacao.apk > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GabineteMais-validacao-${{ github.sha }}
+          path: validation-apk/
+          if-no-files-found: error
+          retention-days: 30

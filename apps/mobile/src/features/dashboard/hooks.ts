@@ -15,7 +15,7 @@ export function useGabineteDate() {
 }
 export function useDashboardApi() {
   const manager = useSessionManager();
-  return useMemo(() => new DashboardApi(new HttpAuthApi(process.env.EXPO_PUBLIC_API_URL), manager), [manager]);
+  return useMemo(() => new DashboardApi(new HttpAuthApi(manager.apiUrl), manager), [manager]);
 }
 export function useDashboardQueries(day: string) {
   const api = useDashboardApi(); const { user } = useSession(); const assigneeId = user?.id ?? '';
