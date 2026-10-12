@@ -1,4 +1,10 @@
+import {
+  authTokensSchema,
+  authUserSchema,
+  loginResponseSchema,
+} from '@gabinete-plus/shared';
 import request from 'supertest';
+import { z } from 'zod';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../app.js';
 import { hashPassword } from '../lib/password.js';
@@ -8,6 +14,13 @@ const app = createApp();
 const password = 'Gabinete+2026!';
 const activeEmail = 'teste.ativo@gabinete.local';
 const inactiveEmail = 'teste.inativo@gabinete.local';
+
+const errorResponseSchema = z.object({
+  error: z.object({
+    code: z.string(),
+    message: z.string(),
+  }),
+});
 
 const createUser = async (
   email: string,
@@ -56,14 +69,16 @@ describe('RF00 auth endpoints', () => {
       password,
     });
 
+    const rawBody: unknown = response.body;
+    const body = loginResponseSchema.parse(rawBody);
+
     expect(response.status).toBe(200);
-    expect(response.body.user).toMatchObject({
+    expect(body.user).toMatchObject({
       email: activeEmail,
       role: 'CHEFE',
     });
-    expect(response.body.user.passwordHash).toBeUndefined();
-    expect(response.body.tokens.accessToken).toEqual(expect.any(String));
-    expect(response.body.tokens.refreshToken).toEqual(expect.any(String));
+    expect(body.tokens.accessToken).toEqual(expect.any(String));
+    expect(body.tokens.refreshToken).toEqual(expect.any(String));
   });
 
   it('não revela se o erro foi e-mail inexistente ou senha incorreta', async () => {
@@ -79,10 +94,13 @@ describe('RF00 auth endpoints', () => {
       password,
     });
 
+    const wrongBody = errorResponseSchema.parse(wrongPassword.body as unknown);
+    const unknownBody = errorResponseSchema.parse(unknownUser.body as unknown);
+
     expect(wrongPassword.status).toBe(401);
     expect(unknownUser.status).toBe(401);
-    expect(wrongPassword.body.error.code).toBe('INVALID_CREDENTIALS');
-    expect(unknownUser.body.error.code).toBe('INVALID_CREDENTIALS');
+    expect(wrongBody.error.code).toBe('INVALID_CREDENTIALS');
+    expect(unknownBody.error.code).toBe('INVALID_CREDENTIALS');
   });
 
   it('bloqueia usuário inativo', async () => {
@@ -93,53 +111,62 @@ describe('RF00 auth endpoints', () => {
       password,
     });
 
+    const body = errorResponseSchema.parse(response.body as unknown);
+
     expect(response.status).toBe(403);
-    expect(response.body.error.code).toBe('USER_INACTIVE');
+    expect(body.error.code).toBe('USER_INACTIVE');
   });
 
   it('protege /auth/me e retorna o usuário autenticado', async () => {
-    await createUser(activeEmail);
+    const createdUser = await createUser(activeEmail);
 
     const unauthorized = await request(app).get('/auth/me');
     expect(unauthorized.status).toBe(401);
 
-    const login = await request(app).post('/auth/login').send({
+    const loginResponse = await request(app).post('/auth/login').send({
       email: activeEmail,
       password,
     });
+    const loginBody = loginResponseSchema.parse(loginResponse.body as unknown);
 
     const response = await request(app)
       .get('/auth/me')
-      .set('Authorization', `Bearer ${login.body.tokens.accessToken}`);
+      .set('Authorization', `Bearer ${loginBody.tokens.accessToken}`);
+
+    const body = authUserSchema.parse(response.body as unknown);
 
     expect(response.status).toBe(200);
-    expect(response.body.email).toBe(activeEmail);
-    expect(response.body.passwordHash).toBeUndefined();
+    expect(body).toMatchObject({
+      id: createdUser.id,
+      email: activeEmail,
+    });
   });
 
   it('rotaciona o refresh token e rejeita reutilização do token anterior', async () => {
     await createUser(activeEmail);
 
-    const login = await request(app).post('/auth/login').send({
+    const loginResponse = await request(app).post('/auth/login').send({
       email: activeEmail,
       password,
     });
-
-    const oldRefreshToken = login.body.tokens.refreshToken as string;
+    const loginBody = loginResponseSchema.parse(loginResponse.body as unknown);
 
     const refreshed = await request(app).post('/auth/refresh').send({
-      refreshToken: oldRefreshToken,
+      refreshToken: loginBody.tokens.refreshToken,
     });
+    const refreshedBody = authTokensSchema.parse(refreshed.body as unknown);
 
     expect(refreshed.status).toBe(200);
-    expect(refreshed.body.accessToken).toEqual(expect.any(String));
-    expect(refreshed.body.refreshToken).toEqual(expect.any(String));
+    expect(refreshedBody.accessToken).toEqual(expect.any(String));
+    expect(refreshedBody.refreshToken).toEqual(expect.any(String));
+    expect(refreshedBody.refreshToken).not.toBe(loginBody.tokens.refreshToken);
 
     const replay = await request(app).post('/auth/refresh').send({
-      refreshToken: oldRefreshToken,
+      refreshToken: loginBody.tokens.refreshToken,
     });
+    const replayBody = errorResponseSchema.parse(replay.body as unknown);
 
     expect(replay.status).toBe(401);
-    expect(replay.body.error.code).toBe('INVALID_REFRESH_TOKEN');
+    expect(replayBody.error.code).toBe('INVALID_REFRESH_TOKEN');
   });
 });
