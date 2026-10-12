@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
+import { authRouter } from './routes/auth.js';
 import { healthRouter } from './routes/health.js';
 import { errorHandler } from './middlewares/error-handler.js';
 
@@ -11,6 +12,7 @@ export const createApp = (): Express => {
   app.use(cors());
   app.use(express.json({ limit: '1mb' }));
   app.use('/health', healthRouter);
+  app.use('/auth', authRouter);
   app.use(errorHandler);
   return app;
 };
