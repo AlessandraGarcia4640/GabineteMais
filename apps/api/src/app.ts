@@ -1,3 +1,6 @@
+import { createTransitionRouter } from './modules/transition/transition.router.js';
+import { TransitionService } from './modules/transition/transition.service.js';
+import { transitionRepository } from './modules/transition/transition.repository.js';
 import { createDocumentationRouter } from './routes/documentation.js';
 import { createGuidelinesRouter } from './modules/guidelines/guidelines.router.js';
 import { GuidelinesService } from './modules/guidelines/guidelines.service.js';
@@ -53,6 +56,7 @@ export const createApp = (loginService = new LoginService({
   app.use('/contacts', createContactsRouter(authorization, new ContactsService(authorization, contactRepository)));
   app.use('/tasks', createTasksRouter(authorization, new TasksService(authorization, taskRepository)));
   app.use('/guidelines', createGuidelinesRouter(authorization, new GuidelinesService(authorization, guidelinesRepository)));
+  app.use('/transition-guide', createTransitionRouter(authorization, new TransitionService(authorization, transitionRepository)));
   app.use(errorHandler);
   return app;
 };

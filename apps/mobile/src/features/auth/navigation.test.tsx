@@ -1,3 +1,4 @@
+import { TransitionGuideScreen, TransitionCuratorScreen, TransitionCopiesScreen, TransitionCopyScreen } from '../transition/screens';
 import { GuidelineListScreen, GuidelineDetailScreen, GuidelineFormScreen, GuidelineHistoryScreen, GuidelineVersionScreen } from '../guidelines/screens';
 import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
@@ -41,7 +42,7 @@ async function enter() {
 }
 async function leave() { fireEvent.press(screen.getByRole('button', { name: strings.session.logout })); await screen.findByRole('button', { name: strings.auth.submit }); }
 function renderApp(initialUrl = '/') { return renderRouter({ _layout: RootLayout, login: LoginScreen, '(tabs)/_layout': SessionLayout, '(tabs)/index': DashboardScreen,
-      '(tabs)/orientacoes': GuidelineListScreen, '(tabs)/orientacao/nova': () => <GuidelineFormScreen mode="create" />, '(tabs)/orientacao/[id]': GuidelineDetailScreen, '(tabs)/orientacao/[id]/editar': () => <GuidelineFormScreen mode="edit" />, '(tabs)/orientacao/[id]/versoes': GuidelineHistoryScreen, '(tabs)/orientacao/[id]/versao/[version]': GuidelineVersionScreen, '(tabs)/perfil': SessionScreen, '(tabs)/tarefas': TaskListScreen, '(tabs)/rotinas': RoutineListScreen, '(tabs)/rotina/[id]': RoutineDetailScreen,
+      '(tabs)/orientacoes': GuidelineListScreen, '(tabs)/orientacao/nova': () => <GuidelineFormScreen mode="create" />, '(tabs)/orientacao/[id]': GuidelineDetailScreen, '(tabs)/orientacao/[id]/editar': () => <GuidelineFormScreen mode="edit" />, '(tabs)/orientacao/[id]/versoes': GuidelineHistoryScreen, '(tabs)/orientacao/[id]/versao/[version]': GuidelineVersionScreen, '(tabs)/transicao': TransitionGuideScreen, '(tabs)/transicao/preparar': TransitionCuratorScreen, '(tabs)/transicao/copias': TransitionCopiesScreen, '(tabs)/transicao/copia/[id]': TransitionCopyScreen, '(tabs)/perfil': SessionScreen, '(tabs)/tarefas': TaskListScreen, '(tabs)/rotinas': RoutineListScreen, '(tabs)/rotina/[id]': RoutineDetailScreen,
       '(tabs)/rotina/nova': () => <RoutineFormScreen mode="create" />, '(tabs)/rotina/[id]/editar': () => <RoutineFormScreen mode="edit" />,
       '(tabs)/checklists': ChecklistListScreen, '(tabs)/execucoes': ChecklistHistoryScreen, '(tabs)/checklist/[id]': ChecklistDetailScreen,
       '(tabs)/execucao/[id]': ChecklistRunScreen, '(tabs)/checklist/nova': () => <ChecklistFormScreen mode="create" />, '(tabs)/checklist/[id]/editar': () => <ChecklistFormScreen mode="edit" />,

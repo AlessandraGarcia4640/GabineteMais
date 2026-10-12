@@ -3,6 +3,7 @@ import * as shared from '@gabinete-plus/shared';
 
 // Keep names stable for clients. Payloads are generated from the shared contracts.
 export const contractSchemas = {
+  TransitionGuide: shared.transitionGuideSchema, TransitionSettings: shared.transitionSettingsSchema, UpdateTransition: shared.updateTransitionSchema, CreateTransitionSnapshot: shared.createTransitionSnapshotSchema, TransitionSnapshot: shared.transitionSnapshotSchema, TransitionSnapshotPage: shared.transitionSnapshotPageSchema,
   Permission: shared.permissionSchema, CurrentAccess: shared.currentAccessSchema, UserPermissions: shared.userPermissionsSchema,
   UserRole: shared.userRoleSchema, UserPosition: shared.userPositionSchema, UserSummary: shared.userSummarySchema,
   UserPositionHistory: shared.positionHistorySchema, LoginRequest: shared.loginRequestSchema, LoginResponse: shared.loginResponseSchema,
@@ -24,6 +25,7 @@ export const queryContractSchemas = {
   '/routines': shared.routineListQuerySchema, '/checklists/templates': shared.checklistListQuerySchema,
   '/checklists/runs': shared.checklistRunQuerySchema, '/contacts': shared.contactListQuerySchema,
   '/tasks': shared.taskListQuerySchema, '/tasks/{id}/history': shared.taskHistoryQuerySchema,
+  '/transition-guide': shared.transitionQuerySchema, '/transition-guide/snapshots': shared.transitionSnapshotsQuerySchema,
   '/guidelines': shared.guidelineListQuerySchema, '/guidelines/{id}/versions': shared.guidelineHistoryQuerySchema,
 };
 export function generatedQueryParameters() {

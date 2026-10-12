@@ -53,6 +53,8 @@ model User {
   guidelineVersions GuidelineVersion[]
 
   @@map("users")
+  transitionSettings TransitionSettings[] @relation("TransitionEditor")
+  transitionSnapshots TransitionSnapshot[] @relation("TransitionAuthor")
 }
 
 model UserPositionHistory {
@@ -349,4 +351,25 @@ model GuidelineVersion {
   createdAt DateTime @default(now())
   @@unique([guidelineId, version])
   @@map("guideline_versions")
+}
+model TransitionSettings {
+  id String @id
+  overview String @default("")
+  notes String @default("")
+  revision Int @default(0)
+  updatedById String?
+  updatedBy User? @relation("TransitionEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  updatedAt DateTime @updatedAt
+  @@map("transition_settings")
+}
+model TransitionSnapshot {
+  id String @id @default(cuid())
+  title String @db.VarChar(200)
+  version Int @unique
+  authorId String
+  author User @relation("TransitionAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  authorName String
+  content Json
+  createdAt DateTime @default(now())
+  @@map("transition_snapshots")
 }

@@ -4,7 +4,7 @@ import { unauthenticated, type AuthorizationService, type SessionPrincipal } fro
 import { todayInGabinete } from '../checklists/period.js';
 import type { StoredTask, TaskMutation, TasksRepository } from './tasks.repository.js';
 const error = (code: string, message: string, status = 409): AppError => new AppError(code, message, status);
-function view(row: StoredTask): Task {
+export function taskView(row: StoredTask): Task {
   const dueDate = row.dueDate?.toISOString().slice(0, 10) ?? null;
   return taskSchema.parse({ ...row, dueDate, isOverdue: dueDate !== null && dueDate < todayInGabinete() && ['ABERTA', 'EM_ANDAMENTO'].includes(row.status),
     createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString(), startedAt: row.startedAt?.toISOString() ?? null,
@@ -31,11 +31,11 @@ export class TasksService {
       catch { throw error('INVALID_CURSOR', 'Cursor de paginação inválido.', 400); }
     }
     const rows = await this.repository.list(query, cursor, todayInGabinete()); const visible = rows.slice(0, query.limit); const last = visible.at(-1);
-    return taskPageSchema.parse({ items: visible.map(view), nextCursor: rows.length > query.limit && last ? Buffer.from(JSON.stringify({ id: last.id, dueDate: last.dueDate?.toISOString().slice(0, 10) ?? null, priorityRank: last.priorityRank })).toString('base64url') : null });
+    return taskPageSchema.parse({ items: visible.map(taskView), nextCursor: rows.length > query.limit && last ? Buffer.from(JSON.stringify({ id: last.id, dueDate: last.dueDate?.toISOString().slice(0, 10) ?? null, priorityRank: last.priorityRank })).toString('base64url') : null });
   }
   async get(principal: SessionPrincipal, id: string): Promise<Task> {
     this.authorization.requirePermission(principal, 'tasks:read'); const row = await this.repository.find(id);
-    if (!row) throw error('TASK_NOT_FOUND', 'Tarefa não encontrada.', 404); return view(row);
+    if (!row) throw error('TASK_NOT_FOUND', 'Tarefa não encontrada.', 404); return taskView(row);
   }
   async history(principal: SessionPrincipal, id: string, query: TaskHistoryQuery) {
     await this.get(principal, id); const rows = await this.repository.history(id, query); const visible = rows.slice(0, query.limit);
@@ -56,14 +56,14 @@ export class TasksService {
       const contact = value.contactId ? await context.contact(value.contactId) : null;
       if (value.contactId && !contact) throw error('CONTACT_NOT_FOUND', 'Contato não encontrado.', 404);
       if (contact?.isArchived) throw error('CONTACT_ARCHIVED', 'Contato arquivado não recebe tarefas.');
-      return view(await context.create({ title: value.title, description: value.description, instructions: value.instructions ?? routine?.instructions ?? '',
+      return taskView(await context.create({ title: value.title, description: value.description, instructions: value.instructions ?? routine?.instructions ?? '',
         priority: value.priority, dueDate: value.dueDate ? new Date(value.dueDate + 'T00:00:00Z') : null, assigneeId, routineId, checklistRunId: value.checklistRunId, contactId: value.contactId }));
     });
   }
   async update(principal: SessionPrincipal, id: string, input: UpdateTask): Promise<Task> {
     return this.repository.withActor(principal.user.id, principal.sessionId, id, async (context) => {
       const live = this.authorize(principal, context); const task = this.target(context); owner(live, task, 'creator'); open(task);
-      return view(await context.update(id, input, Object.keys(input)));
+      return taskView(await context.update(id, input, Object.keys(input)));
     });
   }
   async assign(principal: SessionPrincipal, id: string, assigneeId: string): Promise<Task> {
@@ -71,16 +71,16 @@ export class TasksService {
       const live = this.authorize(principal, context); const task = this.target(context); owner(live, task, 'creator'); open(task);
       if (!(await context.assignee(assigneeId))?.isActive) throw error('TASK_ASSIGNEE_INACTIVE', 'Escolha um responsável ativo.');
       if (task.checklistRunId && (await context.run(task.checklistRunId))?.assigneeId !== assigneeId) throw error('TASK_CHECKLIST_MISMATCH', 'Responsável deve corresponder ao checklist vinculado.');
-      return view(task.assigneeId === assigneeId ? task : await context.assign(task, assigneeId));
+      return taskView(task.assigneeId === assigneeId ? task : await context.assign(task, assigneeId));
     });
   }
   async status(principal: SessionPrincipal, id: string, status: Task['status']): Promise<Task> {
     return this.repository.withActor(principal.user.id, principal.sessionId, id, async (context) => {
       const live = this.authorize(principal, context); const task = this.target(context); owner(live, task, status === 'CANCELADA' ? 'creator' : 'assignee');
-      if (task.status === status) return view(task);
+      if (task.status === status) return taskView(task);
       if (!((task.status === 'ABERTA' && status === 'EM_ANDAMENTO') || (task.status === 'EM_ANDAMENTO' && status === 'CONCLUIDA') || (['ABERTA', 'EM_ANDAMENTO'].includes(task.status) && status === 'CANCELADA'))) throw error('TASK_INVALID_TRANSITION', 'Transição de status não permitida.');
       if (status === 'CONCLUIDA' && task.checklistRunId && (await context.run(task.checklistRunId))?.status !== 'CONCLUIDA') throw error('TASK_CHECKLIST_INCOMPLETE', 'Conclua o checklist vinculado antes de finalizar a tarefa.');
-      return view(await context.status(task, status));
+      return taskView(await context.status(task, status));
     });
   }
 }

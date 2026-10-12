@@ -2,9 +2,9 @@ import { z } from 'zod';
 import { userRoleSchema, userSummarySchema } from './users.js';
 
 export const permissionSchema = z.enum([
-  'team:read', 'activities:read', 'tasks:read', 'contacts:read', 'guidelines:read',
+  'team:read', 'activities:read', 'tasks:read', 'contacts:read', 'guidelines:read', 'transition:read',
   'profile:update-self', 'tasks:execute-assigned', 'team:manage', 'activities:manage',
-  'contacts:manage', 'guidelines:manage', 'tasks:assign', 'substitutions:manage',
+  'contacts:manage', 'guidelines:manage', 'transition:manage', 'tasks:assign', 'substitutions:manage',
   'checklists:read', 'checklists:manage', 'checklists:execute-assigned',
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
