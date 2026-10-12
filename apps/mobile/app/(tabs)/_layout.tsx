@@ -8,4 +8,10 @@ export default function SessionLayout() { return <Stack>
   <Stack.Screen name="rotina/nova" options={{ title: strings.routines.create }} />
   <Stack.Screen name="rotina/[id]" options={{ title: strings.routines.details }} />
   <Stack.Screen name="rotina/[id]/editar" options={{ title: strings.routines.edit }} />
+  <Stack.Screen name="checklists" options={{ title: strings.checklists.models }} />
+  <Stack.Screen name="execucoes" options={{ title: strings.checklists.history }} />
+  <Stack.Screen name="checklist/nova" options={{ title: strings.checklists.create }} />
+  <Stack.Screen name="checklist/[id]" options={{ title: strings.checklists.detail }} />
+  <Stack.Screen name="checklist/[id]/editar" options={{ title: strings.checklists.edit }} />
+  <Stack.Screen name="execucao/[id]" options={{ title: strings.checklists.run }} />
 </Stack>; }

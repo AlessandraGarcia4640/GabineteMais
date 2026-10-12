@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, screen } from '@testing-library/react-native';
 import { dashboardFixture, routineFixture, taskFixture } from './fixtures.test-helper';
 import { PendingTasksScreen, TodayRoutinesScreen } from './list-screens';
 import { strings } from '../../lib/strings';
@@ -10,8 +10,8 @@ jest.mock('react-native-safe-area-context', () => {
 });
 let fixture: Awaited<ReturnType<typeof dashboardFixture>>;
 let fetcher: jest.SpyInstance<ReturnType<typeof fetch>, Parameters<typeof fetch>>; let previous: string | undefined;
-beforeEach(async () => { previous = process.env.EXPO_PUBLIC_API_URL; process.env.EXPO_PUBLIC_API_URL = 'https://api.example.invalid'; fixture = await dashboardFixture(); fetcher = jest.spyOn(globalThis, 'fetch'); });
-afterEach(() => { cleanup(); fixture.client.clear(); fetcher.mockRestore(); if (previous === undefined) delete process.env.EXPO_PUBLIC_API_URL; else process.env.EXPO_PUBLIC_API_URL = previous; });
+beforeEach(async () => { jest.useFakeTimers(); previous = process.env.EXPO_PUBLIC_API_URL; process.env.EXPO_PUBLIC_API_URL = 'https://api.example.invalid'; fixture = await dashboardFixture(); fetcher = jest.spyOn(globalThis, 'fetch'); });
+afterEach(() => { cleanup(); fixture.client.clear(); act(() => jest.runOnlyPendingTimers()); jest.useRealTimers(); fetcher.mockRestore(); if (previous === undefined) delete process.env.EXPO_PUBLIC_API_URL; else process.env.EXPO_PUBLIC_API_URL = previous; });
 it('consulta de tarefas carrega próxima página e permite selecionar em andamento', async () => {
   fetcher.mockImplementation((url) => { const parsed = new URL(String(url)); const cursor = parsed.searchParams.get('cursor'); const progress = parsed.searchParams.get('status') === 'EM_ANDAMENTO';
     return Promise.resolve(new Response(JSON.stringify({ items: [taskFixture({ id: progress ? 'progress' : cursor ? 'second' : 'first', title: progress ? 'Em execução' : cursor ? 'Segunda página' : 'Primeira página', status: progress ? 'EM_ANDAMENTO' : 'ABERTA' })], nextCursor: !progress && !cursor ? 'next' : null })));
