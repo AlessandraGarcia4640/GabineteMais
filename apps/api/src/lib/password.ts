@@ -19,7 +19,7 @@ const derive = (password: string, salt: Buffer): Buffer =>
     passes: PASSES,
   });
 
-export const hashPassword = async (password: string): Promise<string> => {
+export const hashPassword = (password: string): string => {
   const salt = randomBytes(16);
   const hash = derive(password, salt);
   return [
@@ -29,10 +29,10 @@ export const hashPassword = async (password: string): Promise<string> => {
   ].join('$');
 };
 
-export const verifyPassword = async (
+export const verifyPassword = (
   encoded: string,
   password: string,
-): Promise<boolean> => {
+): boolean => {
   const [algorithm, saltEncoded, hashEncoded] = encoded.split('$');
 
   if (algorithm !== 'argon2id' || !saltEncoded || !hashEncoded) {
