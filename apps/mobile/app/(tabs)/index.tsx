@@ -1,1 +1,1 @@
-export { SessionScreen as default } from '../../src/features/auth/session-screen';
+export { DashboardScreen as default } from '../../src/features/dashboard/dashboard-screen';

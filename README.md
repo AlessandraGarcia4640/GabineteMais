@@ -68,5 +68,8 @@ permanecem planejados. A interface local fica desabilitada em produção.
 O app possui login integrado à API, rotas protegidas e recuperação da sessão com
 armazenamento seguro no Android/iOS. Configure `apps/mobile/.env` e consulte
 [o guia do login mobile](docs/login-mobile.md). No navegador, a sessão fica em memória.
-Após entrar, esta etapa mostra identidade, perfil e saída; as demais telas core
-serão implementadas nas próximas etapas da Fase 4.
+O perfil e a saída ficam disponíveis na área protegida; cadastro, edição e execução
+dos módulos continuarão nas próximas etapas da Fase 4.
+
+A tela [Hoje](docs/dashboard-mobile.md) exibe tarefas pendentes próprias e rotinas
+do dia obtidas da API, com atalhos para consultas paginadas e perfil.

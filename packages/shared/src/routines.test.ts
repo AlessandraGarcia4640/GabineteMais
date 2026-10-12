@@ -1,6 +1,10 @@
 import { expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { createRoutineSchema, routineListQuerySchema, routineSchema, updateRoutineSchema } from './routines.js';
+it('valida filtro de rotinas previstas em data civil', () => {
+  expect(routineListQuerySchema.parse({ scheduledFor: '2026-10-12' }).scheduledFor).toBe('2026-10-12');
+  expect(routineListQuerySchema.safeParse({ scheduledFor: '2026-02-30' }).success).toBe(false);
+});
 
 it('aceita frequências do catálogo e data sem horário', () => {
   const routine = createRoutineSchema.parse({ title: ' Reunião ', category: 'Administrativo', frequency: 'QUINZENAL', specificDate: '2026-11-03' });

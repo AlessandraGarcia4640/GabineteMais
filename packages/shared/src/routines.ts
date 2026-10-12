@@ -30,6 +30,7 @@ export const routineListQuerySchema = z.object({
   isArchived: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
   frequency: routineFrequencySchema.optional(), category: z.string().trim().min(1).max(100).optional(),
   defaultPosition: userPositionSchema.optional(), q: z.string().trim().min(1).max(100).optional(),
+  scheduledFor: dateOnlySchema.optional(),
 }).strict();
 export type RoutineListQuery = z.infer<typeof routineListQuerySchema>;
 export const routinePageSchema = z.object({ items: z.array(routineSchema).max(100), nextCursor: z.string().nullable() });

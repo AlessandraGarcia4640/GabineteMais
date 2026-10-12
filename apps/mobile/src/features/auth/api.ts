@@ -16,8 +16,10 @@ export class HttpAuthApi implements AuthApi {
     if (!value.success) throw new AuthFailure('configuration');
     return value.data.replace(/\/+$/, '');
   }
-  private async request<T>(path: string, schema: z.ZodType<T>, body?: LoginRequest | { refreshToken: string }, accessToken?: string): Promise<T> {
+  private async request<T>(path: string, schema: z.ZodType<T>, body?: LoginRequest | { refreshToken: string }, accessToken?: string, signal?: AbortSignal): Promise<T> {
     const baseUrl = this.baseUrl; const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 12000);
+    const cancel = () => controller.abort();
+    if (signal?.aborted) cancel(); else signal?.addEventListener('abort', cancel, { once: true });
     try {
       const response = await this.fetcher(`${baseUrl}${path}`, { method: body ? 'POST' : 'GET', signal: controller.signal,
         headers: { Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}), ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
@@ -33,8 +35,9 @@ export class HttpAuthApi implements AuthApi {
       if (error instanceof AuthFailure) throw error;
       if (error instanceof z.ZodError || error instanceof SyntaxError) throw new AuthFailure('unexpected');
       throw new AuthFailure('network');
-    } finally { clearTimeout(timer); }
+    } finally { clearTimeout(timer); signal?.removeEventListener('abort', cancel); }
   }
+  get<T>(path: string, schema: z.ZodType<T>, accessToken: string, signal?: AbortSignal): Promise<T> { return this.request(path, schema, undefined, accessToken, signal); }
   login(input: LoginRequest): Promise<LoginResponse> { return this.request('/auth/login', loginResponseSchema, loginRequestSchema.parse(input)); }
   refresh(refreshToken: string): Promise<LoginResponse> { return this.request('/auth/refresh', loginResponseSchema, refreshRequestSchema.parse({ refreshToken })); }
   current(accessToken: string): Promise<CurrentAccess> { return this.request('/auth/me', currentAccessSchema, undefined, accessToken); }
