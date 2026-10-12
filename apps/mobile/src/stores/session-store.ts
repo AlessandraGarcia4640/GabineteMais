@@ -1,13 +1,28 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
+import type { LoginResponse, SessionUser } from '../lib/api';
 
 type SessionState = {
-  userName: string | null;
-  setUserName: (userName: string) => void;
+  user: SessionUser | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  setSession: (session: LoginResponse) => void;
   clearSession: () => void;
 };
 
 export const useSessionStore = create<SessionState>((set) => ({
-  userName: null,
-  setUserName: (userName) => set({ userName }),
-  clearSession: () => set({ userName: null }),
+  user: null,
+  accessToken: null,
+  refreshToken: null,
+  setSession: (session) =>
+    set({
+      user: session.user,
+      accessToken: session.tokens.accessToken,
+      refreshToken: session.tokens.refreshToken,
+    }),
+  clearSession: () =>
+    set({
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+    }),
 }));
