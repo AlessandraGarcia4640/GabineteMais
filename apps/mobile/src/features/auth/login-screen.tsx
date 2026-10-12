@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useMutation } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,8 +37,7 @@ export function LoginScreen() {
       autoComplete="current-password" textContentType="password" editable={!login.isPending} returnKeyType="go"
       onSubmitEditing={() => { if (!login.isPending) void form.handleSubmit(submit)(); }}
       errorText={fieldState.error ? strings.auth.invalidPassword : undefined} />} />
-    <Pressable accessibilityRole="button" accessibilityLabel={visible ? strings.auth.hidePassword : strings.auth.showPassword}
-      onPress={() => setVisible(!visible)} style={styles.visibility}><Text style={styles.link}>{visible ? strings.auth.hidePassword : strings.auth.showPassword}</Text></Pressable>
+    <Button label={visible ? strings.auth.hidePassword : strings.auth.showPassword} secondary disabled={login.isPending} onPress={() => setVisible(!visible)} />
     {!!notice && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{notice}</Text>}
     <Button label={login.isPending ? strings.auth.submitting : strings.auth.submit} loading={login.isPending} onPress={() => void form.handleSubmit(submit)()} />
   </Card><Text style={styles.footnote}>{strings.auth.invitation}</Text>
@@ -48,6 +47,5 @@ export function LoginScreen() {
 const styles = StyleSheet.create({ header: { gap: 14 }, brand: { color: theme.primary, fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
   title: { color: theme.text, fontSize: 30, fontWeight: '700' }, description: { color: theme.muted, fontSize: 16, lineHeight: 24 },
   form: { padding: 22, gap: 20, marginBottom: 0 },
-  visibility: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-end' }, link: { color: theme.primary, fontSize: 14, fontWeight: '600' },
   error: { backgroundColor: theme.errorSurface, color: theme.danger, padding: 14, borderRadius: 10, fontSize: 14, lineHeight: 21 },
   footnote: { color: theme.muted, fontSize: 13, textAlign: 'center', lineHeight: 20 } });

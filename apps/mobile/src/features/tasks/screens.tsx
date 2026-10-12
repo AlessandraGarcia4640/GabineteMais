@@ -54,7 +54,7 @@ export function TaskDetailScreen() {
   if (!id) return <EmptyState message={strings.tasks.notFound} />; if (query.isPending) return <LoadingState />;
   if (query.isError) return <View><Text style={styles.error}>{taskError(query.error)}</Text><ErrorState retry={() => void query.refetch()} /></View>;
   const task = query.data; const actions = taskActions(task, user); const busy = command.isPending || query.isRefetching;
-  return <Screen><ScrollView contentContainerStyle={styles.content}><View style={styles.section}>
+  return <Screen><ScrollView contentContainerStyle={styles.content} accessibilityElementsHidden={picker} importantForAccessibility={picker ? 'no-hide-descendants' : 'auto'}><View style={styles.section}>
     <Text accessibilityRole="header" style={styles.title}>{task.title}</Text><Text>{strings.dashboard.status[task.status]} · {strings.dashboard.priority[task.priority]}</Text>
     <Text>{task.dueDate ? `${strings.tasks.dueDate}: ${displayDate(task.dueDate)}` : strings.dashboard.noDueDate}</Text>{task.isOverdue && <Text style={styles.error}>{strings.dashboard.overdue}</Text>}
     <Text style={styles.label}>{strings.tasks.assignee}</Text><Text>{task.assigneeId === user?.id ? user.name : owner.data?.name ?? strings.tasks.personUnknown}</Text>

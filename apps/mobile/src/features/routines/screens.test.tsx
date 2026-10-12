@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { dashboardFixture, routineFixture } from '../dashboard/fixtures.test-helper';
 import { RoutineForm } from './form';
 import { RoutineDetailScreen, RoutineFormScreen, RoutineListScreen } from './screens';
@@ -8,8 +8,8 @@ jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush, replace: m
 jest.mock('@shopify/flash-list', () => { const { FlatList } = jest.requireActual<typeof import('react-native')>('react-native'); return { FlashList: FlatList }; });
 jest.mock('react-native-safe-area-context', () => { const mock = jest.requireActual<typeof import('react-native-safe-area-context/jest/mock')>('react-native-safe-area-context/jest/mock'); return mock.default; });
 let fixture: Awaited<ReturnType<typeof dashboardFixture>>; let fetcher: jest.SpyInstance<ReturnType<typeof fetch>, Parameters<typeof fetch>>; let previous: string | undefined;
-beforeEach(async () => { previous = process.env.EXPO_PUBLIC_API_URL; process.env.EXPO_PUBLIC_API_URL = 'https://api.example.invalid'; fixture = await dashboardFixture(); fetcher = jest.spyOn(globalThis, 'fetch'); mockParams = {}; mockPush.mockClear(); mockReplace.mockClear(); });
-afterEach(() => { cleanup(); fixture.client.clear(); fetcher.mockRestore(); if (previous === undefined) delete process.env.EXPO_PUBLIC_API_URL; else process.env.EXPO_PUBLIC_API_URL = previous; });
+beforeEach(async () => { jest.useFakeTimers(); previous = process.env.EXPO_PUBLIC_API_URL; process.env.EXPO_PUBLIC_API_URL = 'https://api.example.invalid'; fixture = await dashboardFixture(); fetcher = jest.spyOn(globalThis, 'fetch'); mockParams = {}; mockPush.mockClear(); mockReplace.mockClear(); });
+afterEach(() => { cleanup(); fixture.client.clear(); act(() => jest.runOnlyPendingTimers()); jest.useRealTimers(); fetcher.mockRestore(); if (previous === undefined) delete process.env.EXPO_PUBLIC_API_URL; else process.env.EXPO_PUBLIC_API_URL = previous; });
 function chief(): void { const user = fixture.manager.store.getState().user; if (!user) throw new Error('Usuário ausente.'); fixture.manager.store.setState({ user: { ...user, role: 'CHEFE' } }); }
 it('catálogo busca, filtra e abre detalhes; assessor não recebe botão de cadastro', async () => {
   fetcher.mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ items: [routineFixture()], nextCursor: null }))));
@@ -18,7 +18,7 @@ it('catálogo busca, filtra e abre detalhes; assessor não recebe botão de cada
   await waitFor(() => expect(fetcher.mock.calls.some((call) => String(call[0]).includes('q=e-mail'))).toBe(true));
   fireEvent.press(screen.getByRole('radio', { name: strings.routines.archived }));
   await waitFor(() => expect(fetcher.mock.calls.some((call) => String(call[0]).includes('isArchived=true'))).toBe(true));
-  fireEvent.press(screen.getByRole('button', { name: 'Rotina fictícia' })); expect(mockPush).toHaveBeenCalledWith({ pathname: '/rotina/[id]', params: { id: 'routine-1' } });
+  fireEvent.press(await screen.findByRole('button', { name: 'Rotina fictícia' })); expect(mockPush).toHaveBeenCalledWith({ pathname: '/rotina/[id]', params: { id: 'routine-1' } });
 });
 it('link direto de criação não habilita manutenção para assessor', async () => {
   fixture.show(<RoutineFormScreen mode="create" />); expect(screen.getByText(strings.routines.forbidden)).toBeTruthy(); expect(fetcher).not.toHaveBeenCalled();
