@@ -1,6 +1,18 @@
 import type { NextFunction, Request, Response } from 'express';
 import { verifyAccessToken, type AuthRole } from '../lib/tokens.js';
 
+interface AuthContext {
+  userId: string;
+  role: AuthRole;
+}
+
+interface RequestWithAuth extends Request {
+  auth?: AuthContext;
+}
+
+export const getAuthContext = (request: Request): AuthContext | undefined =>
+  (request as RequestWithAuth).auth;
+
 export const requireAuth = (
   request: Request,
   response: Response,
@@ -20,7 +32,8 @@ export const requireAuth = (
 
   try {
     const payload = verifyAccessToken(authorization.slice(7));
-    request.auth = {
+    const authenticatedRequest = request as RequestWithAuth;
+    authenticatedRequest.auth = {
       userId: payload.sub,
       role: payload.role,
     };
@@ -38,7 +51,9 @@ export const requireAuth = (
 export const requireRole =
   (...roles: AuthRole[]) =>
   (request: Request, response: Response, next: NextFunction) => {
-    if (!request.auth || !roles.includes(request.auth.role)) {
+    const auth = getAuthContext(request);
+
+    if (!auth || !roles.includes(auth.role)) {
       response.status(403).json({
         error: {
           code: 'FORBIDDEN',
