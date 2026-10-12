@@ -1,3 +1,4 @@
+import * as SplashScreen from 'expo-splash-screen';
 import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,6 +18,7 @@ export function ConnectionGate({ children }: PropsWithChildren) {
   const [url, setUrl] = useState<string | null>(configured.success ? configured.data : null); const [loading, setLoading] = useState(!configured.success); const [busy, setBusy] = useState(false); const [message, setMessage] = useState<string | null>(null);
   const form = useForm<{ url: string }>({ resolver: zodResolver(connectionFormSchema), defaultValues: { url: '' } });
   useEffect(() => { let active = true; if (!configured.success) void readConnectionUrl().then((saved) => { if (active) setUrl(saved); }).catch(() => { if (active) setMessage(strings.connection.storageError); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [configured.success]);
+  useEffect(() => { if (!loading && !url) void SplashScreen.hideAsync().catch(() => setMessage(strings.auth.unexpected)); }, [loading, url]);
   async function reset() { await secureSessionStorage.clear(); await clearConnectionUrl(); client.clear(); setUrl(null); form.reset({ url: '' }); }
   async function save(input: { url: string }) { setBusy(true); setMessage(null); try { const valid = connectionUrlSchema.parse(input.url); await secureSessionStorage.clear(); await saveConnectionUrl(valid); client.clear(); setUrl(valid); } catch { setMessage(strings.connection.storageError); } finally { setBusy(false); } }
   if (loading) return <AuthScreen><ActivityIndicator /><Text>{strings.auth.restoring}</Text></AuthScreen>;
