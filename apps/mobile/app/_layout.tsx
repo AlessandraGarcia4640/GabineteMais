@@ -14,5 +14,5 @@ function SessionRoutes() {
   </Stack><StatusBar style="dark" /></SessionGate>;
 }
 export default function RootLayout() {
-  return <QueryProvider><ConnectionGate><SessionProvider><SafeAreaProvider><SessionRoutes /></SafeAreaProvider></SessionProvider></ConnectionGate></QueryProvider>;
+  return <QueryProvider><SafeAreaProvider><ConnectionGate><SessionProvider><SessionRoutes /></SessionProvider></ConnectionGate></SafeAreaProvider></QueryProvider>;
 }
