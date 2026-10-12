@@ -1,0 +1,3 @@
+import { expect, it } from 'vitest';
+import { connectionUrlSchema } from './connection.js';
+it('endereço permite HTTPS ou rede local, normaliza e rejeita credenciais/query/fragmento', () => { expect(connectionUrlSchema.parse(' https://example.invalid/api/ ')).toBe('https://example.invalid/api'); expect(connectionUrlSchema.parse('http://192.168.1.10:3333')).toBe('http://192.168.1.10:3333'); for (const value of ['file:///secret', 'https://user:password@example.invalid', 'https://example.invalid?token=secret', 'https://example.invalid#token', 'invalid']) expect(connectionUrlSchema.safeParse(value).success).toBe(false); });

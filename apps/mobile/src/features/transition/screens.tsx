@@ -14,7 +14,7 @@ import { TransitionApi } from './api';
 import { ApiFailure } from '../../lib/api-error';
 import { strings } from '../../lib/strings';
 import { styles } from '../tasks/styles';
-export function useTransitionApi() { const manager = useSessionManager(); return useMemo(() => new TransitionApi(new HttpAuthApi(process.env.EXPO_PUBLIC_API_URL), manager), [manager]); }
+export function useTransitionApi() { const manager = useSessionManager(); return useMemo(() => new TransitionApi(new HttpAuthApi(manager.apiUrl), manager), [manager]); }
 function errorMessage(error: Error) { if (error instanceof ApiFailure) { if (error.code === 'TRANSITION_CONFLICT') return strings.transition.conflict; if (error.code === 'TRANSITION_TOO_LARGE') return strings.transition.tooLarge; if (error.code === 'TRANSITION_NOT_FOUND') return strings.transition.notFound; if (error.code === 'FORBIDDEN') return strings.transition.forbidden; } return strings.contacts.requestError; }
 type Kind = 'OVERVIEW' | 'NOTES' | typeof transitionSectionSchema.enum[keyof typeof transitionSectionSchema.enum];
 interface Item { id: string; title: string; content: string }

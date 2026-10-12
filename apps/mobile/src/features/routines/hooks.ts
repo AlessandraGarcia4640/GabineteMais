@@ -8,7 +8,7 @@ import { ApiFailure } from '../../lib/api-error';
 import { AuthFailure } from '../auth/errors';
 import { strings } from '../../lib/strings';
 export function useRoutinesApi() {
-  const manager = useSessionManager(); return useMemo(() => new RoutinesApi(new HttpAuthApi(process.env.EXPO_PUBLIC_API_URL), manager), [manager]);
+  const manager = useSessionManager(); return useMemo(() => new RoutinesApi(new HttpAuthApi(manager.apiUrl), manager), [manager]);
 }
 export function useRoutine(id: string | undefined) {
   const api = useRoutinesApi(); const { user } = useSession();

@@ -6,7 +6,7 @@ import { AuthFailure } from '../auth/errors';
 import { ApiFailure } from '../../lib/api-error';
 import { strings } from '../../lib/strings';
 import { ContactsApi } from './api';
-export function useContactsApi() { const manager = useSessionManager(); return useMemo(() => new ContactsApi(new HttpAuthApi(process.env.EXPO_PUBLIC_API_URL), manager), [manager]); }
+export function useContactsApi() { const manager = useSessionManager(); return useMemo(() => new ContactsApi(new HttpAuthApi(manager.apiUrl), manager), [manager]); }
 export function useContact(id?: string) { const api = useContactsApi(); const { user } = useSession(); return useQuery({ queryKey: ['contact', id, user?.id], enabled: !!id && !!user, retry: false, queryFn: ({ signal }) => api.get(id ?? '', signal) }); }
 export interface ContactFilters { q: string; organization: string; tag: string; archived: boolean; keyOnly: boolean }
 export function useContacts(filters: ContactFilters) {

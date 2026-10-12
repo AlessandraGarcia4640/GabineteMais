@@ -7,7 +7,7 @@ import { AuthFailure } from '../auth/errors';
 import { ApiFailure } from '../../lib/api-error';
 import { strings } from '../../lib/strings';
 import { TasksApi } from './api';
-export function useTasksApi() { const manager = useSessionManager(); return useMemo(() => new TasksApi(new HttpAuthApi(process.env.EXPO_PUBLIC_API_URL), manager), [manager]); }
+export function useTasksApi() { const manager = useSessionManager(); return useMemo(() => new TasksApi(new HttpAuthApi(manager.apiUrl), manager), [manager]); }
 export function useTask(id?: string) { const api = useTasksApi(); const { user } = useSession(); return useQuery({ queryKey: ['task', id, user?.id], enabled: !!id && !!user, retry: false, queryFn: ({ signal }) => api.get(id ?? '', signal) }); }
 export function useTaskPerson(id?: string) { const api = useTasksApi(); const { user } = useSession(); return useQuery({ queryKey: ['task-person', id, user?.id], enabled: !!id && !!user && user.id !== id, retry: false, queryFn: ({ signal }) => api.person(id ?? '', signal) }); }
 export function useTasks(filters: { mine: boolean; status: Task['status'] | ''; priority: Task['priority'] | ''; q: string; overdue: boolean }, day: string) {
