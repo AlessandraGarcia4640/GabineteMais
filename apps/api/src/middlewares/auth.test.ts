@@ -25,7 +25,7 @@ describe('auth middleware', () => {
   });
 
   it('aceita access token válido', async () => {
-    const token = await signAccessToken('user-1', 'ASSESSOR');
+    const token = signAccessToken('user-1', 'ASSESSOR');
     const response = await request(createTestApp())
       .get('/protected')
       .set('Authorization', `Bearer ${token}`);
@@ -38,8 +38,8 @@ describe('auth middleware', () => {
   });
 
   it('aplica RBAC', async () => {
-    const assessor = await signAccessToken('user-1', 'ASSESSOR');
-    const chefe = await signAccessToken('user-2', 'CHEFE');
+    const assessor = signAccessToken('user-1', 'ASSESSOR');
+    const chefe = signAccessToken('user-2', 'CHEFE');
 
     const denied = await request(createTestApp())
       .get('/chief-only')
