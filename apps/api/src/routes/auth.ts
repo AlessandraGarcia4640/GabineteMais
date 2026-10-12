@@ -63,7 +63,17 @@ authRouter.post('/refresh', async (request, response, next) => {
 
 authRouter.get('/me', requireAuth, async (request, response, next) => {
   try {
-    const user = await getAuthenticatedUser(request.auth!.userId);
+    if (!request.auth) {
+      response.status(401).json({
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Autenticação necessária.',
+        },
+      });
+      return;
+    }
+
+    const user = await getAuthenticatedUser(request.auth.userId);
 
     if (!user) {
       response.status(401).json({
