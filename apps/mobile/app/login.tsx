@@ -17,6 +17,7 @@ import { useSessionStore } from '@/src/stores/session-store';
 
 export default function LoginScreen() {
   const accessToken = useSessionStore((state) => state.accessToken);
+  const hasHydrated = useSessionStore((state) => state.hasHydrated);
   const setSession = useSessionStore((state) => state.setSession);
 
   const {
@@ -29,6 +30,14 @@ export default function LoginScreen() {
     defaultValues: { email: '', password: '' },
   });
 
+  if (!hasHydrated) {
+    return (
+      <SafeAreaView style={styles.loadingPage}>
+        <ActivityIndicator size="large" color="#173b67" />
+      </SafeAreaView>
+    );
+  }
+
   if (accessToken) {
     return <Redirect href="/(tabs)" />;
   }
@@ -39,7 +48,8 @@ export default function LoginScreen() {
       setSession(session);
     } catch (error) {
       setError('root', {
-        message: error instanceof Error ? error.message : 'Não foi possível entrar.',
+        message:
+          error instanceof Error ? error.message : 'Não foi possível entrar.',
       });
     }
   });
@@ -48,7 +58,9 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.page}>
       <View style={styles.card}>
         <Text style={styles.brand}>Gabinete+</Text>
-        <Text style={styles.subtitle}>Rotinas, continuidade e conhecimento institucional</Text>
+        <Text style={styles.subtitle}>
+          Rotinas, continuidade e conhecimento institucional
+        </Text>
 
         <View style={styles.form}>
           <Controller
@@ -66,7 +78,9 @@ export default function LoginScreen() {
                   style={styles.input}
                   value={value}
                 />
-                {errors.email ? <Text style={styles.error}>{errors.email.message}</Text> : null}
+                {errors.email ? (
+                  <Text style={styles.error}>{errors.email.message}</Text>
+                ) : null}
               </View>
             )}
           />
@@ -92,7 +106,9 @@ export default function LoginScreen() {
             )}
           />
 
-          {errors.root ? <Text style={styles.error}>{errors.root.message}</Text> : null}
+          {errors.root ? (
+            <Text style={styles.error}>{errors.root.message}</Text>
+          ) : null}
 
           <Pressable
             disabled={isSubmitting}
@@ -109,13 +125,21 @@ export default function LoginScreen() {
           </Pressable>
         </View>
 
-        <Text style={styles.note}>Use apenas credenciais fictícias no ambiente de demonstração.</Text>
+        <Text style={styles.note}>
+          Use apenas credenciais fictícias no ambiente de demonstração.
+        </Text>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  loadingPage: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f7fb',
+  },
   page: {
     flex: 1,
     backgroundColor: '#f5f7fb',
