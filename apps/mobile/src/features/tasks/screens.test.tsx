@@ -103,3 +103,8 @@ it('resposta tardia após logout não navega nem restaura cache', async () => {
   fireEvent.changeText(screen.getByLabelText(strings.tasks.name), 'Tarefa nova'); fireEvent.press(screen.getByRole('button', { name: strings.routines.save })); await waitFor(() => expect(fetcher).toHaveBeenCalled());
   await act(async () => { cleanup(); await fixture.manager.logout(); if (!finish) throw new Error('Requisição ausente.'); finish(new Response(JSON.stringify(taskFixture()))); }); expect(saved).not.toHaveBeenCalled(); expect(fixture.client.getQueryData(['task', 'task-1', 'actor'])).toBeUndefined();
 });
+it('modal oculta o formulário e fechar restaura os controles acessíveis', async () => {
+  chief(); fetcher.mockImplementation(() => response({ items: [person()], nextCursor: null })); fixture.show(<TaskForm onSaved={() => undefined} onCancel={() => undefined} />);
+  fireEvent.press(screen.getByRole('button', { name: strings.tasks.selectPerson })); await screen.findByRole('button', { name: 'Outra Pessoa' }); expect(screen.queryByLabelText(strings.tasks.name)).toBeNull();
+  expect(screen.getAllByRole('button', { name: strings.routines.cancel })).toHaveLength(1); fireEvent.press(screen.getByRole('button', { name: strings.routines.cancel })); await screen.findByLabelText(strings.tasks.name);
+});
