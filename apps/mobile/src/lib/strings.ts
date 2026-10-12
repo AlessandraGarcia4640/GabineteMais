@@ -1,5 +1,19 @@
 export const strings = {
   brand: 'Gabinete+',
+  tasks: {
+    title: 'Tarefas', details: 'Detalhes da tarefa', create: 'Nova tarefa', edit: 'Editar tarefa', history: 'Histórico da tarefa', empty: 'Nenhuma tarefa encontrada.',
+    name: 'Título', description: 'Descrição', instructions: 'Orientações', dueDate: 'Prazo', priority: 'Prioridade', search: 'Buscar tarefas', mine: 'Minhas tarefas', all: 'Todas as tarefas', allStatuses: 'Todos os status', allPriorities: 'Todas as prioridades', overdue: 'Somente em atraso', anyDeadline: 'Todos os prazos',
+    assignee: 'Responsável', creator: 'Criada por', personUnknown: 'Integrante da equipe', routine: 'Rotina vinculada', contact: 'Contato vinculado', run: 'Checklist vinculado',
+    selectPerson: 'Escolher responsável', self: 'Atribuir a mim', selectRoutine: 'Vincular rotina', selectContact: 'Vincular contato', selectRun: 'Vincular execução de checklist', noLink: 'Sem vínculo', clearLink: 'Remover vínculo', selectionEmpty: 'Nenhum registro disponível.',
+    start: 'Iniciar tarefa', complete: 'Concluir tarefa', cancelTask: 'Cancelar tarefa', confirmCancel: 'Confirmar cancelamento da tarefa', cancelHelp: 'A tarefa será encerrada como cancelada. Seus registros e vínculos serão preservados.',
+    assign: 'Reatribuir tarefa', confirmAssign: 'Confirmar novo responsável', assignmentLocked: 'O responsável deve corresponder ao checklist vinculado.',
+    inheritance: 'Se as orientações ficarem vazias no cadastro, serão copiadas da rotina vinculada.', linksFixed: 'Os vínculos são definidos no cadastro e preservados na edição.',
+    forbidden: 'Você não tem permissão para esta operação.', notFound: 'Tarefa não encontrada.', closed: 'Esta tarefa está encerrada e não pode ser alterada.',
+    invalidTransition: 'Esta mudança de status não está disponível. Atualize a tarefa.', incomplete: 'Conclua o checklist vinculado antes de finalizar a tarefa.', mismatch: 'O checklist deve corresponder à rotina e à pessoa responsável.', inactive: 'Escolha uma pessoa responsável ativa.', archivedLink: 'A rotina ou o contato está arquivado e não pode receber novas tarefas.',
+    emptyHistory: 'Nenhum evento encontrado.', events: { CREATED: 'Tarefa criada', EDITED: 'Dados alterados', REASSIGNED: 'Responsável alterado', STATUS_CHANGED: 'Status alterado' },
+    fields: { title: 'Título', description: 'Descrição', instructions: 'Orientações', priority: 'Prioridade', dueDate: 'Prazo' },
+    validation: { title: 'Informe um título de até 200 caracteres.', description: 'Use até 4.000 caracteres na descrição.', instructions: 'Use até 12.000 caracteres nas orientações.', dueDate: 'Informe uma data válida no formato DD/MM/AAAA ou deixe vazio.', priority: 'Escolha uma prioridade válida.' },
+  },
   contacts: {
     title: 'Contatos', details: 'Detalhes do contato', create: 'Novo contato', edit: 'Editar contato', empty: 'Nenhum contato encontrado.',
     name: 'Nome', organization: 'Órgão ou instituição', jobTitle: 'Cargo ou função', email: 'E-mail', notes: 'Observações', phones: 'Telefones', tags: 'Etiquetas',
