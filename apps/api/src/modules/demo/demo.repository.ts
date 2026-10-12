@@ -12,10 +12,12 @@ export async function seedDemoDataset(passwordHash: string, referenceDate: strin
   const day = demoDateSchema.parse(referenceDate);
   await seedDemoUsers(passwordHash); await seedDemoRoutines(); await seedDemoChecklists(); await seedDemoContacts(); await seedDemoTasks();
   await prisma.$transaction(async (tx) => {
-    const [chief, member, support, routine, template, contact] = await Promise.all([
-      tx.user.findUniqueOrThrow({ where: { email: 'chefia@example.invalid' } }), tx.user.findUniqueOrThrow({ where: { email: 'assessor1@example.invalid' } }), tx.user.findUniqueOrThrow({ where: { email: 'apoio@example.invalid' } }),
-      tx.routine.findUniqueOrThrow({ where: { id: 'demo-routine-email' } }), tx.checklistTemplate.findUniqueOrThrow({ where: { id: 'demo-checklist-email' } }), tx.contact.findUniqueOrThrow({ where: { id: 'demo-contact-secretaria' } }),
-    ]);
+    const chief = await tx.user.findUniqueOrThrow({ where: { email: 'chefia@example.invalid' } });
+    const member = await tx.user.findUniqueOrThrow({ where: { email: 'assessor1@example.invalid' } });
+    const support = await tx.user.findUniqueOrThrow({ where: { email: 'apoio@example.invalid' } });
+    const routine = await tx.routine.findUniqueOrThrow({ where: { id: 'demo-routine-email' } });
+    const template = await tx.checklistTemplate.findUniqueOrThrow({ where: { id: 'demo-checklist-email' } });
+    const contact = await tx.contact.findUniqueOrThrow({ where: { id: 'demo-contact-secretaria' } });
     if (!chief.isActive || chief.role !== 'CHEFE' || !member.isActive || !support.isActive || routine.isArchived || template.isArchived || contact.isArchived || !template.items.length) throw new Error('A demonstração foi alterada/inativada. Recrie em banco novo; registros existentes não serão reativados ou sobrescritos.');
     const yesterday = new Date(`${day}T00:00:00Z`); yesterday.setUTCDate(yesterday.getUTCDate() - 1); const previous = yesterday.toISOString().slice(0, 10);
     const at = new Date(`${day}T09:00:00Z`); const started = new Date(at.getTime() + 3600000); const ended = new Date(at.getTime() + 7200000);

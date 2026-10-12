@@ -1,0 +1,3 @@
+import { expect, it } from 'vitest';
+import { transactionConflictSchema } from './transaction-conflict.js';
+it('reconhece conflito de escrita de operação Prisma e bloqueio SQL do adapter pg', () => { expect(transactionConflictSchema.safeParse({ code: 'P2034' }).success).toBe(true); expect(transactionConflictSchema.safeParse({ code: 'P2010', meta: { driverAdapterError: { cause: { kind: 'TransactionWriteConflict' } } } }).success).toBe(true); expect(transactionConflictSchema.safeParse({ code: 'P2010', meta: { driverAdapterError: { cause: { kind: 'TableDoesNotExist' } } } }).success).toBe(false); expect(transactionConflictSchema.safeParse(new Error('Other error')).success).toBe(false); });
