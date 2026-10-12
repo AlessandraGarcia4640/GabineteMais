@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
+import { Screen } from '../../components/screen';
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -10,11 +10,12 @@ import { strings } from '../../lib/strings';
 import { theme } from '../../lib/theme';
 import { Button } from '../../components/button';
 import { TextField } from '../../components/text-field';
-import { EmptyState, ErrorState, LoadingState, RoutineCard } from '../dashboard/cards';
+import { EmptyState, ErrorState, LoadingState } from '../../components/feedback';
+import { RoutineCard } from '../dashboard/cards';
 import { displayDate } from '../dashboard/model';
 import { useGabineteDate } from '../dashboard/hooks';
 import { routineError, useRoutine, useRoutineList, useRoutinesApi } from './hooks';
-import { Choice } from './choice';
+import { Choice } from '../../components/choice';
 import { RoutineForm } from './form';
 export function RoutineListScreen() {
   const params = useLocalSearchParams(); const router = useRouter(); const { user } = useSession(); const day = useGabineteDate();
@@ -30,13 +31,13 @@ export function RoutineListScreen() {
     <View style={styles.choices}><Choice label={strings.routines.allFrequencies} selected={frequency === ''} onPress={() => setFrequency('')} />
       {routineFrequencySchema.options.map((value) => <Choice key={value} label={strings.dashboard.frequency[value]} selected={frequency === value} onPress={() => setFrequency(value)} />)}</View>
   </View>;
-  return <SafeAreaView style={styles.screen} edges={['bottom']}>
+  return <Screen>
     {query.isPending ? <View>{header}<LoadingState /></View> : query.isError && !query.data ? <View>{header}<ErrorState retry={() => void query.refetch()} /></View> : <FlashList data={data} keyExtractor={(routine) => routine.id} contentContainerStyle={styles.content}
-      ListHeaderComponent={header} renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={item.title} onPress={() => router.push({ pathname: '/rotina/[id]', params: { id: item.id } })}><RoutineCard routine={item} /></Pressable>}
+      ListHeaderComponent={header} renderItem={({ item }) => <RoutineCard routine={item} onPress={() => router.push({ pathname: '/rotina/[id]', params: { id: item.id } })} />}
       refreshing={query.isRefetching} onRefresh={() => void query.refetch()} ListEmptyComponent={query.isError ? null : <EmptyState message={strings.routines.empty} />}
       ListFooterComponent={<View style={styles.footer}>{query.isError && <ErrorState updating retry={() => { if (query.isFetchNextPageError) void query.fetchNextPage(); else void query.refetch(); }} />}
-        {query.hasNextPage && <Button label={query.isFetchingNextPage ? strings.dashboard.loadingMore : strings.dashboard.loadMore} loading={query.isFetchingNextPage} disabled={query.isRefetching} onPress={() => void query.fetchNextPage()} />}</View>} />}
-  </SafeAreaView>;
+        {query.hasNextPage && <Button label={query.isFetchingNextPage ? strings.feedback.loadingMore : strings.feedback.loadMore} loading={query.isFetchingNextPage} disabled={query.isRefetching} onPress={() => void query.fetchNextPage()} />}</View>} />}
+  </Screen>;
 }
 export function RoutineDetailScreen() {
   const params = useLocalSearchParams(); const valid = userIdParamsSchema.safeParse({ id: params.id }); const id = valid.success ? valid.data.id : undefined;
@@ -61,7 +62,7 @@ export function RoutineDetailScreen() {
     <Button label={strings.checklists.models} secondary onPress={() => router.push({ pathname: '/checklists', params: { routineId: routine.id } })} />
     {user?.role === 'CHEFE' && !routine.isArchived && <Button label={strings.checklists.create} onPress={() => router.push({ pathname: '/checklist/nova', params: { routineId: routine.id } })} />}
     <Text style={styles.label}>{strings.routines.steps}</Text></View>;
-  return <SafeAreaView style={styles.screen} edges={['bottom']}><FlashList data={routine.steps.map((text, index) => ({ text, index }))} keyExtractor={(step) => String(step.index)} contentContainerStyle={styles.content}
+  return <Screen><FlashList data={routine.steps.map((text, index) => ({ text, index }))} keyExtractor={(step) => String(step.index)} contentContainerStyle={styles.content}
     ListHeaderComponent={header} renderItem={({ item }) => <View style={styles.step}><Text style={styles.label}>{strings.routines.step(item.index)}</Text><Text style={styles.text}>{item.text}</Text></View>}
     ListEmptyComponent={<Text>{strings.routines.noSteps}</Text>}
     ListFooterComponent={<View style={styles.footer}>{!!message && <Text accessibilityRole="alert" style={styles.error}>{message}</Text>}
@@ -70,7 +71,7 @@ export function RoutineDetailScreen() {
           <Text style={styles.label}>{strings.routines.archiveTitle}</Text><Text style={styles.text}>{strings.routines.archiveDescription}</Text>
           <Button label={archive.isPending ? strings.routines.archiving : strings.routines.confirmArchive} loading={archive.isPending} onPress={() => archive.mutate()} />
           <Button label={strings.routines.cancel} secondary disabled={archive.isPending} onPress={() => setConfirm(false)} /></View>}</>}
-    </View>} /></SafeAreaView>;
+    </View>} /></Screen>;
 }
 export function RoutineFormScreen({ mode }: { mode: 'create' | 'edit' }) {
   const { user } = useSession(); const router = useRouter(); const params = useLocalSearchParams();
@@ -85,6 +86,6 @@ export function RoutineFormScreen({ mode }: { mode: 'create' | 'edit' }) {
     onSaved={(routine) => router.replace({ pathname: '/rotina/[id]', params: { id: routine.id } })}
     onCancel={() => { if (id) router.replace({ pathname: '/rotina/[id]', params: { id } }); else router.replace('/rotinas'); }} />;
 }
-const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: theme.background }, content: { padding: 20 }, header: { gap: 16, paddingBottom: 20 },
+const styles = StyleSheet.create({ content: { padding: 20 }, header: { gap: 16, paddingBottom: 20 },
   choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, title: { fontSize: 25, fontWeight: '700', color: theme.text }, label: { fontSize: 16, fontWeight: '600', color: theme.text },
   text: { fontSize: 15, lineHeight: 23, color: theme.muted }, error: { color: theme.danger, padding: 16 }, footer: { paddingVertical: 20, gap: 16 }, step: { marginBottom: 20, gap: 8 } });

@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginRequestSchema, type LoginRequest } from '@gabinete-plus/shared';
 import { AuthScreen } from '../../components/auth-screen';
+import { Card } from '../../components/card';
 import { Button } from '../../components/button';
 import { TextField } from '../../components/text-field';
 import { strings } from '../../lib/strings';
@@ -26,7 +27,7 @@ export function LoginScreen() {
   return <AuthScreen><View style={styles.header}>
     <Text style={styles.brand}>{strings.brand}</Text><Text accessibilityRole="header" style={styles.title}>{strings.auth.title}</Text>
     <Text style={styles.description}>{strings.auth.subtitle}</Text>
-  </View><View style={styles.card}>
+  </View><Card style={styles.form}>
     <Controller control={form.control} name="email" render={({ field, fieldState }) => <TextField label={strings.auth.email} value={field.value}
       onChangeText={field.onChange} onBlur={field.onBlur} keyboardType="email-address" autoCapitalize="none" autoCorrect={false}
       autoComplete="email" textContentType="username" editable={!login.isPending} placeholder={strings.auth.emailPlaceholder}
@@ -40,13 +41,13 @@ export function LoginScreen() {
       onPress={() => setVisible(!visible)} style={styles.visibility}><Text style={styles.link}>{visible ? strings.auth.hidePassword : strings.auth.showPassword}</Text></Pressable>
     {!!notice && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{notice}</Text>}
     <Button label={login.isPending ? strings.auth.submitting : strings.auth.submit} loading={login.isPending} onPress={() => void form.handleSubmit(submit)()} />
-  </View><Text style={styles.footnote}>{strings.auth.invitation}</Text>
+  </Card><Text style={styles.footnote}>{strings.auth.invitation}</Text>
     {Platform.OS === 'web' && <Text style={styles.footnote}>{strings.auth.webSession}</Text>}
   </AuthScreen>;
 }
 const styles = StyleSheet.create({ header: { gap: 14 }, brand: { color: theme.primary, fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
   title: { color: theme.text, fontSize: 30, fontWeight: '700' }, description: { color: theme.muted, fontSize: 16, lineHeight: 24 },
-  card: { backgroundColor: theme.surface, borderRadius: 18, padding: 22, borderWidth: 1, borderColor: theme.border, gap: 20 },
+  form: { padding: 22, gap: 20, marginBottom: 0 },
   visibility: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-end' }, link: { color: theme.primary, fontSize: 14, fontWeight: '600' },
   error: { backgroundColor: theme.errorSurface, color: theme.danger, padding: 14, borderRadius: 10, fontSize: 14, lineHeight: 21 },
   footnote: { color: theme.muted, fontSize: 13, textAlign: 'center', lineHeight: 20 } });

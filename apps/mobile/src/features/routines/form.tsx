@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
+import { Screen } from '../../components/screen';
 import { FlashList } from '@shopify/flash-list';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +10,7 @@ import { Button } from '../../components/button';
 import { TextField } from '../../components/text-field';
 import { strings } from '../../lib/strings';
 import { theme } from '../../lib/theme';
-import { Choice } from './choice';
+import { Choice } from '../../components/choice';
 import { useSession, useSessionManager } from '../../providers/session-provider';
 import { initialValues, routineChanges, routineFormSchema, toRoutinePayload, type RoutineFormValues } from './form-model';
 import { routineError, useRoutinesApi } from './hooks';
@@ -65,7 +65,7 @@ export function RoutineForm({ routine, onSaved, onCancel }: { routine?: Routine;
     {discard && <View style={styles.footer}><Text style={styles.label}>{strings.routines.unsavedTitle}</Text><Text>{strings.routines.unsavedDescription}</Text>
       <Button label={strings.routines.discard} onPress={onCancel} /><Button label={strings.routines.continueEditing} secondary onPress={() => setDiscard(false)} /></View>}
   </View>;
-  return <SafeAreaView style={styles.screen} edges={['bottom']}><KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+  return <Screen keyboard>
     <FlashList data={steps.fields} keyExtractor={(field) => field.id} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" ListHeaderComponent={header}
       ListEmptyComponent={<Text style={styles.empty}>{strings.routines.noSteps}</Text>} ListFooterComponent={footer} renderItem={({ index }) => <View style={styles.step}>
         <Controller control={form.control} name={`steps.${index}.text`} render={({ field, fieldState }) => <TextField label={strings.routines.step(index)} value={field.value} multiline
@@ -74,8 +74,8 @@ export function RoutineForm({ routine, onSaved, onCancel }: { routine?: Routine;
         <Button label={strings.routines.moveDown(index)} secondary disabled={busy || index === steps.fields.length - 1} onPress={() => steps.move(index, index + 1)} />
         <Button label={strings.routines.removeStep(index)} secondary disabled={busy} onPress={() => steps.remove(index)} />
       </View>} />
-  </KeyboardAvoidingView></SafeAreaView>;
+  </Screen>;
 }
-const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: theme.background }, content: { padding: 20 }, header: { gap: 16, paddingBottom: 20 },
+const styles = StyleSheet.create({ content: { padding: 20 }, header: { gap: 16, paddingBottom: 20 },
   label: { color: theme.text, fontWeight: '600', fontSize: 16 }, choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   step: { gap: 10, marginBottom: 20 }, footer: { gap: 16, paddingVertical: 20 }, error: { color: theme.danger, fontSize: 14 }, empty: { color: theme.muted } });

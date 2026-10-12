@@ -16,15 +16,15 @@ function chief() { const user = fixture.manager.store.getState().user; if (!user
 function response(value: object) { return Promise.resolve(new Response(JSON.stringify(value))); }
 it('catálogo pagina por cursor, filtra arquivo e abre modelo', async () => {
   fetcher.mockImplementation((url) => response({ items: [templateFixture({ id: String(url).includes('cursor=') ? 'template-2' : 'template-1' })], nextCursor: String(url).includes('cursor=') ? null : 'template-1' }));
-  fixture.show(<ChecklistListScreen />); await screen.findByRole('button', { name: 'Checklist fictício' }); fireEvent.press(screen.getByRole('button', { name: strings.dashboard.loadMore }));
+  fixture.show(<ChecklistListScreen />); await screen.findByRole('button', { name: 'Checklist fictício' }); fireEvent.press(screen.getByRole('button', { name: strings.feedback.loadMore }));
   await waitFor(() => expect(screen.getAllByRole('button', { name: 'Checklist fictício' })).toHaveLength(2));
   expect(fetcher.mock.calls.some((call) => String(call[0]).includes('cursor=template-1'))).toBe(true);
   fireEvent.press(screen.getByRole('radio', { name: strings.checklists.archived })); await waitFor(() => expect(fetcher.mock.calls.some((call) => String(call[0]).includes('isArchived=true'))).toBe(true));
   const buttons = await screen.findAllByRole('button', { name: 'Checklist fictício' }); fireEvent.press(buttons[0]); expect(mockPush).toHaveBeenCalledWith({ pathname: '/checklist/[id]', params: { id: 'template-1' } });
 });
 it('lista vazia e falha permitem nova tentativa', async () => {
-  fetcher.mockRejectedValue(new Error('offline')); fixture.show(<ChecklistListScreen />); await screen.findByText(strings.dashboard.error);
-  fetcher.mockImplementation(() => response({ items: [], nextCursor: null })); fireEvent.press(screen.getByRole('button', { name: strings.dashboard.retry })); await screen.findByText(strings.checklists.empty);
+  fetcher.mockRejectedValue(new Error('offline')); fixture.show(<ChecklistListScreen />); await screen.findByText(strings.feedback.error);
+  fetcher.mockImplementation(() => response({ items: [], nextCursor: null })); fireEvent.press(screen.getByRole('button', { name: strings.feedback.retry })); await screen.findByText(strings.checklists.empty);
 });
 it('histórico filtra pessoa e modelo e navega para execução', async () => {
   mockParams = { templateId: 'template-1' }; fetcher.mockImplementation(() => response({ items: [runFixture()], nextCursor: null })); fixture.show(<ChecklistHistoryScreen />);

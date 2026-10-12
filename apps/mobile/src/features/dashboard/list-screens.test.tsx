@@ -16,13 +16,13 @@ it('consulta de tarefas carrega próxima página e permite selecionar em andamen
   fetcher.mockImplementation((url) => { const parsed = new URL(String(url)); const cursor = parsed.searchParams.get('cursor'); const progress = parsed.searchParams.get('status') === 'EM_ANDAMENTO';
     return Promise.resolve(new Response(JSON.stringify({ items: [taskFixture({ id: progress ? 'progress' : cursor ? 'second' : 'first', title: progress ? 'Em execução' : cursor ? 'Segunda página' : 'Primeira página', status: progress ? 'EM_ANDAMENTO' : 'ABERTA' })], nextCursor: !progress && !cursor ? 'next' : null })));
   });
-  fixture.show(<PendingTasksScreen />); await screen.findByText('Primeira página'); fireEvent.press(screen.getByRole('button', { name: strings.dashboard.loadMore }));
+  fixture.show(<PendingTasksScreen />); await screen.findByText('Primeira página'); fireEvent.press(screen.getByRole('button', { name: strings.feedback.loadMore }));
   await screen.findByText('Segunda página'); expect(screen.getByText('Primeira página')).toBeTruthy(); expect(fetcher.mock.calls.some((call) => String(call[0]).includes('cursor=next'))).toBe(true);
   fireEvent.press(screen.getByRole('button', { name: strings.dashboard.progress })); await screen.findByText('Em execução'); expect(screen.queryByText('Primeira página')).toBeNull();
 });
 it('erro ao carregar mais preserva registros e oferece tentativa manual', async () => {
   fetcher.mockImplementation((url) => String(url).includes('cursor=') ? Promise.resolve(new Response(JSON.stringify({ error: { code: 'INTERNAL_ERROR', message: 'Interno' } }), { status: 503 }))
     : Promise.resolve(new Response(JSON.stringify({ items: [routineFixture()], nextCursor: 'next' }))));
-  fixture.show(<TodayRoutinesScreen />); await screen.findByText('Rotina fictícia'); fireEvent.press(screen.getByRole('button', { name: strings.dashboard.loadMore }));
-  await screen.findByText(strings.dashboard.updatingError); expect(screen.getByText('Rotina fictícia')).toBeTruthy(); expect(screen.getByRole('button', { name: strings.dashboard.retry })).toBeTruthy();
+  fixture.show(<TodayRoutinesScreen />); await screen.findByText('Rotina fictícia'); fireEvent.press(screen.getByRole('button', { name: strings.feedback.loadMore }));
+  await screen.findByText(strings.feedback.updatingError); expect(screen.getByText('Rotina fictícia')).toBeTruthy(); expect(screen.getByRole('button', { name: strings.feedback.retry })).toBeTruthy();
 });
