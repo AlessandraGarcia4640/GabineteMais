@@ -2,13 +2,13 @@ import express from 'express';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { signAccessToken } from '../lib/tokens.js';
-import { requireAuth, requireRole } from './auth.js';
+import { getAuthContext, requireAuth, requireRole } from './auth.js';
 
 const createTestApp = () => {
   const app = express();
 
   app.get('/protected', requireAuth, (req, res) => {
-    res.json(req.auth);
+    res.json(getAuthContext(req));
   });
 
   app.get('/chief-only', requireAuth, requireRole('CHEFE'), (_req, res) => {
