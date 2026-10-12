@@ -48,9 +48,15 @@ jobs:
       - run: pnpm db:seed
         env:
           DEMO_SEED_PASSWORD: demo-ci-password-only
+          DEMO_REFERENCE_DATE: '2026-10-12'
       - run: pnpm db:seed
         env:
           DEMO_SEED_PASSWORD: demo-ci-password-only
+          DEMO_REFERENCE_DATE: '2026-10-12'
+      - name: Verify backup and restore in isolated database
+        run: node scripts/db-transfer.integration.mjs
+        env:
+          GABINETE_TEST_CONTAINER: ${{ job.services.postgres.id }}
       - run: pnpm build
       - run: pnpm --filter @gabinete-plus/mobile export:web
         env:
