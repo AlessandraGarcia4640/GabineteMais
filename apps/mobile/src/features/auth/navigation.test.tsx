@@ -4,9 +4,10 @@ import RootLayout from '../../../app/_layout';
 import SessionLayout from '../../../app/(tabs)/_layout';
 import { LoginScreen } from './login-screen';
 import { SessionScreen } from './session-screen';
+import { RoutineListScreen, RoutineDetailScreen, RoutineFormScreen } from '../routines/screens';
 import { strings } from '../../lib/strings';
 import { DashboardScreen } from '../dashboard/dashboard-screen';
-import { PendingTasksScreen, TodayRoutinesScreen } from '../dashboard/list-screens';
+import { PendingTasksScreen } from '../dashboard/list-screens';
 jest.mock('@shopify/flash-list', () => {
   const { FlatList } = jest.requireActual<typeof import('react-native')>('react-native'); return { FlashList: FlatList };
 });
@@ -37,7 +38,8 @@ it('rota privada abre login, sucesso navega para o gabinete e sair impede voltar
   });
   try {
     renderRouter({ _layout: RootLayout, login: LoginScreen, '(tabs)/_layout': SessionLayout, '(tabs)/index': DashboardScreen,
-      '(tabs)/perfil': SessionScreen, '(tabs)/tarefas': PendingTasksScreen, '(tabs)/rotinas': TodayRoutinesScreen }, { initialUrl: '/' });
+      '(tabs)/perfil': SessionScreen, '(tabs)/tarefas': PendingTasksScreen, '(tabs)/rotinas': RoutineListScreen, '(tabs)/rotina/[id]': RoutineDetailScreen,
+      '(tabs)/rotina/nova': () => <RoutineFormScreen mode="create" />, '(tabs)/rotina/[id]/editar': () => <RoutineFormScreen mode="edit" /> }, { initialUrl: '/' });
     await screen.findByRole('button', { name: strings.auth.submit }); expect(screen.queryByText('Pessoa Fictícia')).toBeNull();
     fireEvent.changeText(screen.getByLabelText(strings.auth.email), 'pessoa@example.invalid');
     fireEvent.changeText(screen.getByLabelText(strings.auth.password), 'Senha-ficticia-34');

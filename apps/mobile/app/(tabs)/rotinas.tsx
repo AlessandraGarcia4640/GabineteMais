@@ -1,1 +1,1 @@
-export { TodayRoutinesScreen as default } from '../../src/features/dashboard/list-screens';
+export { RoutineListScreen as default } from '../../src/features/routines/screens';

@@ -24,7 +24,7 @@ export function DashboardScreen() {
       <Text style={styles.muted}>{displayDate(day)}</Text><Button label={strings.dashboard.refresh} secondary onPress={refresh} /></View>
     <View style={styles.section}><Text style={styles.heading}>{strings.dashboard.shortcuts}</Text>
       <Button label={strings.dashboard.tasksShortcut} onPress={() => router.push('/tarefas')} />
-      <Button label={strings.dashboard.routinesShortcut} secondary onPress={() => router.push('/rotinas')} />
+      <Button label={strings.dashboard.routinesShortcut} secondary onPress={() => router.push({ pathname: '/rotinas', params: { scope: 'today' } })} />
       <Button label={strings.dashboard.profileShortcut} secondary onPress={() => router.push('/perfil')} /></View>
     <View style={styles.section}><Text accessibilityRole="header" style={styles.heading}>{strings.dashboard.tasksTitle}</Text><Text style={styles.muted}>{strings.dashboard.tasksDescription}</Text>
       {open.isPending || progress.isPending ? <LoadingState /> : open.isError || progress.isError ? <ErrorState retry={retryTasks} /> : tasks.length === 0 ? <EmptyState message={strings.dashboard.emptyTasks} /> : tasks.map((task) => <TaskCard key={task.id} task={task} />)}
@@ -33,7 +33,7 @@ export function DashboardScreen() {
     <View style={styles.section}><Text accessibilityRole="header" style={styles.heading}>{strings.dashboard.routinesTitle}</Text><Text style={styles.muted}>{strings.dashboard.routinesDescription}</Text>
       {routines.isPending ? <LoadingState /> : routines.isError ? <ErrorState retry={() => void routines.refetch()} /> : !routines.data.items.length ? <EmptyState message={strings.dashboard.emptyRoutines} /> : routines.data.items.map((routine) => <RoutineCard key={routine.id} routine={routine} />)}
       {!!routines.data?.nextCursor && !routines.isError && <Text style={styles.muted}>{strings.dashboard.moreRoutines}</Text>}
-      <Button label={strings.dashboard.viewRoutines} secondary onPress={() => router.push('/rotinas')} /></View>
+      <Button label={strings.dashboard.viewRoutines} secondary onPress={() => router.push({ pathname: '/rotinas', params: { scope: 'today' } })} /></View>
     <Button label={logout.isPending ? strings.session.leaving : strings.session.logout} secondary loading={logout.isPending} onPress={() => logout.mutate()} />
   </ScrollView></SafeAreaView>;
 }

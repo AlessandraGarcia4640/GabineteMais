@@ -69,7 +69,10 @@ O app possui login integrado à API, rotas protegidas e recuperação da sessão
 armazenamento seguro no Android/iOS. Configure `apps/mobile/.env` e consulte
 [o guia do login mobile](docs/login-mobile.md). No navegador, a sessão fica em memória.
 O perfil e a saída ficam disponíveis na área protegida; cadastro, edição e execução
-dos módulos continuarão nas próximas etapas da Fase 4.
+dos demais módulos continuarão nas próximas etapas da Fase 4.
+
+[Rotinas no aplicativo](docs/rotinas-mobile.md) já possuem catálogo, busca, filtros,
+detalhes e manutenção pela chefia, com passos ordenados e arquivamento confirmado.
 
 A tela [Hoje](docs/dashboard-mobile.md) exibe tarefas pendentes próprias e rotinas
 do dia obtidas da API, com atalhos para consultas paginadas e perfil.
