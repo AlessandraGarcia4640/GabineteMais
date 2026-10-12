@@ -58,6 +58,8 @@ export function RoutineDetailScreen() {
     {routine.specificDate && <Text style={styles.text}>{strings.routines.specificDate}: {displayDate(routine.specificDate)}</Text>}
     <Text style={styles.text}>{strings.routines.defaultPosition}: {routine.defaultPosition ? strings.routines.positions[routine.defaultPosition] : strings.routines.noPosition}</Text>
     <Text style={styles.text}>{strings.routines.essential}: {routine.essentialForTransition ? strings.routines.yes : strings.routines.no}</Text>
+    <Button label={strings.checklists.models} secondary onPress={() => router.push({ pathname: '/checklists', params: { routineId: routine.id } })} />
+    {user?.role === 'CHEFE' && !routine.isArchived && <Button label={strings.checklists.create} onPress={() => router.push({ pathname: '/checklist/nova', params: { routineId: routine.id } })} />}
     <Text style={styles.label}>{strings.routines.steps}</Text></View>;
   return <SafeAreaView style={styles.screen} edges={['bottom']}><FlashList data={routine.steps.map((text, index) => ({ text, index }))} keyExtractor={(step) => String(step.index)} contentContainerStyle={styles.content}
     ListHeaderComponent={header} renderItem={({ item }) => <View style={styles.step}><Text style={styles.label}>{strings.routines.step(item.index)}</Text><Text style={styles.text}>{item.text}</Text></View>}

@@ -23,7 +23,7 @@ it('exibe tarefas/rotinas reais do transporte, com filtros e atalhos funcionais'
   fixture.show(<DashboardScreen />); await screen.findByText('Tarefa fictícia'); await screen.findByText('Rotina fictícia'); expect(screen.getByText(strings.dashboard.overdue)).toBeTruthy();
   const urls = fetcher.mock.calls.map((call) => new URL(String(call[0]))); expect(urls.filter((url) => url.pathname === '/tasks').every((url) => url.searchParams.get('assigneeId') === 'actor' && url.searchParams.get('limit') === '5')).toBe(true);
   expect(urls.find((url) => url.pathname === '/routines')?.searchParams.get('scheduledFor')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-  for (const [label, path] of [[strings.dashboard.tasksShortcut, '/tarefas'], [strings.dashboard.routinesShortcut, '/rotinas'], [strings.dashboard.profileShortcut, '/perfil']]) {
+  for (const [label, path] of [[strings.dashboard.tasksShortcut, '/tarefas'], [strings.dashboard.routinesShortcut, '/rotinas'], [strings.checklists.title, '/checklists'], [strings.dashboard.profileShortcut, '/perfil']]) {
     fireEvent.press(screen.getByRole('button', { name: label })); expect(mockPush).toHaveBeenLastCalledWith(path === '/rotinas' ? { pathname: '/rotinas', params: { scope: 'today' } } : path);
   }
 });

@@ -1,5 +1,20 @@
 export const strings = {
   brand: 'Gabinete+',
+  checklists: {
+    title: 'Checklists', models: 'Modelos de checklist', detail: 'Modelo de checklist', create: 'Novo checklist', edit: 'Editar checklist', run: 'Execução de checklist', history: 'Histórico de execuções',
+    active: 'Ativos', archived: 'Arquivados', empty: 'Nenhum checklist encontrado.', emptyRuns: 'Nenhuma execução encontrada.', mine: 'Minhas execuções', allRuns: 'Todas as execuções',
+    name: 'Título do checklist', items: 'Itens ordenados', item: (index: number) => `Item ${String(index + 1)}`, add: 'Adicionar item', remove: (index: number) => `Remover item ${String(index + 1)}`,
+    up: (index: number) => `Mover item ${String(index + 1)} para cima`, down: (index: number) => `Mover item ${String(index + 1)} para baixo`,
+    version: (version: number) => `Versão ${String(version)}`, progress: (done: number, total: number) => `${String(done)} de ${String(total)} itens concluídos`,
+    start: 'Iniciar ou abrir execução', date: 'Data de referência', startHelp: 'A execução é criada para o período desta data e fica sob sua responsabilidade. Uma execução existente será reaberta.',
+    owner: 'Esta execução está sob sua responsabilidade.', chiefCanMark: 'A chefia pode marcar os itens desta execução.', readOnly: 'Somente a pessoa responsável e a chefia podem marcar os itens.', personUnavailable: 'Integrante da equipe',
+    snapshot: 'Itens e orientações registrados no início desta execução.', marked: (actor: string, date: string) => `Marcado por ${actor} em ${date}`,
+    archive: 'Arquivar checklist', confirmArchive: 'Confirmar arquivamento do checklist', archiveHelp: 'O modelo deixará de permitir novas execuções. O histórico será preservado.', archivedLabel: 'Este modelo está arquivado.',
+    forbidden: 'Você não tem permissão para esta operação.', notFound: 'Checklist não encontrado.', archivedError: 'O modelo ou a rotina está arquivado. Novas execuções e alterações estão indisponíveis.',
+    completedTask: 'Este checklist está vinculado a uma tarefa concluída e não pode ser reaberto.', exists: 'Já existe uma execução para este período. Consulte o histórico.',
+    inactive: 'A pessoa responsável está inativa.', invalidTitle: 'Informe um título de até 200 caracteres.', invalidItems: 'Inclua de 1 a 100 itens, com até 500 caracteres em cada item.',
+    status: { POR_FAZER: 'Por fazer', EM_ANDAMENTO: 'Em andamento', CONCLUIDA: 'Concluída' },
+  },
   routines: {
     title: 'Rotinas', details: 'Detalhes da rotina', create: 'Nova rotina', edit: 'Editar rotina', save: 'Salvar', saving: 'Salvando…', cancel: 'Cancelar',
     all: 'Todas', today: 'Hoje', archived: 'Arquivadas', empty: 'Nenhuma rotina encontrada.', search: 'Buscar rotinas', searchAction: 'Buscar', allFrequencies: 'Todas as frequências',
