@@ -11,3 +11,5 @@ O endereço e a sessão são armazenados separadamente. **Alterar endereço de a
 Este instalador usa assinatura de debug para validação interna e não é uma versão de loja. A configuração normal não habilita HTTP. O workflow pode ser executado novamente pela interface Actions. Os perfis de EAS Build estão em `apps/mobile/eas.json`; é necessário conectar a conta/projeto EAS antes de usar esse serviço.
 
 Registre instalação, aparelho, versão Android, commit, conectividade, encerramento/reabertura, expiração e logout. Execute o [protocolo da prova de conceito](validacao/protocolo-poc.md). A publicação do APK pelo CI, por si só, não marca os testes físicos ou sessões de usuários como concluídos.
+
+O workflow também instala e abre o APK em emulador Android 35, verificando a tela inicial de endereço e registrando imagem, árvore da interface e erros. O procedimento usa [Android Emulator Runner](https://github.com/ReactiveCircus/android-emulator-runner), conforme as opções e instruções de aceleração de sua documentação. Esse teste verifica inicialização, sem substituir a jornada completa em aparelho físico.
