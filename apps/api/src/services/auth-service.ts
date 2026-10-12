@@ -27,9 +27,9 @@ const publicUser = (user: {
 });
 
 const issueTokens = async (user: { id: string; role: AuthRole }) => {
-  const accessToken = await signAccessToken(user.id, user.role);
-  const refreshToken = await signRefreshToken(user.id);
-  const payload = await verifyRefreshToken(refreshToken);
+  const accessToken = signAccessToken(user.id, user.role);
+  const refreshToken = signRefreshToken(user.id);
+  const payload = verifyRefreshToken(refreshToken);
 
   await prisma.refreshToken.create({
     data: {
@@ -51,7 +51,7 @@ export const login = async (input: unknown) => {
   if (!user) return { kind: 'invalid_credentials' as const };
   if (!user.isActive) return { kind: 'inactive' as const };
 
-  const valid = await verifyPassword(user.passwordHash, credentials.password);
+  const valid = verifyPassword(user.passwordHash, credentials.password);
   if (!valid) return { kind: 'invalid_credentials' as const };
 
   const tokens = await issueTokens(user);
@@ -67,7 +67,7 @@ export const refreshSession = async (input: unknown) => {
 
   let payload;
   try {
-    payload = await verifyRefreshToken(refreshToken);
+    payload = verifyRefreshToken(refreshToken);
   } catch {
     return { kind: 'invalid_refresh' as const };
   }
