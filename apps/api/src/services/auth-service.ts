@@ -78,10 +78,9 @@ export const refreshSession = async (input: unknown) => {
   });
 
   if (
-    !stored ||
+    !stored?.user.isActive ||
     stored.revokedAt ||
     stored.expiresAt <= new Date() ||
-    !stored.user.isActive ||
     stored.user.id !== payload.sub
   ) {
     return { kind: 'invalid_refresh' as const };
