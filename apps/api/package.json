@@ -23,9 +23,7 @@
     "express": "^5.0.0",
     "helmet": "latest",
     "pg": "latest",
-    "zod": "latest",
-    "argon2": "^0.44.0",
-    "jose": "^6.1.0"
+    "zod": "latest"
   },
   "devDependencies": {
     "@types/cors": "latest",
