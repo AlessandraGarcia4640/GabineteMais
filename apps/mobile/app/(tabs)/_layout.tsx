@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { strings } from '../../src/lib/strings';
 export default function SessionLayout() { return <Stack>
   <Stack.Screen name="index" options={{ title: strings.dashboard.title }} />
-  <Stack.Screen name="tarefas" options={{ title: strings.dashboard.pendingList }} />
+  <Stack.Screen name="tarefas" options={{ title: strings.tasks.title }} />
   <Stack.Screen name="rotinas" options={{ title: strings.routines.title }} />
   <Stack.Screen name="perfil" options={{ title: strings.session.title }} />
   <Stack.Screen name="rotina/nova" options={{ title: strings.routines.create }} />
@@ -18,4 +18,8 @@ export default function SessionLayout() { return <Stack>
   <Stack.Screen name="contato/novo" options={{ title: strings.contacts.create }} />
   <Stack.Screen name="contato/[id]" options={{ title: strings.contacts.details }} />
   <Stack.Screen name="contato/[id]/editar" options={{ title: strings.contacts.edit }} />
+  <Stack.Screen name="tarefa/nova" options={{ title: strings.tasks.create }} />
+  <Stack.Screen name="tarefa/[id]" options={{ title: strings.tasks.details }} />
+  <Stack.Screen name="tarefa/[id]/editar" options={{ title: strings.tasks.edit }} />
+  <Stack.Screen name="tarefa/[id]/historico" options={{ title: strings.tasks.history }} />
 </Stack>; }

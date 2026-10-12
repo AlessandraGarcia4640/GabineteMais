@@ -1,1 +1,1 @@
-export { PendingTasksScreen as default } from '../../src/features/dashboard/list-screens';
+export { TaskListScreen as default } from '../../src/features/tasks/screens';

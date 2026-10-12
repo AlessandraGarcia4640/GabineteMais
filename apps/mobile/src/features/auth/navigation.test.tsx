@@ -7,7 +7,7 @@ import { SessionScreen } from './session-screen';
 import { RoutineListScreen, RoutineDetailScreen, RoutineFormScreen } from '../routines/screens';
 import { strings } from '../../lib/strings';
 import { DashboardScreen } from '../dashboard/dashboard-screen';
-import { PendingTasksScreen } from '../dashboard/list-screens';
+import { TaskListScreen, TaskDetailScreen, TaskFormScreen, TaskHistoryScreen } from '../tasks/screens';
 import { ChecklistListScreen, ChecklistHistoryScreen, ChecklistDetailScreen, ChecklistRunScreen, ChecklistFormScreen } from '../checklists/screens';
 import { ContactListScreen, ContactDetailScreen, ContactFormScreen } from '../contacts/screens';
 jest.mock('@shopify/flash-list', () => {
@@ -40,11 +40,12 @@ it('rota privada abre login, sucesso navega para o gabinete e sair impede voltar
   });
   try {
     renderRouter({ _layout: RootLayout, login: LoginScreen, '(tabs)/_layout': SessionLayout, '(tabs)/index': DashboardScreen,
-      '(tabs)/perfil': SessionScreen, '(tabs)/tarefas': PendingTasksScreen, '(tabs)/rotinas': RoutineListScreen, '(tabs)/rotina/[id]': RoutineDetailScreen,
+      '(tabs)/perfil': SessionScreen, '(tabs)/tarefas': TaskListScreen, '(tabs)/rotinas': RoutineListScreen, '(tabs)/rotina/[id]': RoutineDetailScreen,
       '(tabs)/rotina/nova': () => <RoutineFormScreen mode="create" />, '(tabs)/rotina/[id]/editar': () => <RoutineFormScreen mode="edit" />,
       '(tabs)/checklists': ChecklistListScreen, '(tabs)/execucoes': ChecklistHistoryScreen, '(tabs)/checklist/[id]': ChecklistDetailScreen,
       '(tabs)/execucao/[id]': ChecklistRunScreen, '(tabs)/checklist/nova': () => <ChecklistFormScreen mode="create" />, '(tabs)/checklist/[id]/editar': () => <ChecklistFormScreen mode="edit" />,
-      '(tabs)/contatos': ContactListScreen, '(tabs)/contato/[id]': ContactDetailScreen, '(tabs)/contato/novo': () => <ContactFormScreen mode="create" />, '(tabs)/contato/[id]/editar': () => <ContactFormScreen mode="edit" /> }, { initialUrl: '/' });
+      '(tabs)/contatos': ContactListScreen, '(tabs)/contato/[id]': ContactDetailScreen, '(tabs)/contato/novo': () => <ContactFormScreen mode="create" />, '(tabs)/contato/[id]/editar': () => <ContactFormScreen mode="edit" />,
+      '(tabs)/tarefa/[id]': TaskDetailScreen, '(tabs)/tarefa/nova': () => <TaskFormScreen mode="create" />, '(tabs)/tarefa/[id]/editar': () => <TaskFormScreen mode="edit" />, '(tabs)/tarefa/[id]/historico': TaskHistoryScreen }, { initialUrl: '/' });
     await screen.findByRole('button', { name: strings.auth.submit }); expect(screen.queryByText('Pessoa Fictícia')).toBeNull();
     fireEvent.changeText(screen.getByLabelText(strings.auth.email), 'pessoa@example.invalid');
     fireEvent.changeText(screen.getByLabelText(strings.auth.password), 'Senha-ficticia-34');

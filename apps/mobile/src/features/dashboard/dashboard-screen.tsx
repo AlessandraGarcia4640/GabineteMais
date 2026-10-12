@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/button';
 import { strings } from '../../lib/strings';
@@ -29,7 +29,7 @@ export function DashboardScreen() {
       <Button label={strings.contacts.title} secondary onPress={() => router.push('/contatos')} />
       <Button label={strings.dashboard.profileShortcut} secondary onPress={() => router.push('/perfil')} /></View>
     <View style={styles.section}><Text accessibilityRole="header" style={styles.heading}>{strings.dashboard.tasksTitle}</Text><Text style={styles.muted}>{strings.dashboard.tasksDescription}</Text>
-      {open.isPending || progress.isPending ? <LoadingState /> : open.isError || progress.isError ? <ErrorState retry={retryTasks} /> : tasks.length === 0 ? <EmptyState message={strings.dashboard.emptyTasks} /> : tasks.map((task) => <TaskCard key={task.id} task={task} />)}
+      {open.isPending || progress.isPending ? <LoadingState /> : open.isError || progress.isError ? <ErrorState retry={retryTasks} /> : tasks.length === 0 ? <EmptyState message={strings.dashboard.emptyTasks} /> : tasks.map((task) => <Pressable key={task.id} accessibilityRole="button" accessibilityLabel={task.title} onPress={() => router.push({ pathname: '/tarefa/[id]', params: { id: task.id } })}><TaskCard task={task} /></Pressable>)}
       {hasMoreTasks && !open.isError && !progress.isError && <Text style={styles.muted}>{strings.dashboard.moreTasks}</Text>}
       <Button label={strings.dashboard.viewTasks} secondary onPress={() => router.push('/tarefas')} /></View>
     <View style={styles.section}><Text accessibilityRole="header" style={styles.heading}>{strings.dashboard.routinesTitle}</Text><Text style={styles.muted}>{strings.dashboard.routinesDescription}</Text>
