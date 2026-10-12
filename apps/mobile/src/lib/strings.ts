@@ -1,5 +1,18 @@
 export const strings = {
   brand: 'Gabinete+',
+  contacts: {
+    title: 'Contatos', details: 'Detalhes do contato', create: 'Novo contato', edit: 'Editar contato', empty: 'Nenhum contato encontrado.',
+    name: 'Nome', organization: 'Órgão ou instituição', jobTitle: 'Cargo ou função', email: 'E-mail', notes: 'Observações', phones: 'Telefones', tags: 'Etiquetas',
+    phone: (index: number) => `Telefone ${String(index + 1)}`, tag: (index: number) => `Etiqueta ${String(index + 1)}`,
+    addPhone: 'Adicionar telefone', addTag: 'Adicionar etiqueta', removePhone: (index: number) => `Remover telefone ${String(index + 1)}`, removeTag: (index: number) => `Remover etiqueta ${String(index + 1)}`,
+    noPhones: 'Nenhum telefone cadastrado.', noTags: 'Nenhuma etiqueta cadastrada.', noInformation: 'Não informado.', keyContact: 'Contato-chave para transição',
+    search: 'Buscar por nome, instituição ou etiqueta', filterOrganization: 'Filtrar por instituição exata', filterTag: 'Filtrar por etiqueta', applyFilters: 'Aplicar filtros', clearFilters: 'Limpar filtros',
+    all: 'Todos', keyOnly: 'Somente contatos-chave', active: 'Ativos', archived: 'Arquivados', archivedLabel: 'Este contato está arquivado.',
+    archive: 'Arquivar contato', confirmArchive: 'Confirmar arquivamento do contato', archiveHelp: 'O contato deixará de aparecer na lista de ativos. Os registros vinculados serão preservados.',
+    forbidden: 'Somente a chefia pode cadastrar, editar ou arquivar contatos.', notFound: 'Contato não encontrado.', archivedError: 'Um contato arquivado não pode ser editado.', requestError: 'Não foi possível concluir a operação. Tente novamente.',
+    validation: { name: 'Informe um nome de até 150 caracteres.', organization: 'Informe uma instituição de até 200 caracteres.', jobTitle: 'Use até 150 caracteres para o cargo ou função.',
+      email: 'Informe um e-mail válido ou deixe o campo vazio.', notes: 'Use até 4.000 caracteres nas observações.', phones: 'Use até 10 telefones válidos, com DDD quando aplicável.', tags: 'Use até 20 etiquetas, com 1 a 40 caracteres em cada uma.' },
+  },
   checklists: {
     title: 'Checklists', models: 'Modelos de checklist', detail: 'Modelo de checklist', create: 'Novo checklist', edit: 'Editar checklist', run: 'Execução de checklist', history: 'Histórico de execuções',
     active: 'Ativos', archived: 'Arquivados', empty: 'Nenhum checklist encontrado.', emptyRuns: 'Nenhuma execução encontrada.', mine: 'Minhas execuções', allRuns: 'Todas as execuções',

@@ -26,6 +26,7 @@ export function DashboardScreen() {
       <Button label={strings.dashboard.tasksShortcut} onPress={() => router.push('/tarefas')} />
       <Button label={strings.dashboard.routinesShortcut} secondary onPress={() => router.push({ pathname: '/rotinas', params: { scope: 'today' } })} />
       <Button label={strings.checklists.title} secondary onPress={() => router.push('/checklists')} />
+      <Button label={strings.contacts.title} secondary onPress={() => router.push('/contatos')} />
       <Button label={strings.dashboard.profileShortcut} secondary onPress={() => router.push('/perfil')} /></View>
     <View style={styles.section}><Text accessibilityRole="header" style={styles.heading}>{strings.dashboard.tasksTitle}</Text><Text style={styles.muted}>{strings.dashboard.tasksDescription}</Text>
       {open.isPending || progress.isPending ? <LoadingState /> : open.isError || progress.isError ? <ErrorState retry={retryTasks} /> : tasks.length === 0 ? <EmptyState message={strings.dashboard.emptyTasks} /> : tasks.map((task) => <TaskCard key={task.id} task={task} />)}
