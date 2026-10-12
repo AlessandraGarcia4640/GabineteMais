@@ -1,0 +1,5 @@
+import { expect, it } from 'vitest';
+import { createGuidelineSchema, updateGuidelineSchema, guidelineHistoryQuerySchema } from './guidelines.js';
+it('orientação exige conteúdo e categoria válidos', () => { expect(createGuidelineSchema.safeParse({ title: 'Título', category: 'SESSOES', content: ' ' }).success).toBe(false); expect(createGuidelineSchema.safeParse({ title: 'Título', category: 'INVALIDA', content: 'Texto' }).success).toBe(false); });
+it('edição exige versão esperada e alteração explícita', () => { expect(updateGuidelineSchema.safeParse({ title: 'Novo' }).success).toBe(false); expect(updateGuidelineSchema.safeParse({ expectedVersion: 1 }).success).toBe(false); expect(updateGuidelineSchema.parse({ expectedVersion: 1, essentialForTransition: false }).essentialForTransition).toBe(false); });
+it('histórico limita página e valida cursor de versão', () => { expect(guidelineHistoryQuerySchema.safeParse({ cursor: 'inválido' }).success).toBe(false); expect(guidelineHistoryQuerySchema.parse({ cursor: '2', limit: '10' })).toEqual({ cursor: 2, limit: 10 }); });

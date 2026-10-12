@@ -1,0 +1,22 @@
+import { z } from 'zod';
+const id = z.string().min(1).max(128);
+export const guidelineCategorySchema = z.enum(['SESSOES', 'PRAZOS', 'ATENDIMENTO', 'EQUIPE', 'MAGISTRADO', 'OUTROS']);
+const fields = { title: z.string().trim().min(1).max(200), category: guidelineCategorySchema, content: z.string().trim().min(1).max(24000), essentialForTransition: z.boolean() };
+export const createGuidelineSchema = z.object({ ...fields, essentialForTransition: fields.essentialForTransition.default(false) }).strict();
+export type CreateGuideline = z.infer<typeof createGuidelineSchema>;
+export const updateGuidelineSchema = z.object({ ...fields }).partial().extend({ expectedVersion: z.number().int().positive().max(2147483647) }).strict().refine((value) => Object.keys(value).some((key) => key !== 'expectedVersion'), 'Informe ao menos um campo.');
+export type UpdateGuideline = z.infer<typeof updateGuidelineSchema>;
+export const guidelineSchema = z.object({ ...fields, id, isArchived: z.boolean(), version: z.number().int().positive(), createdById: id, updatedById: id, authorName: z.string(), createdAt: z.iso.datetime(), updatedAt: z.iso.datetime() });
+export type Guideline = z.infer<typeof guidelineSchema>;
+export const guidelineVersionSchema = z.object({ ...fields, id, guidelineId: id, version: z.number().int().positive(), authorId: id, authorName: z.string(), createdAt: z.iso.datetime() });
+export type GuidelineVersion = z.infer<typeof guidelineVersionSchema>;
+export const guidelineListQuerySchema = z.object({ limit: z.coerce.number().int().min(1).max(100).default(20), cursor: id.optional(), q: z.string().trim().min(1).max(100).optional(), category: guidelineCategorySchema.optional(),
+  isArchived: z.enum(['true', 'false']).default('false').transform((v) => v === 'true'), essentialForTransition: z.enum(['true', 'false']).transform((v) => v === 'true').optional() }).strict();
+export type GuidelineListQuery = z.infer<typeof guidelineListQuerySchema>;
+export const guidelineHistoryQuerySchema = z.object({ limit: z.coerce.number().int().min(1).max(100).default(20), cursor: z.coerce.number().int().positive().max(2147483647).optional() }).strict();
+export type GuidelineHistoryQuery = z.infer<typeof guidelineHistoryQuerySchema>;
+export const guidelineVersionParamsSchema = z.object({ id, version: z.coerce.number().int().positive().max(2147483647) });
+export const guidelinePageSchema = z.object({ items: z.array(guidelineSchema).max(100), nextCursor: z.string().nullable() });
+export const guidelineVersionPageSchema = z.object({ items: z.array(guidelineVersionSchema).max(100), nextCursor: z.string().nullable() });
+export type GuidelinePage = z.infer<typeof guidelinePageSchema>;
+export type GuidelineVersionPage = z.infer<typeof guidelineVersionPageSchema>;

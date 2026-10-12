@@ -17,12 +17,14 @@ export const contractSchemas = {
   CreateContact: shared.createContactSchema, UpdateContact: shared.updateContactSchema, Contact: shared.contactSchema, ContactPage: shared.contactPageSchema,
   CreateTask: shared.createTaskSchema, UpdateTask: shared.updateTaskSchema, AssignTask: shared.assignTaskSchema,
   ChangeTaskStatus: shared.changeTaskStatusSchema, Task: shared.taskSchema, TaskEvent: shared.taskEventSchema, TaskPage: shared.taskPageSchema, TaskEventPage: shared.taskEventPageSchema,
+  CreateGuideline: shared.createGuidelineSchema, UpdateGuideline: shared.updateGuidelineSchema, Guideline: shared.guidelineSchema, GuidelineVersion: shared.guidelineVersionSchema, GuidelinePage: shared.guidelinePageSchema, GuidelineVersionPage: shared.guidelineVersionPageSchema,
 };
 export const queryContractSchemas = {
   '/users': shared.userListQuerySchema, '/users/{id}/positions': shared.historyQuerySchema,
   '/routines': shared.routineListQuerySchema, '/checklists/templates': shared.checklistListQuerySchema,
   '/checklists/runs': shared.checklistRunQuerySchema, '/contacts': shared.contactListQuerySchema,
   '/tasks': shared.taskListQuerySchema, '/tasks/{id}/history': shared.taskHistoryQuerySchema,
+  '/guidelines': shared.guidelineListQuerySchema, '/guidelines/{id}/versions': shared.guidelineHistoryQuerySchema,
 };
 export function generatedQueryParameters() {
   return Object.fromEntries(Object.entries(queryContractSchemas).map(([path, schema]) => {
@@ -45,6 +47,7 @@ export function generatedContractSchemas() {
     delete result.$schema;
     // Cross-field refinements need explicit JSON Schema constraints or prose.
     if (['UpdateProfile', 'UpdateRoutine', 'UpdateChecklist', 'UpdateContact', 'UpdateTask'].includes(name)) result.minProperties = 1;
+    if (name === 'UpdateGuideline') result.minProperties = 2;
     const json = z.json().parse(result);
     qualifyReferences(json, name);
     schemas[name] = json;

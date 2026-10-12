@@ -1,6 +1,6 @@
 # Documentação da API — etapa 32
 
-O contrato OpenAPI 3.1 está em `openapi/gabinete-plus.yaml`. Documenta os 41 endpoints implementados de RF00–RF04: autenticação, equipe/perfis, atividades, checklists, contatos e tarefas. RF05 (orientações) e RF06 (transição) ainda estão planejados; não há rotas desses módulos nesta versão.
+O contrato OpenAPI 3.1 está em `openapi/gabinete-plus.yaml`. Documenta os endpoints implementados de RF00–RF05: autenticação, equipe/perfis, atividades, checklists, contatos e tarefas. RF05 inclui orientações com versões imutáveis. RF06 (transição) ainda está planejado.
 
 ## Interface local
 

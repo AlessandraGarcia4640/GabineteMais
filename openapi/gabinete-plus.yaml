@@ -3,7 +3,7 @@ info:
   title: Gabinete+ API
   version: 0.2.0
   description: |-
-    API implementada de RF00–RF04: autenticação, equipe, atividades, checklists, contatos e tarefas. RF05 (orientações) e RF06 (transição) permanecem planejados e não possuem endpoints nesta versão. Interface local: /docs; contrato em /docs/openapi.json e /docs/openapi.yaml, habilitados em desenvolvimento/teste.
+    API implementada de RF00–RF05: autenticação, equipe, atividades, checklists, contatos, tarefas e orientações com histórico. RF06 (transição) permanece planejado. Interface local: /docs; contrato em /docs/openapi.json e /docs/openapi.yaml, habilitados em desenvolvimento/teste.
 
     Login retorna accessToken Bearer válido por 900 segundos e refreshToken opaco com prazo absoluto de sete dias. No botão Authorize informe apenas accessToken. Refresh/logout recebem refreshToken no corpo e não exigem Bearer. Renovação rotativa invalida o token anterior; reutilização revoga a sessão. Logout é idempotente. Sessão, atividade do usuário e perfil são consultados no banco a cada chamada protegida. Tokens dos exemplos são fictícios.
 
@@ -2007,6 +2007,435 @@ paths:
           $ref: "#/components/responses/InternalError"
       tags:
         - Tarefas
+  /guidelines:
+    get:
+      operationId: listGuidelines
+      summary: Consulta orientações paginadas
+      tags:
+        - Guidelines
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Consulta orientações paginadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuidelinePage"
+              examples:
+                ficticio:
+                  value:
+                    items:
+                      - &a4
+                        title: Orientação fictícia
+                        category: SESSOES
+                        content: |-
+                          # Sessão
+
+                          Conferir materiais fictícios.
+                        essentialForTransition: true
+                        id: demo-guideline
+                        isArchived: false
+                        version: 1
+                        createdById: demo-chief
+                        updatedById: demo-chief
+                        authorName: Chefia fictícia
+                        createdAt: 2026-10-12T12:00:00Z
+                        updatedAt: 2026-10-12T12:00:00Z
+                    nextCursor: null
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            default: 20
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: q
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum:
+              - SESSOES
+              - PRAZOS
+              - ATENDIMENTO
+              - EQUIPE
+              - MAGISTRADO
+              - OUTROS
+        - name: isArchived
+          in: query
+          schema:
+            default: "false"
+            type: string
+            enum:
+              - "true"
+              - "false"
+        - name: essentialForTransition
+          in: query
+          schema:
+            type: string
+            enum:
+              - "true"
+              - "false"
+    post:
+      operationId: createGuideline
+      summary: Cria orientação e primeira versão
+      tags:
+        - Guidelines
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Cria orientação e primeira versão
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guideline"
+              examples:
+                ficticio:
+                  value: *a4
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Orientação arquivada ou conflito de versão
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: GUIDELINE_VERSION_CONFLICT
+                      message: A orientação mudou. Reabra a versão atual antes de editar.
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGuideline"
+            examples:
+              ficticio:
+                value:
+                  title: Orientação fictícia
+                  category: SESSOES
+                  content: |-
+                    # Sessão
+
+                    Conferir materiais fictícios.
+                  essentialForTransition: true
+  /guidelines/{id}:
+    get:
+      operationId: getGuideline
+      summary: Consulta orientação atual
+      tags:
+        - Guidelines
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Consulta orientação atual
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guideline"
+              examples:
+                ficticio:
+                  value: &a1
+                    title: Orientação fictícia
+                    category: SESSOES
+                    content: |-
+                      # Sessão
+
+                      Conferir materiais fictícios.
+                    essentialForTransition: true
+                    id: demo-guideline
+                    isArchived: false
+                    version: 1
+                    createdById: demo-chief
+                    updatedById: demo-chief
+                    authorName: Chefia fictícia
+                    createdAt: 2026-10-12T12:00:00Z
+                    updatedAt: 2026-10-12T12:00:00Z
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Orientação não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: GUIDELINE_NOT_FOUND
+                      message: Orientação não encontrada.
+      parameters:
+        - &a5
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+    patch:
+      operationId: updateGuideline
+      summary: Edita com controle de versão e preserva histórico
+      tags:
+        - Guidelines
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Edita com controle de versão e preserva histórico
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guideline"
+              examples:
+                ficticio:
+                  value: *a1
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Orientação não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: GUIDELINE_NOT_FOUND
+                      message: Orientação não encontrada.
+        "409":
+          description: Orientação arquivada ou conflito de versão
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: GUIDELINE_VERSION_CONFLICT
+                      message: A orientação mudou. Reabra a versão atual antes de editar.
+        "413":
+          $ref: "#/components/responses/BodyTooLarge"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGuideline"
+            examples:
+              ficticio:
+                value:
+                  title: Título atualizado
+                  expectedVersion: 1
+      parameters:
+        - *a5
+    delete:
+      operationId: archiveGuideline
+      summary: Arquiva sem apagar versões
+      tags:
+        - Guidelines
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Arquiva sem apagar versões
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Orientação não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: GUIDELINE_NOT_FOUND
+                      message: Orientação não encontrada.
+      parameters:
+        - *a5
+  /guidelines/{id}/versions:
+    get:
+      operationId: listGuidelineVersions
+      summary: Consulta versões imutáveis paginadas
+      tags:
+        - Guidelines
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Consulta versões imutáveis paginadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuidelineVersionPage"
+              examples:
+                ficticio:
+                  value:
+                    items:
+                      - title: Orientação fictícia
+                        category: SESSOES
+                        content: |-
+                          # Sessão
+
+                          Conferir materiais fictícios.
+                        essentialForTransition: true
+                        id: demo-version
+                        guidelineId: demo-guideline
+                        version: 1
+                        authorId: demo-chief
+                        authorName: Chefia fictícia
+                        createdAt: 2026-10-12T12:00:00Z
+                    nextCursor: null
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Orientação não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: GUIDELINE_NOT_FOUND
+                      message: Orientação não encontrada.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: limit
+          in: query
+          schema:
+            default: 20
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: cursor
+          in: query
+          schema:
+            type: integer
+            exclusiveMinimum: 0
+            maximum: 2147483647
+  /guidelines/{id}/versions/{version}:
+    get:
+      operationId: getGuidelineVersion
+      summary: Consulta versão preservada
+      tags:
+        - Guidelines
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Consulta versão preservada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuidelineVersion"
+              examples:
+                ficticio:
+                  value:
+                    title: Orientação fictícia
+                    category: SESSOES
+                    content: |-
+                      # Sessão
+
+                      Conferir materiais fictícios.
+                    essentialForTransition: true
+                    id: demo-version
+                    guidelineId: demo-guideline
+                    version: 1
+                    authorId: demo-chief
+                    authorName: Chefia fictícia
+                    createdAt: 2026-10-12T12:00:00Z
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Orientação não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                ficticio:
+                  value:
+                    error:
+                      code: GUIDELINE_NOT_FOUND
+                      message: Orientação não encontrada.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 2147483647
 components:
   responses:
     Unauthenticated:
@@ -4340,6 +4769,326 @@ components:
         - status
         - service
         - timestamp
+    CreateGuideline:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          type: string
+          enum:
+            - SESSOES
+            - PRAZOS
+            - ATENDIMENTO
+            - EQUIPE
+            - MAGISTRADO
+            - OUTROS
+        content:
+          type: string
+          minLength: 1
+          maxLength: 24000
+        essentialForTransition:
+          default: false
+          type: boolean
+      required:
+        - title
+        - category
+        - content
+      additionalProperties: false
+    UpdateGuideline:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          type: string
+          enum:
+            - SESSOES
+            - PRAZOS
+            - ATENDIMENTO
+            - EQUIPE
+            - MAGISTRADO
+            - OUTROS
+        content:
+          type: string
+          minLength: 1
+          maxLength: 24000
+        essentialForTransition:
+          type: boolean
+        expectedVersion:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 2147483647
+      required:
+        - expectedVersion
+      additionalProperties: false
+      minProperties: 2
+    Guideline:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          type: string
+          enum:
+            - SESSOES
+            - PRAZOS
+            - ATENDIMENTO
+            - EQUIPE
+            - MAGISTRADO
+            - OUTROS
+        content:
+          type: string
+          minLength: 1
+          maxLength: 24000
+        essentialForTransition:
+          type: boolean
+        id:
+          type: string
+          minLength: 1
+          maxLength: 128
+        isArchived:
+          type: boolean
+        version:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+        createdById:
+          type: string
+          minLength: 1
+          maxLength: 128
+        updatedById:
+          type: string
+          minLength: 1
+          maxLength: 128
+        authorName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+      required:
+        - title
+        - category
+        - content
+        - essentialForTransition
+        - id
+        - isArchived
+        - version
+        - createdById
+        - updatedById
+        - authorName
+        - createdAt
+        - updatedAt
+    GuidelineVersion:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        category:
+          type: string
+          enum:
+            - SESSOES
+            - PRAZOS
+            - ATENDIMENTO
+            - EQUIPE
+            - MAGISTRADO
+            - OUTROS
+        content:
+          type: string
+          minLength: 1
+          maxLength: 24000
+        essentialForTransition:
+          type: boolean
+        id:
+          type: string
+          minLength: 1
+          maxLength: 128
+        guidelineId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        version:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+        authorId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        authorName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+      required:
+        - title
+        - category
+        - content
+        - essentialForTransition
+        - id
+        - guidelineId
+        - version
+        - authorId
+        - authorName
+        - createdAt
+    GuidelinePage:
+      type: object
+      properties:
+        items:
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                minLength: 1
+                maxLength: 200
+              category:
+                type: string
+                enum:
+                  - SESSOES
+                  - PRAZOS
+                  - ATENDIMENTO
+                  - EQUIPE
+                  - MAGISTRADO
+                  - OUTROS
+              content:
+                type: string
+                minLength: 1
+                maxLength: 24000
+              essentialForTransition:
+                type: boolean
+              id:
+                type: string
+                minLength: 1
+                maxLength: 128
+              isArchived:
+                type: boolean
+              version:
+                type: integer
+                exclusiveMinimum: 0
+                maximum: 9007199254740991
+              createdById:
+                type: string
+                minLength: 1
+                maxLength: 128
+              updatedById:
+                type: string
+                minLength: 1
+                maxLength: 128
+              authorName:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+              updatedAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - title
+              - category
+              - content
+              - essentialForTransition
+              - id
+              - isArchived
+              - version
+              - createdById
+              - updatedById
+              - authorName
+              - createdAt
+              - updatedAt
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - items
+        - nextCursor
+    GuidelineVersionPage:
+      type: object
+      properties:
+        items:
+          maxItems: 100
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                minLength: 1
+                maxLength: 200
+              category:
+                type: string
+                enum:
+                  - SESSOES
+                  - PRAZOS
+                  - ATENDIMENTO
+                  - EQUIPE
+                  - MAGISTRADO
+                  - OUTROS
+              content:
+                type: string
+                minLength: 1
+                maxLength: 24000
+              essentialForTransition:
+                type: boolean
+              id:
+                type: string
+                minLength: 1
+                maxLength: 128
+              guidelineId:
+                type: string
+                minLength: 1
+                maxLength: 128
+              version:
+                type: integer
+                exclusiveMinimum: 0
+                maximum: 9007199254740991
+              authorId:
+                type: string
+                minLength: 1
+                maxLength: 128
+              authorName:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            required:
+              - title
+              - category
+              - content
+              - essentialForTransition
+              - id
+              - guidelineId
+              - version
+              - authorId
+              - authorName
+              - createdAt
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - items
+        - nextCursor
 servers:
   - url: /
     description: Mesmo servidor que disponibiliza a documentação

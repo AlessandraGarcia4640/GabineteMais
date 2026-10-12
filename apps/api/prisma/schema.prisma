@@ -48,6 +48,9 @@ model User {
   taskEvents TaskEvent[] @relation("TaskEventActor")
   previousTaskAssignments TaskEvent[] @relation("TaskPreviousAssignee")
   nextTaskAssignments TaskEvent[] @relation("TaskNextAssignee")
+  createdGuidelines Guideline[] @relation("GuidelineCreator")
+  editedGuidelines Guideline[] @relation("GuidelineEditor")
+  guidelineVersions GuidelineVersion[]
 
   @@map("users")
 }
@@ -302,4 +305,48 @@ model TaskEvent {
 
   @@index([taskId, id])
   @@map("task_events")
+}
+
+enum GuidelineCategory {
+  SESSOES
+  PRAZOS
+  ATENDIMENTO
+  EQUIPE
+  MAGISTRADO
+  OUTROS
+}
+model Guideline {
+  id String @id @default(cuid())
+  title String @db.VarChar(200)
+  category GuidelineCategory
+  content String
+  essentialForTransition Boolean @default(false)
+  isArchived Boolean @default(false)
+  version Int @default(1)
+  createdById String
+  createdBy User @relation("GuidelineCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById String
+  updatedBy User @relation("GuidelineEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  versions GuidelineVersion[]
+  @@index([isArchived, id])
+  @@index([essentialForTransition, isArchived, id])
+  @@map("guidelines")
+}
+model GuidelineVersion {
+  id String @id @default(cuid())
+  guidelineId String
+  guideline Guideline @relation(fields: [guidelineId], references: [id], onDelete: Restrict)
+  version Int
+  title String @db.VarChar(200)
+  category GuidelineCategory
+  content String
+  essentialForTransition Boolean
+  authorId String
+  author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  authorName String
+  createdAt DateTime @default(now())
+  @@unique([guidelineId, version])
+  @@map("guideline_versions")
 }

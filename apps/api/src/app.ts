@@ -1,4 +1,7 @@
 import { createDocumentationRouter } from './routes/documentation.js';
+import { createGuidelinesRouter } from './modules/guidelines/guidelines.router.js';
+import { GuidelinesService } from './modules/guidelines/guidelines.service.js';
+import { guidelinesRepository } from './modules/guidelines/guidelines.repository.js';
 import { tasksRepository } from './modules/tasks/tasks.repository.js';
 import { TasksService } from './modules/tasks/tasks.service.js';
 import { createTasksRouter } from './modules/tasks/tasks.router.js';
@@ -49,6 +52,7 @@ export const createApp = (loginService = new LoginService({
   app.use('/checklists', createChecklistsRouter(authorization, new ChecklistsService(authorization, checklistRepository)));
   app.use('/contacts', createContactsRouter(authorization, new ContactsService(authorization, contactRepository)));
   app.use('/tasks', createTasksRouter(authorization, new TasksService(authorization, taskRepository)));
+  app.use('/guidelines', createGuidelinesRouter(authorization, new GuidelinesService(authorization, guidelinesRepository)));
   app.use(errorHandler);
   return app;
 };
