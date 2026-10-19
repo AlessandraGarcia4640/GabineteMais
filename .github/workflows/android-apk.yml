@@ -1,0 +1,66 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - chore/android-apk-install
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: URL pública ou de rede local da API
+        required: false
+        default: http://localhost:3333
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_API_URL: ${{ github.event.inputs.api_url || 'http://localhost:3333' }}
+      EXPO_PREVIEW_ALLOW_HTTP: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.14.0
+
+      - name: Configure Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Configure Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared package
+        run: pnpm --filter @gabinete-plus/shared build
+
+      - name: Generate Android project
+        working-directory: apps/mobile
+        run: pnpm exec expo prebuild --platform android --clean --no-install
+
+      - name: Build installable APK
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleRelease
+
+      - name: Prepare APK
+        run: |
+          mkdir -p dist
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk dist/GabineteMais-preview.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: GabineteMais-Android-APK
+          path: dist/GabineteMais-preview.apk
+          if-no-files-found: error
+          retention-days: 14
