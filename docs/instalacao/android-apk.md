@@ -12,7 +12,11 @@ Arquivo: **GabineteMais-preview.apk**
 
 ## Preparar o computador que servirá a API
 
-No Windows, com o repositório já clonado e atualizado, execute na raiz do projeto:
+No Windows, com o repositório já clonado e atualizado, basta abrir:
+
+`scripts\\start-phone-preview.cmd`
+
+Se preferir pelo PowerShell:
 
 ~~~powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\start-phone-preview.ps1
@@ -51,7 +55,11 @@ O computador e o Samsung devem estar na mesma rede Wi-Fi para usar um endereço 
 
 ## Encerrar o ambiente local
 
-Feche a janela onde a API está rodando e execute:
+Feche a janela onde a API está rodando e abra:
+
+`scripts\\stop-phone-preview.cmd`
+
+Ou execute:
 
 ~~~powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\stop-phone-preview.ps1
