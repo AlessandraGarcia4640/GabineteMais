@@ -1,28 +1,62 @@
-# Instalação do Gabinete+ no Android
+# Instalar e usar o Gabinete+ em um Samsung Galaxy
 
-Este fluxo gera um APK de demonstração diretamente pelo GitHub Actions.
+O APK de demonstração é gerado automaticamente pelo GitHub Actions. A versão de preview permite informar o endereço da API no próprio aplicativo, sem precisar gerar um novo APK quando o IP do computador mudar.
 
-## Arquivo
+## APK
 
-O artefato gerado chama-se `GabineteMais-Android-APK` e contém:
+Workflow: **Build Android APK**
 
-- `GabineteMais-preview.apk`
+Artefato: **GabineteMais-Android-APK**
 
-## Instalação pelo celular
+Arquivo: **GabineteMais-preview.apk**
 
-1. Abra o repositório no GitHub.
-2. Acesse **Actions**.
-3. Abra a execução **Build Android APK** mais recente que esteja verde.
-4. Role até **Artifacts**.
-5. Baixe **GabineteMais-Android-APK**.
-6. Abra o arquivo ZIP baixado e extraia `GabineteMais-preview.apk`.
-7. Toque no APK para instalar.
-8. Se o Android solicitar, autorize temporariamente **Instalar apps desconhecidos** para o navegador ou gerenciador de arquivos utilizado.
+## Preparar o computador que servirá a API
 
-## API
+No Windows, com o repositório já clonado e atualizado, execute na raiz do projeto:
 
-O APK é construído com a variável `EXPO_PUBLIC_API_URL`.
+~~~powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-phone-preview.ps1
+~~~
 
-Na execução automática desta branch, o valor padrão é `http://localhost:3333`. Esse endereço só alcança uma API rodando no próprio aparelho ou redirecionada por ADB.
+O script:
 
-Para uso funcional em outro dispositivo, gere o APK informando uma URL de API acessível pelo celular, por exemplo uma API publicada em HTTPS ou o endereço IP do computador na mesma rede Wi-Fi.
+- verifica Docker, Node e pnpm;
+- cria um \`.env\` local se necessário;
+- sobe PostgreSQL;
+- instala dependências;
+- gera Prisma Client;
+- aplica migrations;
+- cria dados fictícios de demonstração;
+- mostra o endereço da API para informar no celular;
+- inicia a API.
+
+Credencial fictícia padrão:
+
+- E-mail: \`chefia@example.invalid\`
+- Senha: \`GabineteMais2026!\`
+
+O computador e o Samsung devem estar na mesma rede Wi-Fi para usar um endereço local como \`http://192.168.x.x:3333\`.
+
+## Instalação no Samsung
+
+1. GitHub → repositório **GabineteMais** → **Actions**.
+2. Abra **Build Android APK** e escolha uma execução verde da branch \`main\`.
+3. Em **Artifacts**, baixe **GabineteMais-Android-APK**.
+4. Extraia \`GabineteMais-preview.apk\`.
+5. Toque no APK.
+6. Se solicitado, habilite temporariamente **Permitir desta fonte** para o aplicativo usado para abrir o APK.
+7. Abra **Gabinete+**.
+8. Na primeira tela, informe o endereço mostrado pelo script no computador, por exemplo \`http://192.168.0.10:3333\`.
+9. Entre com a credencial fictícia acima.
+
+## Encerrar o ambiente local
+
+Feche a janela onde a API está rodando e execute:
+
+~~~powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\stop-phone-preview.ps1
+~~~
+
+## Observação
+
+O APK aceita HTTP somente no perfil de preview para permitir testes na rede local. Builds de produção continuam sem essa liberação.
