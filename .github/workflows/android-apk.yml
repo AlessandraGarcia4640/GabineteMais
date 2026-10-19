@@ -3,19 +3,14 @@ name: Build Android APK
 on:
   push:
     branches:
+      - main
       - chore/android-apk-install
   workflow_dispatch:
-    inputs:
-      api_url:
-        description: URL pública ou de rede local da API
-        required: false
-        default: http://localhost:3333
 
 jobs:
   build-apk:
     runs-on: ubuntu-latest
     env:
-      EXPO_PUBLIC_API_URL: ${{ github.event.inputs.api_url || 'http://localhost:3333' }}
       EXPO_PREVIEW_ALLOW_HTTP: 'true'
     steps:
       - name: Checkout
